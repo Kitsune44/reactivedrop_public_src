@@ -5063,6 +5063,12 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 
 	bool bFriendlyFire = IRelationType( pAttacker ) == D_LI;
 
+	// special scaling for flamer ff
+	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
+	{
+		flFlameLifetime = MAX( 1.0f, flFlameLifetime * m_fFriendlyFireAbsorptionTime );
+	}
+
 	// if this is an env_fire trying to burn us, ignore the grace period that the AllowedToIgnite function does
 	// we want env_fires to always ignite the marine immediately so they can be used as dangerous blockers in levels
 	CFire *pFire = dynamic_cast< CFire * >( pAttacker );
