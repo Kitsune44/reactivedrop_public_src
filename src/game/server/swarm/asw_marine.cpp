@@ -1433,7 +1433,7 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			}
 
 			// drop the damage down by our absorption buffer
-			bool bFlamerDot = !!(newInfo.GetDamageType() & ( DMG_BURN | DMG_DIRECT ) );
+			bool bFlamerDot = !!(newInfo.GetDamageType() & DMG_DIRECT);
 			if ( newInfo.GetDamage() > 0 && pAttacker != this && !bFlamerDot )
 			{
 				if ( asw_marine_ff_absorption.GetInt() != 0 )
@@ -1827,8 +1827,8 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			CheckAutoWeaponSwitch();
 		}
 	}	
-	
-	if (result > 0)
+	// Mari: Friendly fire from flamer should be considered regardless if it deals 0 damage
+	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
 	{		
 		// update our stats
 		CASW_Marine_Resource *pMR = GetMarineResource();
@@ -5063,10 +5063,10 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 
 	bool bFriendlyFire = IRelationType( pAttacker ) == D_LI;
 
-	// special scaling for flamer ff
+	// Mari: special scaling for flamer ff
 	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
 	{
-		flFlameLifetime = MAX( 1.0f, flFlameLifetime * m_fFriendlyFireAbsorptionTime );
+		flFlameLifetime = MAX( flFlameLifetime*0.1875f, MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, (m_fLastFriendlyFireTime + flFlameLifetime*0.2f - gpGlobals->curtime)*5.0f ) );
 	}
 
 	// if this is an env_fire trying to burn us, ignore the grace period that the AllowedToIgnite function does
