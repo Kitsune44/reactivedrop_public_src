@@ -1827,6 +1827,7 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			CheckAutoWeaponSwitch();
 		}
 	}	
+	
 	// Mari: Friendly fire from flamer should be considered regardless if it deals 0 damage
 	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
 	{		
