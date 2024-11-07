@@ -5066,7 +5066,7 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 	bool bFriendlyFire = IRelationType( pAttacker ) == D_LI;
 
 	// Mari: special scaling for flamer ff
-	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
+	if ( asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER )
 	{
 		flFlameLifetime = MAX( flFlameLifetime*0.1875f, MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, (m_fLastFriendlyFireTime + flFlameLifetime*0.2f - gpGlobals->curtime)*5.0f ) );
 	}
