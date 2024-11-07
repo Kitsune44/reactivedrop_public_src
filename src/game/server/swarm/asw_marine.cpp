@@ -1434,7 +1434,8 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 			// drop the damage down by our absorption buffer
 			bool bFlamerDot = !!(newInfo.GetDamageType() & DMG_DIRECT);
-			if ( newInfo.GetDamage() > 0 && pAttacker != this && !bFlamerDot )
+			bool bIsFlamer = newInfo.GetWeapon() && newInfo.GetWeapon()->Classify() == CLASS_ASW_FLAMER;
+			if ( newInfo.GetDamage() > 0 && pAttacker != this && (!bFlamerDot || bIsFlamer) )
 			{
 				if ( asw_marine_ff_absorption.GetInt() != 0 )
 				{
@@ -1447,7 +1448,7 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 					}
 				}
 				// if 0 don't chatter about friendly fire
-				if ( rd_chatter_about_ff.GetBool() )
+				if ( rd_chatter_about_ff.GetBool() && !bFlamerDot )
 					GetMarineSpeech()->QueueChatter( CHATTER_FRIENDLY_FIRE, gpGlobals->curtime + 0.4f, gpGlobals->curtime + 1.0f );
 
 				m_fLastFriendlyFireTime = gpGlobals->curtime;
@@ -1829,7 +1830,7 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	}	
 	
 	// Mari: Friendly fire from flamer should be considered regardless if it deals 0 damage
-	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
+	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon() && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
 	{		
 		// update our stats
 		CASW_Marine_Resource *pMR = GetMarineResource();
@@ -5065,7 +5066,7 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 	bool bFriendlyFire = IRelationType( pAttacker ) == D_LI;
 
 	// Mari: special scaling for flamer ff
-	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
+	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
 	{
 		flFlameLifetime = MAX( flFlameLifetime*0.1875f, MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, (m_fLastFriendlyFireTime + flFlameLifetime*0.2f - gpGlobals->curtime)*5.0f ) );
 	}
