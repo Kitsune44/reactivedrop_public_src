@@ -103,7 +103,7 @@ extern ConVar asw_stun_grenade_time;
 ConVar rd_frags_limit( "rd_frags_limit", "20",  FCVAR_REPLICATED, "Number of frags a player must reach to win the round");
 ConVar rd_chatter_about_ff( "rd_chatter_about_ff", "1",  FCVAR_REPLICATED, "If 1 marines will shout about friendly fire done to them");
 ConVar rd_chatter_about_marine_death( "rd_chatter_about_marine_death", "1",  FCVAR_REPLICATED, "If 1 marines will shout Marine Down if marine dies");
-ConVar rd_marine_ignite_immediately( "rd_marine_ignite_immediately", "0",  FCVAR_CHEAT | FCVAR_REPLICATED, "If 1 marines will will be ignited by flamer from single puff");
+ConVar rd_marine_ignite_immediately( "rd_marine_ignite_immediately", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "If 1 marines will will be ignited by flamer from single puff (see also the asw_marine_time_until_ignite convars)" );
 ConVar rd_pvp_marine_take_damage_from_bots("rd_pvp_marine_take_damage_from_bots", "1", FCVAR_CHEAT, "If 0 players will not take damage from bots in PvP");
 ConVar rd_bot_strong( "rd_bot_strong", "1", FCVAR_CHEAT, "If 1, bots take only 25% of damage in a co-op game" );
 ConVar rd_medgun_medkit_refill_amount( "rd_medgun_medkit_refill_amount", "0", FCVAR_CHEAT, "Amount of ammo given to refill a healgun from a medkit" );
@@ -454,6 +454,8 @@ ConVar asw_marine_burn_time_easy( "asw_marine_burn_time_easy", "6", FCVAR_CHEAT,
 ConVar asw_marine_burn_time_normal( "asw_marine_burn_time_normal", "8", FCVAR_CHEAT, "Amount of time marine burns for when ignited on normal difficulty" );
 ConVar asw_marine_burn_time_hard( "asw_marine_burn_time_hard", "12", FCVAR_CHEAT, "Amount of time marine burns for when ignited on hard difficulty" );
 ConVar asw_marine_burn_time_insane( "asw_marine_burn_time_insane", "15", FCVAR_CHEAT, "Amount of time marine burns for when ignited on insane difficulty" );
+ConVar asw_marine_burn_time_min_fraction( "asw_marine_burn_time_min_fraction", "0.1875", FCVAR_CHEAT, "Minimum fraction of the burn time a marine can be ignited for due to friendly fire protection" );
+ConVar asw_marine_burn_time_since_last_ff_scale( "asw_marine_burn_time_since_last_ff_scale", "5", FCVAR_CHEAT, "Number of seconds taken off of the burn time for each second since the last friendly fire incident" );
 ConVar asw_marine_time_until_ignite_expire( "asw_marine_time_until_ignite_expire", "2.0", FCVAR_CHEAT, "Amount of time until repeated burn damage counter expires" );
 ConVar asw_marine_time_until_ignite( "asw_marine_time_until_ignite", "0.7", FCVAR_CHEAT, "Amount of time before a marine ignites from taking repeated burn damage" );
 ConVar asw_marine_time_until_ignite_hcff( "asw_marine_time_until_ignite_hcff", "0.2", FCVAR_CHEAT, "Amount of time before a marine ignites from taking repeated burn damage (hardcore ff)" );
@@ -5065,9 +5067,9 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 	bool bFriendlyFire = IRelationType( pAttacker ) == D_LI;
 
 	// Mari: special scaling for flamer ff
-	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
+	if ( asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER )
 	{
-		flFlameLifetime = MAX( flFlameLifetime*0.1875f, MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, (m_fLastFriendlyFireTime + flFlameLifetime*0.2f - gpGlobals->curtime)*5.0f ) );
+		flFlameLifetime = MAX( flFlameLifetime * asw_marine_burn_time_min_fraction.GetFloat(), MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, flFlameLifetime + ( m_fLastFriendlyFireTime - gpGlobals->curtime ) * asw_marine_burn_time_since_last_ff_scale.GetFloat() ) );
 	}
 
 	// if this is an env_fire trying to burn us, ignore the grace period that the AllowedToIgnite function does
