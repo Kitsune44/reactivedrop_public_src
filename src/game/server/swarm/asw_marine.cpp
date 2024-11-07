@@ -457,7 +457,7 @@ ConVar asw_marine_burn_time_insane( "asw_marine_burn_time_insane", "15", FCVAR_C
 ConVar asw_marine_time_until_ignite_expire( "asw_marine_time_until_ignite_expire", "2.0", FCVAR_CHEAT, "Amount of time until repeated burn damage counter expires" );
 ConVar asw_marine_time_until_ignite( "asw_marine_time_until_ignite", "0.7", FCVAR_CHEAT, "Amount of time before a marine ignites from taking repeated burn damage" );
 ConVar asw_marine_time_until_ignite_hcff( "asw_marine_time_until_ignite_hcff", "0.2", FCVAR_CHEAT, "Amount of time before a marine ignites from taking repeated burn damage (hardcore ff)" );
-ConVar asw_marine_time_until_ignite_flamer( "asw_marine_time_until_ignite_flamer", "0.2", FCVAR_CHEAT, "If non-negative, overrides asw_marine_time_until_ignite for the M868 Flamer Unit" );
+ConVar asw_marine_time_until_ignite_flamer( "asw_marine_time_until_ignite_flamer", "0.0", FCVAR_CHEAT, "If non-negative, overrides asw_marine_time_until_ignite for the M868 Flamer Unit" );
 ConVar asw_marine_time_until_ignite_hcff_flamer( "asw_marine_time_until_ignite_hcff_flamer", "0.0", FCVAR_CHEAT, "If non-negative, overrides asw_marine_time_until_ignite_hcff for the M868 Flamer Unit" );
 ConVar asw_marine_time_until_ignite_grenade( "asw_marine_time_until_ignite_grenade", "-1", FCVAR_CHEAT, "If non-negative, overrides asw_marine_time_until_ignite for M42 Vindicator grenades and NA-23 Incendiary Grenades" );
 ConVar asw_marine_time_until_ignite_hcff_grenade( "asw_marine_time_until_ignite_hcff_grenade", "-1", FCVAR_CHEAT, "If non-negative, overrides asw_marine_time_until_ignite_hcff for M42 Vindicator grenades and NA-23 Incendiary Grenades" );
@@ -1433,7 +1433,7 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			}
 
 			// drop the damage down by our absorption buffer
-			bool bFlamerDot = !!(newInfo.GetDamageType() & ( DMG_BURN | DMG_DIRECT ) );
+			bool bFlamerDot = !!(newInfo.GetDamageType() & DMG_DIRECT);
 			if ( newInfo.GetDamage() > 0 && pAttacker != this && !bFlamerDot )
 			{
 				if ( asw_marine_ff_absorption.GetInt() != 0 )
@@ -1828,7 +1828,8 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		}
 	}	
 	
-	if (result > 0)
+	// Mari: Friendly fire from flamer should be considered regardless if it deals 0 damage
+	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
 	{		
 		// update our stats
 		CASW_Marine_Resource *pMR = GetMarineResource();
@@ -5062,6 +5063,12 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 		m_flFirstBurnTime = gpGlobals->curtime;
 
 	bool bFriendlyFire = IRelationType( pAttacker ) == D_LI;
+
+	// Mari: special scaling for flamer ff
+	if (asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER)
+	{
+		flFlameLifetime = MAX( flFlameLifetime*0.1875f, MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, (m_fLastFriendlyFireTime + flFlameLifetime*0.2f - gpGlobals->curtime)*5.0f ) );
+	}
 
 	// if this is an env_fire trying to burn us, ignore the grace period that the AllowedToIgnite function does
 	// we want env_fires to always ignite the marine immediately so they can be used as dangerous blockers in levels
