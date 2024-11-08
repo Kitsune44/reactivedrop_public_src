@@ -5074,10 +5074,8 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 	{
 		float flMinTime = flFlameLifetime * asw_marine_burn_time_min_fraction.GetFloat();
 
-		// Scaling the burn duration based on the frequency of friendly fire
-		// This calculation relies on the fact that it takes place after m_fLastFriendlyFireTime is already set to the time of the newest ff incident
-		// which makes it impossible to calculate the time since last ff incident
-		// Otherwise this would be used instead: ( gpGlobals->curtime - m_fLastFriendlyFireTime )
+		// Directly scaling the burn duration by the frequency of friendly fire
+		// The frequency is the difference in time between the newest ff incident and the previous one
 		float flFlameLifetimeScaled = flFlameLifetime - ( m_fLastFriendlyFireTime - m_fPrevFriendlyFireTime ) * asw_marine_burn_time_since_last_ff_scale.GetFloat();
 
 		flFlameLifetime = MAX ( flMinTime, flFlameLifetimeScaled );
