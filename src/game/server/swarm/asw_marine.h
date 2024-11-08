@@ -655,6 +655,7 @@ public:
 	virtual void ActivateFriendlyFireGuard(CASW_Marine *pVictim);
 	virtual float GetFFAbsorptionScale();
 	float m_fLastFriendlyFireTime;
+	float m_fPrevFriendlyFireTime;
 	float m_fFriendlyFireAbsorptionTime;				// timer for friendly fire damage
 	float m_fLastAmmoCheckTime;
 	bool m_bDoneWoundedRebuke;
