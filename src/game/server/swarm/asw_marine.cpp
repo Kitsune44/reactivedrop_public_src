@@ -340,6 +340,7 @@ BEGIN_DATADESC( CASW_Marine )
 	DEFINE_FIELD( m_fNextAlienWalkDamage, FIELD_FLOAT ),
 	DEFINE_FIELD( m_iLightLevel, FIELD_INTEGER ),
 	DEFINE_FIELD( m_fLastFriendlyFireTime, FIELD_FLOAT ),
+	DEFINE_FIELD( m_fPrevFriendlyFireTime, FIELD_FLOAT ),
 	DEFINE_FIELD( m_fLastAmmoCheckTime, FIELD_FLOAT ),
 	DEFINE_FIELD( m_fFriendlyFireAbsorptionTime, FIELD_FLOAT ),
 	DEFINE_FIELD( m_vecMeleeStartPos, FIELD_VECTOR ),
@@ -455,7 +456,7 @@ ConVar asw_marine_burn_time_normal( "asw_marine_burn_time_normal", "8", FCVAR_CH
 ConVar asw_marine_burn_time_hard( "asw_marine_burn_time_hard", "12", FCVAR_CHEAT, "Amount of time marine burns for when ignited on hard difficulty" );
 ConVar asw_marine_burn_time_insane( "asw_marine_burn_time_insane", "15", FCVAR_CHEAT, "Amount of time marine burns for when ignited on insane difficulty" );
 ConVar asw_marine_burn_time_min_fraction( "asw_marine_burn_time_min_fraction", "0.1875", FCVAR_CHEAT, "Minimum fraction of the burn time a marine can be ignited for due to friendly fire protection" );
-ConVar asw_marine_burn_time_since_last_ff_scale( "asw_marine_burn_time_since_last_ff_scale", "5", FCVAR_CHEAT, "Number of seconds taken off of the burn time for each second since the last friendly fire incident" );
+ConVar asw_marine_burn_time_since_last_ff_scale( "asw_marine_burn_time_since_last_ff_scale", "1.0", FCVAR_CHEAT, "Number of seconds taken off of the burn time for each second since the last friendly fire incident" );
 ConVar asw_marine_time_until_ignite_expire( "asw_marine_time_until_ignite_expire", "2.0", FCVAR_CHEAT, "Amount of time until repeated burn damage counter expires" );
 ConVar asw_marine_time_until_ignite( "asw_marine_time_until_ignite", "0.7", FCVAR_CHEAT, "Amount of time before a marine ignites from taking repeated burn damage" );
 ConVar asw_marine_time_until_ignite_hcff( "asw_marine_time_until_ignite_hcff", "0.2", FCVAR_CHEAT, "Amount of time before a marine ignites from taking repeated burn damage (hardcore ff)" );
@@ -1436,7 +1437,8 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 			// drop the damage down by our absorption buffer
 			bool bFlamerDot = !!(newInfo.GetDamageType() & DMG_DIRECT);
-			if ( newInfo.GetDamage() > 0 && pAttacker != this && !bFlamerDot )
+			bool bIsFlamer = newInfo.GetWeapon() && newInfo.GetWeapon()->Classify() == CLASS_ASW_FLAMER;
+			if ( newInfo.GetDamage() > 0 && pAttacker != this && (!bFlamerDot || bIsFlamer) )
 			{
 				if ( asw_marine_ff_absorption.GetInt() != 0 )
 				{
@@ -1449,9 +1451,10 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 					}
 				}
 				// if 0 don't chatter about friendly fire
-				if ( rd_chatter_about_ff.GetBool() )
+				if ( rd_chatter_about_ff.GetBool() && !bFlamerDot )
 					GetMarineSpeech()->QueueChatter( CHATTER_FRIENDLY_FIRE, gpGlobals->curtime + 0.4f, gpGlobals->curtime + 1.0f );
 
+				m_fPrevFriendlyFireTime = m_fLastFriendlyFireTime;
 				m_fLastFriendlyFireTime = gpGlobals->curtime;
 			}
 		}
@@ -1831,7 +1834,7 @@ int CASW_Marine::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	}	
 	
 	// Mari: Friendly fire from flamer should be considered regardless if it deals 0 damage
-	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
+	if (result > 0 || (bFriendlyFire && (info.GetDamageType() & DMG_BURN) && info.GetWeapon() && info.GetWeapon()->Classify() == CLASS_ASW_FLAMER))
 	{		
 		// update our stats
 		CASW_Marine_Resource *pMR = GetMarineResource();
@@ -5069,7 +5072,13 @@ void CASW_Marine::ASW_Ignite( float flFlameLifetime, float flSize, CBaseEntity *
 	// Mari: special scaling for flamer ff
 	if ( asw_marine_ff_absorption.GetInt() > 0 && bFriendlyFire && pDamagingWeapon && pDamagingWeapon->Classify() == CLASS_ASW_FLAMER )
 	{
-		flFlameLifetime = MAX( flFlameLifetime * asw_marine_burn_time_min_fraction.GetFloat(), MIN( flFlameLifetime * m_fFriendlyFireAbsorptionTime, flFlameLifetime + ( m_fLastFriendlyFireTime - gpGlobals->curtime ) * asw_marine_burn_time_since_last_ff_scale.GetFloat() ) );
+		float flMinTime = flFlameLifetime * asw_marine_burn_time_min_fraction.GetFloat();
+
+		// Directly scaling the burn duration by the frequency of friendly fire
+		// The frequency is the difference in time between the newest ff incident and the previous one
+		float flFlameLifetimeScaled = flFlameLifetime - ( m_fLastFriendlyFireTime - m_fPrevFriendlyFireTime ) * asw_marine_burn_time_since_last_ff_scale.GetFloat();
+
+		flFlameLifetime = MAX ( flMinTime, flFlameLifetimeScaled );
 	}
 
 	// if this is an env_fire trying to burn us, ignore the grace period that the AllowedToIgnite function does
