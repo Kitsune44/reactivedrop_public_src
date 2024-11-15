@@ -281,6 +281,85 @@ public:
 
 		return ASWSpawnManager()->GetHordeToSpawn();
 	}
+
+	int GetMinNPCClass()
+	{
+		return -int( NELEMS( g_NonSpawnableAliens ) ) - 1;
+	}
+
+	int GetMaxNPCClass()
+	{
+		return NELEMS( g_Aliens ) - 1;
+	}
+
+	const char *GetNPCClassName( int index )
+	{
+		const char *szClassName = GetAlienClassname( index );
+
+		return szClassName ? szClassName : "";
+	}
+
+	int GetNPCClassIndex( const char *classname )
+	{
+		for ( int i = GetMinNPCClass(); i <= GetMaxNPCClass(); i++ )
+		{
+			if ( i == -1 )
+			{
+				continue;
+			}
+
+			if ( FStrEq( classname, GetNPCClassName( i ) ) )
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	const char *GetNPCHordeSound( int index )
+	{
+		const ASW_Alien_Class_Entry *pEntry = GetAlienClass( index );
+		if ( !pEntry )
+		{
+			return "";
+		}
+
+		return pEntry->m_szHordeSound;
+	}
+
+	int GetNPCHullType( int index )
+	{
+		const ASW_Alien_Class_Entry *pEntry = GetAlienClass( index );
+		if ( !pEntry )
+		{
+			return HULL_MEDIUMBIG;
+		}
+
+		return pEntry->m_nHullType;
+	}
+
+	Vector GetNPCMins( int index )
+	{
+		const ASW_Alien_Class_Entry *pEntry = GetAlienClass( index );
+		if ( !pEntry )
+		{
+			return NAI_Hull::Mins( HULL_MEDIUMBIG );
+		}
+
+		return pEntry->m_vecRealHullMins;
+	}
+
+	Vector GetNPCMaxs( int index )
+	{
+		const ASW_Alien_Class_Entry *pEntry = GetAlienClass( index );
+		if ( !pEntry )
+		{
+			return NAI_Hull::Maxs( HULL_MEDIUMBIG );
+		}
+
+		return pEntry->m_vecRealHullMaxs;
+	}
 } g_ASWDirectorVScript;
 
 BEGIN_SCRIPTDESC_ROOT_NAMED( CASW_Director_VScript, "CDirector", SCRIPT_SINGLETON "The AI director" )
@@ -304,6 +383,14 @@ BEGIN_SCRIPTDESC_ROOT_NAMED( CASW_Director_VScript, "CDirector", SCRIPT_SINGLETO
 	DEFINE_SCRIPTFUNC( SetTimeToNextHorde, "Force the horde countdown timer to be set to this number of seconds" )
 	DEFINE_SCRIPTFUNC( FindHordePosition, "Get a random position where a horde can spawn (returns null on fail)" )
 	DEFINE_SCRIPTFUNC( IsSpawningHorde, "Get the number of aliens remaining to spawn in the current horde" )
+	DEFINE_SCRIPTFUNC( GetMinNPCClass, "Returns the minimum NPC class index. Class indexes that are negative cannot be used in spawners. -1 is reserved for \"no class\"." )
+	DEFINE_SCRIPTFUNC( GetMaxNPCClass, "Returns the maximum NPC class index." )
+	DEFINE_SCRIPTFUNC( GetNPCClassName, "Returns the NPC classname associated with a given index." )
+	DEFINE_SCRIPTFUNC( GetNPCClassIndex, "Returns the NPC class index associated with a given classname, or -1 if there is none." )
+	DEFINE_SCRIPTFUNC( GetNPCHordeSound, "Returns the horde sound name for a given NPC class index. This can be used to roughly categorize enemies into factions." )
+	DEFINE_SCRIPTFUNC( GetNPCHullType, "Returns the hull type (for example, HULL_MEDIUMBIG) of an NPC class." )
+	DEFINE_SCRIPTFUNC( GetNPCMins, "Returns the component-wise minimum coordinate on the given NPC class's hull. (For hull traces)" )
+	DEFINE_SCRIPTFUNC( GetNPCMaxs, "Returns the component-wise maximum coordinate on the given NPC class's hull. (For hull traces)" )
 END_SCRIPTDESC();
 
 extern bool ChallengeCanSetConVar( const char *szName );
