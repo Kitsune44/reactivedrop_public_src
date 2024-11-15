@@ -5,7 +5,7 @@
 #include "rd_inventory_shared.h"
 #include <vgui/vgui.h>
 
-class C_ASW_Sentry_Base : public C_BaseAnimating, public IASW_Client_Usable_Entity
+class C_ASW_Sentry_Base : public C_BaseAnimating, public IASW_Client_Usable_Entity, public IHealthTracked
 {
 public:
 	DECLARE_CLASS( C_ASW_Sentry_Base, C_BaseAnimating );
@@ -59,6 +59,12 @@ public:
 	virtual bool NeedsLOSCheck() { return true; }
 
 	virtual Class_T		Classify( void ) { return (Class_T) CLASS_ASW_SENTRY_BASE; }
+
+	// IHealthTracked
+	CNetworkVar( int, m_iMaxHealth );
+	int	GetHealth() const override { return m_iHealth; }
+	int GetMaxHealth() const override { return m_iMaxHealth; }
+	void PaintHealthBar( class CASWHud3DMarineNames *pSurface ) override;
 
 	CInterpolatedVar<float> m_iv_fAssembleProgress;
 

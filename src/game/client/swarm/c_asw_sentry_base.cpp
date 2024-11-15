@@ -13,6 +13,7 @@
 #include "asw_hud_use_icon.h"
 #include "c_user_message_register.h"
 #include "c_gib.h"
+#include "asw_hud_3dmarinenames.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -22,6 +23,7 @@ ConVar rd_sentry_gib_force( "rd_sentry_gib_force", "150", FCVAR_NONE, "amount of
 ConVar rd_sentry_gib_spin( "rd_sentry_gib_spin", "30", FCVAR_NONE, "amount of random spin to apply to sentry gibs" );
 ConVar rd_sentry_gib_lifetime( "rd_sentry_gib_lifetime", "30", FCVAR_NONE, "time in seconds before sentry gibs fade out" );
 ConVar rd_sentry_gib_lifetime_jitter( "rd_sentry_gib_lifetime_jitter", "1", FCVAR_NONE, "random time to add to lifetime to avoid all gibs fading at the same instant" );
+ConVar rd_sentry_health_bar( "rd_sentry_health_bar", "1", FCVAR_ARCHIVE, "Should damaged sentries show a health bar?" );
 
 IMPLEMENT_CLIENTCLASS_DT( C_ASW_Sentry_Base, DT_ASW_Sentry_Base, CASW_Sentry_Base )
 	RecvPropBool( RECVINFO( m_bAssembled ) ),
@@ -35,6 +37,8 @@ IMPLEMENT_CLIENTCLASS_DT( C_ASW_Sentry_Base, DT_ASW_Sentry_Base, CASW_Sentry_Bas
 	RecvPropEHandle( RECVINFO( m_hOriginalOwnerMR ) ),
 	RecvPropInt( RECVINFO( m_iInventoryEquipSlot ) ),
 	RecvPropEHandle( RECVINFO( m_hLastDisassembler ) ),
+	RecvPropInt( RECVINFO( m_iHealth ) ),
+	RecvPropInt( RECVINFO( m_iMaxHealth ) ),
 END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA( C_ASW_Sentry_Base )
@@ -68,6 +72,7 @@ C_ASW_Sentry_Base::C_ASW_Sentry_Base() :
 	m_fAssembleProgress = 0;
 	m_bSkillMarineHelping = false;
 	g_SentryGuns.AddToTail( this );
+	IHealthTracked::Add( this );
 	m_nUseIconTextureID = -1;
 	m_hOriginalOwnerMR = NULL;
 	m_iInventoryEquipSlot = 0;
@@ -82,6 +87,7 @@ C_ASW_Sentry_Base::~C_ASW_Sentry_Base()
 		m_hBuildTop = NULL;
 	}
 
+	IHealthTracked::Remove( this );
 	g_SentryGuns.FindAndRemove( this );
 }
 
@@ -268,6 +274,18 @@ const char *C_ASW_Sentry_Base::GetWeaponClass()
 #endif
 	}
 	return "asw_weapon_sentry";
+}
+
+void C_ASW_Sentry_Base::PaintHealthBar( class CASWHud3DMarineNames *pSurface )
+{
+	Assert( GetMaxHealth() > 0 );
+
+	float flHealthFraction = float( GetHealth() ) / float( GetMaxHealth() );
+
+	if ( rd_sentry_health_bar.GetBool() && flHealthFraction >= 0.0f && flHealthFraction < 1.0f )
+	{
+		pSurface->PaintGenericBar( GetAbsOrigin(), flHealthFraction, Color{ 200, 50, 0, 255 }, 1.0f );
+	}
 }
 
 static const char *const s_szSentryGibs[] =
