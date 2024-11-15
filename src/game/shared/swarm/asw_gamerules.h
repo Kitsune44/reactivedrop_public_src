@@ -390,6 +390,7 @@ public:
 #ifdef GAME_DLL
 	void ReserveMarines();
 	void AutoSelectMarines( CASW_Player *pPlayer );
+	bool m_bDoingInstantRestart;
 #endif
 	CNetworkVar( float, m_fReserveMarinesEndTime );
 

@@ -1842,6 +1842,7 @@ void CAlienSwarm::FullReset()
 	m_iServerVersion = consistency->GetGameVersion();
 
 	m_ActorSpeakingUntil.Purge();
+	m_bDoingInstantRestart = false;
 
 	if ( !sv_cheats )
 	{
@@ -1864,7 +1865,8 @@ CAlienSwarm::~CAlienSwarm()
 	RevertSavedConvars();
 }
 
-ConVar asw_reserve_marine_time("asw_reserve_marine_time", "30.0f", 0, "Number of seconds marines are reserved for at briefing start");
+ConVar asw_reserve_marine_time( "asw_reserve_marine_time", "30.0", FCVAR_NONE, "Number of seconds marines are reserved for at briefing start" );
+ConVar asw_reserve_marine_time_instant( "asw_reserve_marine_time_instant", "2.0", FCVAR_NONE, "Number of seconds marines are reserved for after an instant restart" );
 
 void CAlienSwarm::Precache( void )
 {
@@ -2017,7 +2019,7 @@ void CAlienSwarm::ReserveMarines()
 	}
 
 	if ( bAnyReserved )
-		m_fReserveMarinesEndTime = gpGlobals->curtime + asw_reserve_marine_time.GetFloat();
+		m_fReserveMarinesEndTime = gpGlobals->curtime + ( m_bDoingInstantRestart ? asw_reserve_marine_time_instant.GetFloat() : asw_reserve_marine_time.GetFloat() );
 }
 
 void CAlienSwarm::AutoSelectMarines( CASW_Player *pPlayer )
@@ -3265,6 +3267,7 @@ void CAlienSwarm::RestartMission( CASW_Player *pPlayer, bool bForce, bool bSkipF
 
 	// clear out gamerules
 	FullReset();
+	m_bDoingInstantRestart = true;
 	ASWSpawnSelection()->LevelShutdownPostEntity();
 
 	if ( asw_instant_restart_debug.GetBool() )
