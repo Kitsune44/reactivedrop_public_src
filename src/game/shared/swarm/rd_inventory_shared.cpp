@@ -1999,7 +1999,7 @@ public:
 		}
 
 		CUtlVector<ReactiveDropInventory::ItemInstance_t> optin;
-		ReactiveDropInventory::GetItemsForDef( optin, 4029 );
+		ReactiveDropInventory::GetItemsForSlot( optin, "crafting_material_beta_opt_in" );
 		if ( !optin.Count() )
 		{
 			m_CraftingMaterialSpawnArgs.RemoveAll();
