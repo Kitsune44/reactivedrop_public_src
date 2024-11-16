@@ -113,6 +113,7 @@ ConVar asw_door_normal_health_base( "asw_door_normal_health_base", "1800", FCVAR
 ConVar asw_door_normal_health_step( "asw_door_normal_health_step", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Increase/decrease in health for a non-reinforced door on for every mission difficulty above/below 5." );
 ConVar asw_door_reinforced_health_base( "asw_door_reinforced_health_base", "2400", FCVAR_CHEAT, "Base health for a reinforced door on Normal." );
 ConVar asw_door_reinforced_health_step( "asw_door_reinforced_health_step", "0", FCVAR_CHEAT, "Increase/decrease in health for a reinforced door on for every mission difficulty above/below 5." );
+ConVar rd_door_force_closed( "rd_door_force_closed", "1", FCVAR_CHEAT );
 extern ConVar asw_debug_marine_chatter;
 extern ConVar asw_difficulty_alien_damage_step;
 
