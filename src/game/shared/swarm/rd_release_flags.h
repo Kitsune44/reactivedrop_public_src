@@ -33,6 +33,8 @@
 
 // testing in production, starting january 1st 2024
 #define RD_7A_DROPS_PRE
+// testing in production, starting december 1st 2024
+#define RD_7A_DROPS
 
 #define RD_IS_RELEASE 1
 #endif

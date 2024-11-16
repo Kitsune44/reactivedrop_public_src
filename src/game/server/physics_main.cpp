@@ -38,6 +38,12 @@
 #include "pushentity.h"
 #include "igamemovement.h"
 
+#ifdef INFESTED_DLL
+#include "asw_alien_shover.h"
+#include "asw_alien_jumper.h"
+#include "asw_queen.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -50,7 +56,13 @@ ConVar vprof_scope_entity_thinks( "vprof_scope_entity_thinks", "0" );
 ConVar vprof_scope_entity_gamephys( "vprof_scope_entity_gamephys", "0" );
 
 ConVar	npc_vphysics	( "npc_vphysics","0");
+
+#ifdef INFESTED_DLL
 ConVar rd_interpenetrating_entities_warning( "rd_interpenetrating_entities_warning", "0" );
+ConVar rd_pushables_damage_aliens( "rd_pushables_damage_aliens", "1", FCVAR_CHEAT );
+ConVar rd_pushables_damage_aliens_per_tick( "rd_pushables_damage_aliens_per_tick", "10", FCVAR_CHEAT );
+#endif
+
 //-----------------------------------------------------------------------------
 // helper method for trace hull as used by physics...
 //-----------------------------------------------------------------------------
@@ -374,6 +386,16 @@ bool CPhysicsPushedEntities::SpeculativelyCheckPush( PhysicsPushedInfo_t &info, 
 				}
 			}
 		}
+
+#ifdef INFESTED_DLL
+		// doors hurt aliens except antlion guard, shieldbug, and queen
+		if ( rd_pushables_damage_aliens.GetBool() && pBlocker->m_takedamage == DAMAGE_YES && pBlocker->IsAlien() && ( !dynamic_cast<CASW_Alien_Shover *>( pBlocker ) || dynamic_cast< CASW_Alien_Jumper * >( pBlocker ) ) && !dynamic_cast<CASW_Queen *>( pBlocker ) )
+		{
+			CTakeDamageInfo crushinfo( m_rgPusher[0].m_pEntity, m_rgPusher[0].m_pEntity, rd_pushables_damage_aliens_per_tick.GetFloat(), DMG_CRUSH );
+			pBlocker->DispatchTraceAttack( crushinfo, vecAbsPush, &info.m_Trace );
+			ApplyMultiDamage();
+		}
+#endif
 
 		pBlocker->SetAbsOrigin( org ); // restore origin...
 

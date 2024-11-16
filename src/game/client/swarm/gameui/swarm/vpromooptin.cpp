@@ -11,6 +11,7 @@
 #include "asw_util_shared.h"
 #include "engine/IEngineSound.h"
 #include "soundenvelope.h"
+#include "MultiFontRichText.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -20,8 +21,8 @@ using namespace BaseModUI;
 
 extern ConVar ui_gameui_modal;
 #ifdef RD_7A_DROPS
-extern ConVar rd_crafting_material_beta_phase1_show_promo;
-ConVar rd_crafting_material_beta_phase1_ignore_already_in( "rd_crafting_material_beta_phase1_ignore_already_in", "0" );
+extern ConVar rd_crafting_material_beta_phase2_show_promo;
+ConVar rd_crafting_material_beta_phase2_ignore_already_in( "rd_crafting_material_beta_phase2_ignore_already_in", "0" );
 
 static class CRD_PromoOptIn
 {
@@ -39,7 +40,7 @@ public:
 
 		CUIGameData::Get()->OpenWaitScreen( "#rd_redeem_special_waiting_steam" );
 
-		m_hAuthTicket = pUser->GetAuthTicketForWebApi( "redeem_special_4030" );
+		m_hAuthTicket = pUser->GetAuthTicketForWebApi( "redeem_special_4034" );
 	}
 
 	void ShowMessage( const char *szMessage )
@@ -51,7 +52,7 @@ public:
 
 		if ( !V_strcmp( szMessage, "#rd_redeem_special_already" ) || !V_strcmp( szMessage, "#rd_redeem_special_unavailable" ) || !V_strcmp( szMessage, "#rd_redeem_special_success" ) )
 		{
-			rd_crafting_material_beta_phase1_show_promo.SetValue( false );
+			rd_crafting_material_beta_phase2_show_promo.SetValue( false );
 			engine->ClientCmd_Unrestricted( "host_writeconfig\n" );
 		}
 
@@ -93,7 +94,7 @@ public:
 
 		HTTPRequestHandle hRequest = pHTTP->CreateHTTPRequest( k_EHTTPMethodPOST, "https://stats.reactivedrop.com/api/redeem_special" );
 		pHTTP->SetHTTPRequestUserAgentInfo( hRequest, "RDPromoOptIn" );
-		pHTTP->SetHTTPRequestGetOrPostParameter( hRequest, "itemid", "4030" );
+		pHTTP->SetHTTPRequestGetOrPostParameter( hRequest, "itemid", "4034" );
 		pHTTP->SetHTTPRequestGetOrPostParameter( hRequest, "ticket", szHexTicket );
 		SteamAPICall_t hCall = k_uAPICallInvalid;
 		if ( pHTTP->SendHTTPRequest( hRequest, &hCall ) )
@@ -189,15 +190,22 @@ PromoOptIn::PromoOptIn( Panel *parent, const char *panelName ) :
 	wchar_t wszPlayerName[k_cwchPersonaNameMax + 1];
 	V_UTF8ToUnicode( SteamFriends() ? SteamFriends()->GetPersonaName() : "", wszPlayerName, sizeof( wszPlayerName ) );
 	wchar_t wszFlavor[4096];
-	g_pVGuiLocalize->ConstructString( wszFlavor, sizeof( wszFlavor ), g_pVGuiLocalize->Find( "#rd_crafting_beta1_signup_flavor" ), 1, wszPlayerName );
-	m_pLblFlavor = new vgui::Label( this, "LblFlavor", wszFlavor );
-	m_pLblExplanationTitle = new vgui::Label( this, "LblExplanationTitle", "#rd_crafting_beta1_signup_title" );
-	m_pLblExplanation = new vgui::Label( this, "LblExplanation", "#rd_crafting_beta1_signup_explanation" );
+	g_pVGuiLocalize->ConstructString( wszFlavor, sizeof( wszFlavor ), g_pVGuiLocalize->Find( "#rd_crafting_beta2_signup_flavor" ), 1, wszPlayerName );
+	m_pLblFlavor = new MultiFontRichText( this, "LblFlavor" );
+	m_pLblFlavor->InsertString( wszFlavor );
+
+	m_pLblFlavor->InsertZbalermornaString( "\n\ndoi li'ai " );
+	AccountID_t iAccount = SteamUser() ? SteamUser()->GetSteamID().GetAccountID() : 0;
+	m_pLblFlavor->InsertString( UTIL_RD_ZbalermornaNumberHex( iAccount ) );
+	m_pLblFlavor->InsertZbalermornaString( " jatna i xu do sidju i do ba penmi lo derxi" );
+
+	m_pLblExplanationTitle = new vgui::Label( this, "LblExplanationTitle", "#rd_crafting_beta2_signup_title" );
+	m_pLblExplanation = new vgui::Label( this, "LblExplanation", "#rd_crafting_beta2_signup_explanation" );
 	m_pBtnDecline = new CNB_Button( this, "BtnDecline", "#rd_crafting_beta1_signup_decline", this, "Decline" );
 	m_pBtnDecline->SetControllerButton( KEY_XBUTTON_B );
 	m_pBtnAccept = new CNB_Button( this, "BtnAccept", "#rd_crafting_beta1_signup_accept", this, "Accept" );
 	m_pBtnAccept->SetControllerButton( KEY_XBUTTON_X );
-	m_pBtnAlready = new CNB_Button( this, "BtnAlready", "#rd_crafting_beta1_signup_already", this, "Back" );
+	m_pBtnAlready = new CNB_Button( this, "BtnAlready", "#rd_crafting_beta2_signup_already", this, "Back" );
 	m_pBtnAlready->SetControllerButton( KEY_XBUTTON_B );
 #endif
 }
@@ -243,9 +251,9 @@ void PromoOptIn::Activate()
 	GetAnimationController()->RunAnimationCommand( m_pLblExplanation, "alpha", 255, 5.0f, 1.0f, AnimationController::INTERPOLATOR_LINEAR );
 
 	CUtlVector<ReactiveDropInventory::ItemInstance_t> optin;
-	ReactiveDropInventory::GetItemsForDef( optin, 4029 );
+	ReactiveDropInventory::GetItemsForDef( optin, 4033 );
 
-	if ( !rd_crafting_material_beta_phase1_ignore_already_in.GetBool() && optin.Count() )
+	if ( !rd_crafting_material_beta_phase2_ignore_already_in.GetBool() && optin.Count() )
 	{
 		m_pBtnDecline->SetVisible( false );
 		m_pBtnAccept->SetVisible( false );
@@ -274,7 +282,7 @@ void PromoOptIn::OnCommand( const char *command )
 #ifdef RD_7A_DROPS
 	else if ( FStrEq( command, "Decline" ) )
 	{
-		rd_crafting_material_beta_phase1_show_promo.SetValue( false );
+		rd_crafting_material_beta_phase2_show_promo.SetValue( false );
 		engine->ClientCmd_Unrestricted( "host_writeconfig\n" );
 		OnKeyCodePressed( ButtonCodeToJoystickButtonCode( KEY_XBUTTON_B, CBaseModPanel::GetSingleton().GetLastActiveUserId() ) );
 	}

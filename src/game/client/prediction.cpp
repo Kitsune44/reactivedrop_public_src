@@ -37,7 +37,7 @@ IPredictionSystem *IPredictionSystem::g_pPredictionSystems = NULL;
 ConVar	cl_predictweapons	( "cl_predictweapons", "1", FCVAR_USERINFO | FCVAR_NOT_CONNECTED, "Perform client side prediction of weapon effects." );
 ConVar	cl_lagcompensation	( "cl_lagcompensation", "1", FCVAR_USERINFO, "Perform server side lag compensation of weapon firing events." );
 #ifdef INFESTED_DLL
-ConVar cl_lagcompensation_chainsaw( "cl_lagcompensation_chainsaw", "-1", FCVAR_USERINFO, "Override cl_lagcompensation when using a chainsaw." );
+ConVar cl_lagcompensation_chainsaw( "cl_lagcompensation_chainsaw", "0", FCVAR_USERINFO, "Override cl_lagcompensation when using a chainsaw." );
 #endif
 ConVar	cl_showerror		( "cl_showerror", "0", FCVAR_NONE, "Show prediction errors, 2 for above plus detailed field deltas." );
 

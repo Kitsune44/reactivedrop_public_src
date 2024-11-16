@@ -29,6 +29,7 @@ ConVar asw_sentry_health_step( "asw_sentry_health_step", "0", FCVAR_CHEAT );
 ConVar rd_sentry_take_damage_from_marine( "rd_sentry_take_damage_from_marine", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "If set to 1, players can destroy sentry by shooting at it." );
 ConVar rd_sentry_invincible( "rd_sentry_invincible", "0", FCVAR_CHEAT, "If set to 1 sentries will not take damage from anything" );
 ConVar rd_sentry_refilled_by_dismantling( "rd_sentry_refilled_by_dismantling", "0", FCVAR_CHEAT, "If set to 1 marine will refill sentry ammo by dismantling it." );
+ConVar rd_sentry_dismantle_when_killed( "rd_sentry_dismantle_when_killed", "1", FCVAR_CHEAT, "If set to 1, sentries with remaining ammo explode into their boxes rather than into nothing. If set to 2, skips the ammo check." );
 
 LINK_ENTITY_TO_CLASS( asw_sentry_base, CASW_Sentry_Base );
 PRECACHE_REGISTER( asw_sentry_base );
@@ -45,6 +46,8 @@ IMPLEMENT_SERVERCLASS_ST( CASW_Sentry_Base, DT_ASW_Sentry_Base )
 	SendPropEHandle( SENDINFO( m_hOriginalOwnerMR ) ),
 	SendPropInt( SENDINFO( m_iInventoryEquipSlot ), 2, SPROP_UNSIGNED ),
 	SendPropEHandle( SENDINFO( m_hLastDisassembler ) ),
+	SendPropInt( SENDINFO( m_iHealth ), ASW_ALIEN_HEALTH_BITS, SPROP_CHANGES_OFTEN ),
+	SendPropInt( SENDINFO( m_iMaxHealth ), ASW_ALIEN_HEALTH_BITS ),
 END_SEND_TABLE()
 
 BEGIN_DATADESC( CASW_Sentry_Base )
@@ -505,6 +508,18 @@ void CASW_Sentry_Base::Event_Killed( const CTakeDamageInfo &info )
 	if ( GetSentryTop() )
 	{
 		UTIL_Remove( GetSentryTop() );
+	}
+
+	// spawn box after the explosion so it doesn't get launched off the map
+	if ( rd_sentry_dismantle_when_killed.GetInt() == 2 || ( rd_sentry_dismantle_when_killed.GetInt() == 1 && ( GetAmmo() > 0 || rd_sentry_refilled_by_dismantling.GetBool() ) ) )
+	{
+		CASW_Weapon_Sentry *pWeapon = assert_cast< CASW_Weapon_Sentry * >( Create( GetWeaponNameForGunType( GetGunType() ), WorldSpaceCenter(), GetAbsAngles(), NULL ) );
+		if ( !rd_sentry_refilled_by_dismantling.GetBool() )
+		{
+			pWeapon->SetSentryAmmo( m_iAmmo );
+		}
+		pWeapon->m_hOriginalOwnerMR = m_hOriginalOwnerMR;
+		pWeapon->m_iInventoryEquipSlot = m_iInventoryEquipSlot;
 	}
 
 	BaseClass::Event_Killed( info );

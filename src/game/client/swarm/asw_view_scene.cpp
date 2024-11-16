@@ -354,7 +354,7 @@ public:
 	bool Init( IMaterial *pMaterial, KeyValues *pKeyValues ) override;
 	void OnBind( void *pC_BaseEntity ) override;
 
-	ITexture *m_pTexture{};
+	CTextureReference m_pTexture;
 };
 
 bool CLanguagePreferenceProxy::Init( IMaterial *pMaterial, KeyValues *pKeyValues )
@@ -376,7 +376,7 @@ bool CLanguagePreferenceProxy::Init( IMaterial *pMaterial, KeyValues *pKeyValues
 		return false;
 	}
 
-	m_pTexture = materials->FindTexture( szTextureName, pMaterial->GetTextureGroupName() );
+	m_pTexture.Init( materials->FindTexture( szTextureName, pMaterial->GetTextureGroupName() ) );
 
 	return !IsErrorTexture( m_pTexture );
 }

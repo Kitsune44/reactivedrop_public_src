@@ -5,6 +5,11 @@
 
 class CNB_Button;
 
+namespace vgui
+{
+	class MultiFontRichText;
+}
+
 namespace BaseModUI
 {
 	class PromoOptIn : public CBaseModFrame
@@ -18,7 +23,7 @@ namespace BaseModUI
 		void OnCommand( const char *command ) override;
 		void OnKeyCodePressed( vgui::KeyCode keycode ) override;
 
-		vgui::Label *m_pLblFlavor;
+		vgui::MultiFontRichText *m_pLblFlavor;
 		vgui::Label *m_pLblExplanationTitle;
 		vgui::Label *m_pLblExplanation;
 		CNB_Button *m_pBtnDecline;

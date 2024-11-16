@@ -346,8 +346,6 @@ CRD_Crafting_Material_Pickup::CRD_Crafting_Material_Pickup()
 		m_MaterialAtLocation.Set( i, RD_CRAFTING_MATERIAL_NONE );
 	}
 	m_bAnyoneFound = false;
-
-	AddEFlags( EFL_FORCE_CHECK_TRANSMIT );
 }
 
 void CRD_Crafting_Material_Pickup::Spawn()
@@ -359,6 +357,13 @@ void CRD_Crafting_Material_Pickup::Spawn()
 		Warning( "%s not initialized properly; deleting\n", GetDebugName() );
 		UTIL_Remove( this );
 	}
+
+	AddEFlags( EFL_FORCE_CHECK_TRANSMIT );
+}
+
+int	CRD_Crafting_Material_Pickup::UpdateTransmitState()
+{
+	return SetTransmitState( FL_EDICT_ALWAYS );
 }
 
 int CRD_Crafting_Material_Pickup::ShouldTransmit( const CCheckTransmitInfo *pInfo )
