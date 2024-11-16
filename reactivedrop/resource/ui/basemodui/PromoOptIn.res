@@ -13,7 +13,7 @@
 
 	"LblFlavor"
 	{
-		"ControlName"	"Label"
+		"ControlName"	"MultiFontRichText"
 		"fieldName"		"LblFlavor"
 		"xpos"			"c-200"
 		"ypos"			"20"
@@ -32,7 +32,7 @@
 		"ypos"			"190"
 		"wide"			"500"
 		"tall"			"20"
-		"labelText"		"#rd_crafting_beta1_signup_title"
+		"labelText"		"#rd_crafting_beta2_signup_title"
 		"textAlignment"	"north"
 		"font"			"DefaultLarge"
 	}
@@ -45,7 +45,7 @@
 		"ypos"			"210"
 		"wide"			"500"
 		"tall"			"220"
-		"labelText"		"#rd_crafting_beta1_signup_explanation"
+		"labelText"		"#rd_crafting_beta2_signup_explanation"
 		"textAlignment"	"north-west"
 		"wrap"			"1"
 	}
@@ -86,7 +86,7 @@
 		"ypos"			"440"
 		"wide"			"460"
 		"tall"			"27"
-		"labelText"		"#rd_crafting_beta1_signup_already"
+		"labelText"		"#rd_crafting_beta2_signup_already"
 		"textAlignment"	"center"
 		"font"			"DefaultMedium"
 		"command"		"Back"

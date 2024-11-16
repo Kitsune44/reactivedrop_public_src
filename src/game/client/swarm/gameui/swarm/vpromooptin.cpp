@@ -192,6 +192,7 @@ PromoOptIn::PromoOptIn( Panel *parent, const char *panelName ) :
 	wchar_t wszFlavor[4096];
 	g_pVGuiLocalize->ConstructString( wszFlavor, sizeof( wszFlavor ), g_pVGuiLocalize->Find( "#rd_crafting_beta2_signup_flavor" ), 1, wszPlayerName );
 	m_pLblFlavor = new MultiFontRichText( this, "LblFlavor" );
+	m_pLblFlavor->SetDrawTextOnly();
 	m_pLblFlavor->InsertString( wszFlavor );
 
 	m_pLblFlavor->InsertZbalermornaString( "\n\ndoi li'ai " );
