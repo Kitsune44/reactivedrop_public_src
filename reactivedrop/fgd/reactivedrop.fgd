@@ -914,3 +914,22 @@ asw_pickup_50calmg : "50cal Machine Gun"
 	input TurnOff(void)
 	input Toggle(void)
 ]
+
+@PointClass base(Targetname, Parentname, Angles) studio("models/sentry_gun/sentry_base.mdl") = asw_sentry_base : "Pre-built IAF sentry"
+[
+	GunType(choices) : "Gun type" : 0 =
+	[
+		0 : "Machine Gun"
+		1 : "Grenade Launcher"
+		2 : "Flamer"
+		3 : "Cryo Cannon"
+		4 : "Railgun"
+	]
+	IsAssembled(choices) : "Fully assembled" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	AssembleProgress(float) : "Assembly progress" : "0.0" : "Number between 0 (just placed) and 1 (almost fully assembled). Ignored if fully assembled."
+	Ammo(integer) : "Ammo" : "-1" : "Remaining ammo in gun. -1 = full (automatically changed to the gun type's max ammo). Max ammo for each type: machine gun = 450, grenade launcher = 40, flamer = 1200, cryo cannon = 800, railgun = 300"
+]

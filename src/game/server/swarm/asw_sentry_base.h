@@ -115,6 +115,30 @@ inline void CASW_Sentry_Base::SetGunType( int iType )
 inline void CASW_Sentry_Base::SetGunType( GunType_t iType )
 {
 	m_nGunType = iType;
+
+	if ( GetModelPtr() && GetModelPtr()->numskinfamilies() >= kGUNTYPE_MAX + 2 ) // modeller guy says 2 first textures are a must
+	{
+		switch ( GetGunType() )
+		{
+		case kAUTOGUN:
+			m_nSkin = 2;
+			break;
+		case kCANNON:
+			m_nSkin = 5;
+			break;
+		case kFLAME:
+			m_nSkin = 4;
+			break;
+		case kICE:
+			m_nSkin = 3;
+			break;
+#ifdef RD_7A_WEAPONS
+		case kRAILGUN:
+			m_nSkin = 6;
+			break;
+#endif
+		}
+	}
 }
 
 #endif /* ASW_SENTRY_BASE_H */

@@ -17,10 +17,8 @@
 #include "tier0/memdbgon.h"
 
 #define SENTRY_BASE_MODEL "models/sentry_gun/sentry_base.mdl"
-//#define SENTRY_BASE_MODEL "models/swarm/droneprops/DronePropIdle.mdl"
 
 extern int	g_sModelIndexFireball;			// (in combatweapon.cpp) holds the index for the smoke cloud
-
 
 ConVar asw_sentry_gun_type("asw_sentry_gun_type", "-1", FCVAR_CHEAT, "Force the type of sentry guns built to this. -1, the default, reads from the marine attributes.");
 ConVar asw_sentry_infinite_ammo( "asw_sentry_infinite_ammo", "0", FCVAR_CHEAT );
@@ -53,12 +51,14 @@ END_SEND_TABLE()
 BEGIN_DATADESC( CASW_Sentry_Base )
 	DEFINE_THINKFUNC( AnimThink ),
 	DEFINE_FIELD( m_hSentryTop, FIELD_EHANDLE ),
-	DEFINE_FIELD( m_bAssembled, FIELD_BOOLEAN ),
+	DEFINE_KEYFIELD( m_bAssembled, FIELD_BOOLEAN, "IsAssembled" ),
 	DEFINE_FIELD( m_bIsInUse, FIELD_BOOLEAN ),
-	DEFINE_FIELD( m_fAssembleProgress, FIELD_FLOAT ),
+	DEFINE_KEYFIELD( m_fAssembleProgress, FIELD_FLOAT, "AssembleProgress" ),
 	DEFINE_FIELD( m_fAssembleCompleteTime, FIELD_TIME ),
 	DEFINE_FIELD( m_hDeployer, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_hLastDisassembler, FIELD_EHANDLE ),
+	DEFINE_KEYFIELD( m_iAmmo, FIELD_INTEGER, "Ammo" ),
+	DEFINE_KEYFIELD( m_nGunType, FIELD_INTEGER, "GunType" ),
 END_DATADESC()
 
 BEGIN_ENT_SCRIPTDESC( CASW_Sentry_Base, CBaseAnimating, "sentry" )
@@ -155,6 +155,24 @@ void CASW_Sentry_Base::Spawn( void )
 	if ( m_iAmmo == -1 )
 	{
 		m_iAmmo = m_iMaxAmmo;
+	}
+
+	// mapper-placed sentries
+	SetGunType( m_nGunType ); // set skin
+	if ( m_bAssembled )
+	{
+		Assert( !m_hSentryTop );
+		m_fAssembleProgress = 1.0f;
+		m_fAssembleCompleteTime = gpGlobals->curtime;
+
+		CASW_Sentry_Top *pSentryTop = dynamic_cast< CASW_Sentry_Top * >( CreateEntityByName( GetEntityNameForGunType( GetGunType() ) ) );
+		m_hSentryTop = pSentryTop;
+		if ( pSentryTop )
+		{
+			pSentryTop->SetSentryBase( this );
+			pSentryTop->SetAbsAngles( GetAbsAngles() );
+			DispatchSpawn( pSentryTop );
+		}
 	}
 }
 
@@ -327,30 +345,6 @@ void CASW_Sentry_Base::NPCUsing( CASW_Inhabitable_NPC *pNPC, float deltatime )
 void CASW_Sentry_Base::NPCStartedUsing( CASW_Inhabitable_NPC *pNPC )
 {
 	EmitSound( "ASW_Sentry.SetupLoop" );
-
-	if ( GetModelPtr() && GetModelPtr()->numskinfamilies() >= kGUNTYPE_MAX + 2 ) // modeller guy says 2 first textures are a must
-	{
-		switch ( GetGunType() )
-		{
-		case kAUTOGUN:
-			this->m_nSkin = 2;
-			break;
-		case kCANNON:
-			this->m_nSkin = 5;
-			break;
-		case kFLAME:
-			this->m_nSkin = 4;
-			break;
-		case kICE:
-			this->m_nSkin = 3;
-			break;
-#ifdef RD_7A_WEAPONS
-		case kRAILGUN:
-			this->m_nSkin = 6;
-			break;
-#endif
-		}
-	}
 
 	if ( !m_bIsInUse && m_fAssembleProgress < 1.0f )
 	{
