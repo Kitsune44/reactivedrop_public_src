@@ -74,6 +74,7 @@ using namespace BaseModUI;
 static ConVar connect_lobby( "connect_lobby", "", FCVAR_HIDDEN, "Sets the lobby ID to connect to on start." );
 static ConVar ui_old_options_menu( "ui_old_options_menu", "0", FCVAR_HIDDEN, "Brings up the old tabbed options dialog from Keyboard/Mouse when set to 1." );
 static ConVar ui_play_online_browser( "ui_play_online_browser", "1", FCVAR_RELEASE, "Whether play online displays a browser or plain search dialog." );
+static ConVar ui_old_server_browser( "ui_old_server_browser", "0", FCVAR_HIDDEN, "Use the old (broken) server browser window." );
 ConVar rd_trending_workshop_tags( "rd_trending_workshop_tags", "Campaign,Bonus,Endless,Challenge", FCVAR_NONE, "Trending addons must have at least one of these tags to appear on the main menu." );
 ConVar rd_hoiaf_leaderboard_on_main_menu( "rd_hoiaf_leaderboard_on_main_menu", "1", FCVAR_ARCHIVE, "Should we download HoIAF stats for the current season on the main menu?" );
 static void ActivateMainMenuAgain( IConVar *pConVar, const char *szOldValue, float flOldValue )
@@ -2222,6 +2223,12 @@ CON_COMMAND_F( openserverbrowser, "Opens server browser", 0 )
 	bool isSteam = IsPC() && SteamFriends() && SteamUtils();
 	if ( isSteam )
 	{
+		if ( !ui_old_server_browser.GetBool() )
+		{
+			vgui::system()->ShellExecute( "open", "steam://open/servers/?appid=563560" );
+			return;
+		}
+
 		// show the server browser
 		g_VModuleLoader.ActivateModule("Servers");
 
