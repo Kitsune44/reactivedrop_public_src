@@ -81,4 +81,11 @@
 		"audio"	"Misc.MainUI.InsertionPoint"
 		"mainmenu"	"1"
 	}
+	"GroundworkLabs"
+	{
+		"image"	"groundworkbik"
+		"video"	"media/groundwork.bik"
+		"audio"	"Misc.MainUI.GroundworkLabs"
+		"mainmenu"	"1"
+	}
 }
