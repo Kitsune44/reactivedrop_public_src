@@ -196,7 +196,7 @@ PromoOptIn::PromoOptIn( Panel *parent, const char *panelName ) :
 	m_pLblFlavor->InsertColorChange( Color{ 0, 255, 0, 255 } );
 	m_pLblFlavor->InsertString( wszFlavor );
 
-	m_pLblFlavor->InsertZbalermornaString( "\n\ndoi li'ai " );
+	m_pLblFlavor->InsertZbalermornaString( "\ndoi li'ai " );
 	AccountID_t iAccount = SteamUser() ? SteamUser()->GetSteamID().GetAccountID() : 0;
 	m_pLblFlavor->InsertString( UTIL_RD_ZbalermornaNumberHex( iAccount ) );
 	m_pLblFlavor->InsertZbalermornaString( " jatna i xu do sidju i do ba penmi lo derxi" );
