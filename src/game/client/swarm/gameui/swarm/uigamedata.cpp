@@ -1249,8 +1249,8 @@ void CUIGameData::OnEvent( KeyValues *pEvent )
 		CBaseModPanel::GetSingleton().CloseAllWindows( CBaseModPanel::CLOSE_POLICY_EVEN_MSGS );
 
 		// Show the message box
-		GenericConfirmation* confirmation = static_cast<GenericConfirmation*>( CBaseModPanel::GetSingleton().OpenWindow( WT_GENERICCONFIRMATION, NULL, false ) );
-		CBaseModPanel::GetSingleton().OpenWindow( WT_MAINMENU, NULL );
+		CBaseModFrame *pMainMenu = CBaseModPanel::GetSingleton().OpenWindow( WT_MAINMENU, NULL );
+		GenericConfirmation* confirmation = static_cast<GenericConfirmation*>( CBaseModPanel::GetSingleton().OpenWindow( WT_GENERICCONFIRMATION, pMainMenu ) );
 
 		GenericConfirmation::Data_t data;
 
