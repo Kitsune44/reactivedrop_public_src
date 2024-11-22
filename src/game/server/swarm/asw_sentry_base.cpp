@@ -27,11 +27,11 @@ ConVar asw_sentry_health_step( "asw_sentry_health_step", "0", FCVAR_CHEAT );
 ConVar rd_sentry_take_damage_from_marine( "rd_sentry_take_damage_from_marine", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "If set to 1, players can destroy sentry by shooting at it." );
 ConVar rd_sentry_invincible( "rd_sentry_invincible", "0", FCVAR_CHEAT, "If set to 1 sentries will not take damage from anything" );
 ConVar rd_sentry_refilled_by_dismantling( "rd_sentry_refilled_by_dismantling", "0", FCVAR_CHEAT, "If set to 1 marine will refill sentry ammo by dismantling it." );
-ConVar rd_sentry_dismantle_when_killed( "rd_sentry_dismantle_when_killed", "1", FCVAR_CHEAT, "If set to 1, sentries with remaining ammo explode into their boxes rather than into nothing. If set to 2, skips the ammo check." );
+ConVar rd_sentry_dismantle_when_killed( "rd_sentry_dismantle_when_killed", "1", FCVAR_CHEAT, "If set to 1, sentries with remaining ammo are destroyed into their boxes rather than into nothing. If set to 2, skips the ammo check." );
 ConVar rd_sentry_explosion_damage( "rd_sentry_explosion_damage", "150", FCVAR_CHEAT, "Damage a destroyed sentry does in a radius" );
 ConVar rd_sentry_explosion_radius( "rd_sentry_explosion_radius", "400.0", FCVAR_CHEAT, "Destroyed sentry explosion radius" );
-ConVar rd_sentry_explosion_min_ammo_used( "rd_sentry_explosion_min_ammo_used", "0.1", FCVAR_CHEAT, "Minimum fraction of ammo used to make the sentry explode when destroyed" );
-ConVar rd_sentry_collapse_if_ignored( "rd_sentry_collapse_if_ignored", "1", FCVAR_CHEAT, "Allow drones to destroy a sentry in one hit if the sentry is neither assembled nor being assembled" );
+ConVar rd_sentry_explosion_when_killed( "rd_sentry_explosion_when_killed", "1", FCVAR_CHEAT, "If set to 1, sentries with NO remaining ammo explode when their health reaches zero. If set to 2, skips the ammo check." );
+ConVar rd_sentry_anti_build_progress( "rd_sentry_anti_build_progress", "0.00666", FCVAR_CHEAT, "When a sentry is awaiting assembly but not currently being assembled, alien attacks make anti-build progress of this fraction times the damage they deal. If the anti-build progress exceeds the build progress, the sentry disassembles." );
 
 LINK_ENTITY_TO_CLASS( asw_sentry_base, CASW_Sentry_Base );
 PRECACHE_REGISTER( asw_sentry_base );
@@ -40,6 +40,7 @@ IMPLEMENT_SERVERCLASS_ST( CASW_Sentry_Base, DT_ASW_Sentry_Base )
 	SendPropBool( SENDINFO( m_bAssembled ) ),
 	SendPropBool( SENDINFO( m_bIsInUse ) ),
 	SendPropFloat( SENDINFO( m_fAssembleProgress ) ),
+	SendPropFloat( SENDINFO( m_fAssembleAntiProgress ) ),
 	SendPropFloat( SENDINFO( m_fAssembleCompleteTime ) ),
 	SendPropInt( SENDINFO( m_iAmmo ) ),
 	SendPropInt( SENDINFO( m_iMaxAmmo ) ),
@@ -58,6 +59,7 @@ BEGIN_DATADESC( CASW_Sentry_Base )
 	DEFINE_KEYFIELD( m_bAssembled, FIELD_BOOLEAN, "IsAssembled" ),
 	DEFINE_FIELD( m_bIsInUse, FIELD_BOOLEAN ),
 	DEFINE_KEYFIELD( m_fAssembleProgress, FIELD_FLOAT, "AssembleProgress" ),
+	DEFINE_FIELD( m_fAssembleAntiProgress, FIELD_FLOAT ),
 	DEFINE_FIELD( m_fAssembleCompleteTime, FIELD_TIME ),
 	DEFINE_FIELD( m_hDeployer, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_hLastDisassembler, FIELD_EHANDLE ),
@@ -87,7 +89,8 @@ static const char *const s_szSentryGibs[] =
 CASW_Sentry_Base::CASW_Sentry_Base()
 {
 	m_iAmmo = -1;
-	m_iShotsFired = 0;
+	m_fAssembleProgress = 0.0f;
+	m_fAssembleAntiProgress = 0.0f;
 	m_fSkillMarineHelping = 0;
 	m_bSkillMarineHelping = false;
 	m_fDamageScale = 1.0f;
@@ -421,8 +424,6 @@ void CASW_Sentry_Base::OnFiredShots( int nNumShots )
 	if ( !asw_sentry_infinite_ammo.GetBool() )
 		m_iAmmo -= nNumShots;
 
-	m_iShotsFired += nNumShots;
-
 	if ( GetSentryTop() )
 	{
 		int nThreeQuarterAmmo = GetBaseAmmoForGunType( GetGunType() ) * 0.75f;
@@ -461,14 +462,16 @@ int CASW_Sentry_Base::OnTakeDamage( const CTakeDamageInfo &info )
 		}
 	}
 
-	CTakeDamageInfo newInfo = info;
-	if ( rd_sentry_collapse_if_ignored.GetBool() && !m_bAssembled && !m_bIsInUse )
+	if ( !m_bAssembled && !m_bIsInUse )
 	{
-		// allow drones to instantly destroy a sentry if it's being used simply as bait rather than as a sentry.
-		newInfo.ScaleDamage( 100.0f );
+		m_fAssembleAntiProgress += rd_sentry_anti_build_progress.GetFloat() * info.GetDamage();
+		if ( m_fAssembleAntiProgress > m_fAssembleProgress )
+		{
+			Event_Killed( info );
+		}
 	}
 
-	return BaseClass::OnTakeDamage(newInfo);
+	return BaseClass::OnTakeDamage( info );
 }
 
 // explode if we die
@@ -504,7 +507,7 @@ void CASW_Sentry_Base::Event_Killed( const CTakeDamageInfo &info )
 		WRITE_ANGLE( GetAbsAngles()[YAW] );
 	MessageEnd();
 
-	if ( m_iShotsFired >= rd_sentry_explosion_min_ammo_used.GetFloat() * GetBaseAmmoForGunType( GetGunType() ) )
+	if ( rd_sentry_explosion_when_killed.GetInt() == 2 || ( rd_sentry_explosion_when_killed.GetInt() == 1 && GetAmmo() == 0 ) )
 	{
 		UTIL_ASW_ScreenShake( vecPos, 25.0, 150.0, 1.0, 750, SHAKE_START );
 
@@ -522,7 +525,7 @@ void CASW_Sentry_Base::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	// spawn box after the explosion so it doesn't get launched off the map
-	if ( rd_sentry_dismantle_when_killed.GetInt() == 2 || ( rd_sentry_dismantle_when_killed.GetInt() == 1 && ( GetAmmo() > 0 || rd_sentry_refilled_by_dismantling.GetBool() ) ) )
+	if ( m_fAssembleAntiProgress > m_fAssembleProgress || rd_sentry_dismantle_when_killed.GetInt() == 2 || ( rd_sentry_dismantle_when_killed.GetInt() == 1 && ( GetAmmo() > 0 || rd_sentry_refilled_by_dismantling.GetBool() ) ) )
 	{
 		CASW_Weapon_Sentry *pWeapon = assert_cast< CASW_Weapon_Sentry * >( Create( GetWeaponNameForGunType( GetGunType() ), WorldSpaceCenter(), GetAbsAngles(), NULL ) );
 		if ( !rd_sentry_refilled_by_dismantling.GetBool() )

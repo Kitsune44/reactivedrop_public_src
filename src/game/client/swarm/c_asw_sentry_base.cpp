@@ -29,6 +29,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_ASW_Sentry_Base, DT_ASW_Sentry_Base, CASW_Sentry_Bas
 	RecvPropBool( RECVINFO( m_bAssembled ) ),
 	RecvPropBool( RECVINFO( m_bIsInUse ) ),
 	RecvPropFloat( RECVINFO( m_fAssembleProgress ) ),
+	RecvPropFloat( RECVINFO( m_fAssembleAntiProgress ) ),
 	RecvPropFloat( RECVINFO( m_fAssembleCompleteTime ) ),
 	RecvPropInt( RECVINFO( m_iAmmo ) ),
 	RecvPropInt( RECVINFO( m_iMaxAmmo ) ),
@@ -69,7 +70,8 @@ C_ASW_Sentry_Base::C_ASW_Sentry_Base() :
 
 	m_bAssembled = false;
 	m_bIsInUse = false;
-	m_fAssembleProgress = 0;
+	m_fAssembleProgress = 0.0f;
+	m_fAssembleAntiProgress = 0.0f;
 	m_bSkillMarineHelping = false;
 	g_SentryGuns.AddToTail( this );
 	IHealthTracked::Add( this );

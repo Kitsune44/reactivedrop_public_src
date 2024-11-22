@@ -42,13 +42,13 @@ public:
 	CNetworkVar( bool, m_bAssembled );
 	CNetworkVar( bool, m_bIsInUse );
 	CNetworkVar( float, m_fAssembleProgress );
+	CNetworkVar( float, m_fAssembleAntiProgress );
 	CNetworkVar( float, m_fAssembleCompleteTime );
 	CNetworkVar( int, m_iAmmo );
 	CNetworkVar( int, m_iMaxAmmo );
 	CNetworkVar( bool, m_bSkillMarineHelping );
 	float m_fSkillMarineHelping;
 	float m_fDamageScale;
-	int m_iShotsFired;
 
 	void OnFiredShots( int nNumShots = 1 );
 	inline int GetAmmo() { return m_iAmmo; }
