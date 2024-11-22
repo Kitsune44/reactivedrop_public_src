@@ -28,6 +28,10 @@ ConVar rd_sentry_take_damage_from_marine( "rd_sentry_take_damage_from_marine", "
 ConVar rd_sentry_invincible( "rd_sentry_invincible", "0", FCVAR_CHEAT, "If set to 1 sentries will not take damage from anything" );
 ConVar rd_sentry_refilled_by_dismantling( "rd_sentry_refilled_by_dismantling", "0", FCVAR_CHEAT, "If set to 1 marine will refill sentry ammo by dismantling it." );
 ConVar rd_sentry_dismantle_when_killed( "rd_sentry_dismantle_when_killed", "1", FCVAR_CHEAT, "If set to 1, sentries with remaining ammo explode into their boxes rather than into nothing. If set to 2, skips the ammo check." );
+ConVar rd_sentry_explosion_damage( "rd_sentry_explosion_damage", "150", FCVAR_CHEAT, "Damage a destroyed sentry does in a radius" );
+ConVar rd_sentry_explosion_radius( "rd_sentry_explosion_radius", "400.0", FCVAR_CHEAT, "Destroyed sentry explosion radius" );
+ConVar rd_sentry_explosion_min_ammo_used( "rd_sentry_explosion_min_ammo_used", "0.1", FCVAR_CHEAT, "Minimum fraction of ammo used to make the sentry explode when destroyed" );
+ConVar rd_sentry_collapse_if_ignored( "rd_sentry_collapse_if_ignored", "1", FCVAR_CHEAT, "Allow drones to destroy a sentry in one hit if the sentry is neither assembled nor being assembled" );
 
 LINK_ENTITY_TO_CLASS( asw_sentry_base, CASW_Sentry_Base );
 PRECACHE_REGISTER( asw_sentry_base );
@@ -83,6 +87,7 @@ static const char *const s_szSentryGibs[] =
 CASW_Sentry_Base::CASW_Sentry_Base()
 {
 	m_iAmmo = -1;
+	m_iShotsFired = 0;
 	m_fSkillMarineHelping = 0;
 	m_bSkillMarineHelping = false;
 	m_fDamageScale = 1.0f;
@@ -416,6 +421,8 @@ void CASW_Sentry_Base::OnFiredShots( int nNumShots )
 	if ( !asw_sentry_infinite_ammo.GetBool() )
 		m_iAmmo -= nNumShots;
 
+	m_iShotsFired += nNumShots;
+
 	if ( GetSentryTop() )
 	{
 		int nThreeQuarterAmmo = GetBaseAmmoForGunType( GetGunType() ) * 0.75f;
@@ -454,7 +461,14 @@ int CASW_Sentry_Base::OnTakeDamage( const CTakeDamageInfo &info )
 		}
 	}
 
-	return BaseClass::OnTakeDamage(info);
+	CTakeDamageInfo newInfo = info;
+	if ( rd_sentry_collapse_if_ignored.GetBool() && !m_bAssembled && !m_bIsInUse )
+	{
+		// allow drones to instantly destroy a sentry if it's being used simply as bait rather than as a sentry.
+		newInfo.ScaleDamage( 100.0f );
+	}
+
+	return BaseClass::OnTakeDamage(newInfo);
 }
 
 // explode if we die
@@ -490,14 +504,17 @@ void CASW_Sentry_Base::Event_Killed( const CTakeDamageInfo &info )
 		WRITE_ANGLE( GetAbsAngles()[YAW] );
 	MessageEnd();
 
-	UTIL_ASW_ScreenShake( vecPos, 25.0, 150.0, 1.0, 750, SHAKE_START );
+	if ( m_iShotsFired >= rd_sentry_explosion_min_ammo_used.GetFloat() * GetBaseAmmoForGunType( GetGunType() ) )
+	{
+		UTIL_ASW_ScreenShake( vecPos, 25.0, 150.0, 1.0, 750, SHAKE_START );
 
-	UTIL_ASW_GrenadeExplosion( vecPos, 400.0f );
+		UTIL_ASW_GrenadeExplosion( vecPos, rd_sentry_explosion_radius.GetFloat() );
 
-	EmitSound( "ASWGrenade.Explode" );
+		EmitSound( "ASWGrenade.Explode" );
 
-	// damage to nearby things
-	ASWGameRules()->RadiusDamage( CTakeDamageInfo( this, info.GetAttacker(), 150.0f, DMG_BLAST ), vecPos, 400.0f, CLASS_NONE, NULL );
+		// damage to nearby things
+		ASWGameRules()->RadiusDamage( CTakeDamageInfo( this, info.GetAttacker(), rd_sentry_explosion_damage.GetFloat(), DMG_BLAST ), vecPos, rd_sentry_explosion_radius.GetFloat(), CLASS_NONE, NULL );
+	}
 
 	if ( GetSentryTop() )
 	{

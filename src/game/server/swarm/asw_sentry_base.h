@@ -48,6 +48,7 @@ public:
 	CNetworkVar( bool, m_bSkillMarineHelping );
 	float m_fSkillMarineHelping;
 	float m_fDamageScale;
+	int m_iShotsFired;
 
 	void OnFiredShots( int nNumShots = 1 );
 	inline int GetAmmo() { return m_iAmmo; }
