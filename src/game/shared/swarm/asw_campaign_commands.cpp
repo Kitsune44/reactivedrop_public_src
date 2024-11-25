@@ -15,7 +15,10 @@ void ASW_LaunchSaveGame( const char *szSaveName, bool bMultiplayer, bool bChange
 	if ( !pSource )
 		return;
 
-	int iMissions = pSource->GetNumMissionsCompleted( szSaveName );
+	char szCleanedSaveName[MAX_PATH];
+	V_StripExtension( szSaveName, szCleanedSaveName, sizeof( szCleanedSaveName ) );
+
+	int iMissions = pSource->GetNumMissionsCompleted( szCleanedSaveName );
 	if ( iMissions == -1 )	// invalid save
 		return;
 
@@ -24,9 +27,9 @@ void ASW_LaunchSaveGame( const char *szSaveName, bool bMultiplayer, bool bChange
 	// launch the campaign lobby map
 	char buffer[512];
 	if ( bChangeLevel )
-		V_snprintf( buffer, sizeof( buffer ), "changelevel %s campaign %s\n", szLobby, szSaveName );
+		V_snprintf( buffer, sizeof( buffer ), "changelevel %s campaign %s\n", szLobby, szCleanedSaveName );
 	else
-		V_snprintf( buffer, sizeof( buffer ), "map %s campaign %s\n", szLobby, szSaveName );
+		V_snprintf( buffer, sizeof( buffer ), "map %s campaign %s\n", szLobby, szCleanedSaveName );
 
 #ifdef CLIENT_DLL
 	engine->ClientCmd( buffer );
@@ -58,6 +61,13 @@ namespace
 // con command for new campaign
 void ASW_StartNewCampaign_cc( const CCommand &args )
 {
+#ifdef GAME_DLL
+	if ( !UTIL_IsCommandIssuedByServerAdmin() )
+	{
+		return;
+	}
+#endif
+
 	IASW_Mission_Chooser_Source* pSource = missionchooser ? missionchooser->LocalMissionSource() : NULL;
 	if (!pSource)
 		return;
@@ -81,7 +91,9 @@ void ASW_StartNewCampaign_cc( const CCommand &args )
 		Q_snprintf(buffer, sizeof(buffer), "%s", pNewSaveName);
 	}
 	else
-		Q_snprintf(buffer, sizeof(buffer), "%s", args[2]);
+	{
+		return;
+	}
 
 	// Use an arg to detect MP (would be better to check maxplayers here, but we can't?)
 	bool bMulti = (!Q_strnicmp( args[3], "MP", 2 ));
@@ -103,6 +115,13 @@ ConCommand ASW_Server_StartCampaign( "ASW_Server_StartCampaign", ASW_StartNewCam
 // con command for loading a savegame
 void ASW_LoadCampaignGame_cc( const CCommand &args )
 {
+#ifdef GAME_DLL
+	if ( !UTIL_IsCommandIssuedByServerAdmin() )
+	{
+		return;
+	}
+#endif
+
 	if ( args.ArgC() < 3 )
 	{
 		Msg("Usage: ASW_LoadCampaign [SaveName] [SP|MP]\n" );
