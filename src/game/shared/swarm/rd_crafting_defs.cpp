@@ -337,6 +337,7 @@ Class_T CRD_Crafting_Material_Pickup::Classify() { return ( Class_T )CLASS_RD_CR
 
 #ifdef GAME_DLL
 LINK_ENTITY_TO_CLASS( rd_crafting_material_pickup, CRD_Crafting_Material_Pickup );
+PRECACHE_REGISTER( rd_crafting_material_pickup );
 
 CRD_Crafting_Material_Pickup::CRD_Crafting_Material_Pickup()
 {
@@ -346,6 +347,13 @@ CRD_Crafting_Material_Pickup::CRD_Crafting_Material_Pickup()
 		m_MaterialAtLocation.Set( i, RD_CRAFTING_MATERIAL_NONE );
 	}
 	m_bAnyoneFound = false;
+}
+
+void CRD_Crafting_Material_Pickup::Precache()
+{
+	BaseClass::Precache();
+
+	PrecacheModel( "models/swarm/crafting/placeholder.mdl" );
 }
 
 void CRD_Crafting_Material_Pickup::Spawn()
@@ -358,6 +366,7 @@ void CRD_Crafting_Material_Pickup::Spawn()
 		UTIL_Remove( this );
 	}
 
+	SetModel( "models/swarm/crafting/placeholder.mdl" );
 	AddEFlags( EFL_FORCE_CHECK_TRANSMIT );
 }
 

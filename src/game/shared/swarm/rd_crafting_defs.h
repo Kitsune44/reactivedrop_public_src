@@ -134,6 +134,7 @@ public:
 	RD_Crafting_Material_t m_iLastMaterialType;
 	CGlowObject m_GlowObject;
 #else
+	void Precache() override;
 	void Spawn() override;
 
 	// IASW_Server_Usable_Entity implementation
