@@ -411,6 +411,7 @@ CRD_Crafting_Material_Pickup::CRD_Crafting_Material_Pickup() :
 	m_GlowObject{ this, glow_outline_color_crafting.GetColorAsVector(), 0.8f, true, true }
 {
 	m_iLastMaterialType = RD_CRAFTING_MATERIAL_NONE;
+	m_flLastWorkaroundReset = 0.0f;
 }
 
 void CRD_Crafting_Material_Pickup::OnDataChanged( DataUpdateType_t updateType )
@@ -467,7 +468,7 @@ void CRD_Crafting_Material_Pickup::ClientThink()
 
 	int iCurrentPlayerIndex = pPlayer ? pPlayer->entindex() : 0;
 	RD_Crafting_Material_t iCurrentMaterial = iCurrentPlayerIndex ? m_MaterialAtLocation[iCurrentPlayerIndex - 1] : RD_CRAFTING_MATERIAL_NONE;
-	if ( m_iLastMaterialType != iCurrentMaterial )
+	if ( m_iLastMaterialType != iCurrentMaterial || m_flLastWorkaroundReset < gpGlobals->curtime - 5.0f )
 	{
 		const char *szModelName = g_RD_Crafting_Material_Info[iCurrentMaterial].m_szModelName;
 		if ( szModelName )
@@ -505,6 +506,7 @@ void CRD_Crafting_Material_Pickup::ClientThink()
 		}
 
 		m_iLastMaterialType = iCurrentMaterial;
+		m_flLastWorkaroundReset = gpGlobals->curtime;
 	}
 
 	if ( !IsEffectActive( EF_NODRAW ) )

@@ -132,6 +132,7 @@ public:
 	bool NeedsLOSCheck() override { return false; }
 
 	RD_Crafting_Material_t m_iLastMaterialType;
+	float m_flLastWorkaroundReset;
 	CGlowObject m_GlowObject;
 #else
 	void Precache() override;
