@@ -52,7 +52,7 @@ CHAT_COLOR_STUB( g );
 CHAT_COLOR_STUB( b );
 #undef CHAT_COLOR_STUB
 ConVar rd_chat_colorful_player_names( "rd_chat_colorful_player_names", "1", FCVAR_ARCHIVE, "If set 1, the player name in the chat box will become colorful" );
-
+ConVar rd_chat_item_messages( "rd_chat_item_messages", "1", FCVAR_NONE, "Display a message in chat when a player obtains an inventory item." );
 
 //=====================
 //CHudChat
@@ -439,7 +439,10 @@ void CHudChat::MsgFunc_RDItemPickupMsg( bf_read &msg )
 	char szFullMessage[2048];
 	V_UnicodeToUTF8( wszFullMessage, szFullMessage, sizeof( szFullMessage ) );
 
-	ChatPrintf( iPlayer, CHAT_FILTER_NONE, "%s", szFullMessage );
+	if ( rd_chat_item_messages.GetBool() )
+	{
+		ChatPrintf( iPlayer, CHAT_FILTER_NONE, "%s", szFullMessage );
+	}
 }
 
 int CHudChat::GetChatInputOffset( void )
