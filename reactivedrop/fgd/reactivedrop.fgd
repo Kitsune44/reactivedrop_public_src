@@ -931,5 +931,5 @@ asw_pickup_50calmg : "50cal Machine Gun"
 		1 : "Yes"
 	]
 	AssembleProgress(float) : "Assembly progress" : "0.0" : "Number between 0 (just placed) and 1 (almost fully assembled). Ignored if fully assembled."
-	Ammo(integer) : "Ammo" : "-1" : "Remaining ammo in gun. -1 = full (automatically changed to the gun type's max ammo). Max ammo for each type: machine gun = 450, grenade launcher = 40, flamer = 1200, cryo cannon = 800, railgun = 300"
+	Ammo(integer) : "Ammo" : -1 : "Remaining ammo in gun. -1 = full (automatically changed to the gun type's max ammo). Max ammo for each type: machine gun = 450, grenade launcher = 40, flamer = 1200, cryo cannon = 800, railgun = 300"
 ]
