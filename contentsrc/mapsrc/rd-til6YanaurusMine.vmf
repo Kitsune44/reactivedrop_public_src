@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "7397"
-	"mapversion" "116"
+	"mapversion" "117"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "116"
+	"mapversion" "117"
 	"classname" "worldspawn"
 	"comment" "Decompiled by BSPSource v1.3.6 from yanaurus_01.bsp"
 	"detailmaterial" "detail/detailsprites"
@@ -41961,6 +41961,7 @@ entity
 {
 	"id" "1201"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "entrenceobj"
@@ -41979,6 +41980,7 @@ entity
 {
 	"id" "1202"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "bodiesobj"
@@ -41997,6 +41999,7 @@ entity
 {
 	"id" "1203"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "restoregenobj"
@@ -45473,6 +45476,7 @@ entity
 {
 	"id" "1348"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "elevatorobj"
@@ -71644,7 +71648,7 @@ entity
 		{
 			"id" "2491"
 			"plane" "(7398.31 7261 359) (7398.31 7261 355) (7398.31 7320 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71655,7 +71659,7 @@ entity
 		{
 			"id" "2492"
 			"plane" "(7506 7320 359) (7506 7320 355) (7506 7261 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71666,7 +71670,7 @@ entity
 		{
 			"id" "2493"
 			"plane" "(7506 7261 359) (7506 7261 355) (7398.31 7261 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[-1 0 0 48] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71677,7 +71681,7 @@ entity
 		{
 			"id" "2494"
 			"plane" "(7398.31 7320 359) (7398.31 7320 355) (7506 7320 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[1 0 0 -48] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71688,7 +71692,7 @@ entity
 		{
 			"id" "2495"
 			"plane" "(7398.31 7320 355) (7398.31 7261 355) (7506 7261 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[-1 0 0 48] 0.25"
 			"rotation" "0"
@@ -71699,7 +71703,7 @@ entity
 		{
 			"id" "2496"
 			"plane" "(7398.31 7261 359) (7398.31 7320 359) (7506 7320 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[-1 0 0 48] 0.25"
 			"rotation" "0"
@@ -71732,7 +71736,7 @@ entity
 		{
 			"id" "2497"
 			"plane" "(7394 7034 359) (7394 7034 355) (7394 7093 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71743,7 +71747,7 @@ entity
 		{
 			"id" "2498"
 			"plane" "(7501.69 7093 359) (7501.69 7093 355) (7501.69 7034 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71754,7 +71758,7 @@ entity
 		{
 			"id" "2499"
 			"plane" "(7501.69 7034 359) (7501.69 7034 355) (7394 7034 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[-1 0 0 48] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71765,7 +71769,7 @@ entity
 		{
 			"id" "2500"
 			"plane" "(7394 7093 359) (7394 7093 355) (7501.69 7093 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[1 0 0 -48] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71776,7 +71780,7 @@ entity
 		{
 			"id" "2501"
 			"plane" "(7394 7093 355) (7394 7034 355) (7501.69 7034 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[-1 0 0 48] 0.25"
 			"rotation" "0"
@@ -71787,7 +71791,7 @@ entity
 		{
 			"id" "2502"
 			"plane" "(7394 7034 359) (7394 7093 359) (7501.69 7093 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[-1 0 0 48] 0.25"
 			"rotation" "0"
@@ -71820,7 +71824,7 @@ entity
 		{
 			"id" "2503"
 			"plane" "(7674.51 7193.56 355) (7572.11 7194.43 355) (7570 7135.44 355)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[-1 0 0 48] 0.25"
 			"rotation" "0"
@@ -71831,7 +71835,7 @@ entity
 		{
 			"id" "2504"
 			"plane" "(7672.4 7134.57 359) (7570 7135.44 359) (7572.11 7194.43 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[-1 0 0 48] 0.25"
 			"rotation" "0"
@@ -71842,7 +71846,7 @@ entity
 		{
 			"id" "2505"
 			"plane" "(7572.11 7194.43 355) (7674.51 7193.56 355) (7674.51 7193.56 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[1 -0.00849441 0 -55.3115] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71853,7 +71857,7 @@ entity
 		{
 			"id" "2506"
 			"plane" "(7672.39 7134.57 355) (7570 7135.44 355) (7570 7135.44 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[-1 0.00849435 0 55.3125] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71864,7 +71868,7 @@ entity
 		{
 			"id" "2507"
 			"plane" "(7674.51 7193.56 355) (7672.4 7134.57 355) (7672.4 7134.57 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -71875,7 +71879,7 @@ entity
 		{
 			"id" "2508"
 			"plane" "(7570 7135.44 355) (7572.11 7194.44 355) (7572.11 7194.43 359)"
-			"material" "TOOLS/TOOLSNODRAW"
+			"material" "TOOLS/TOOLSNPCCLIP"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -95717,6 +95721,7 @@ entity
 {
 	"id" "13546"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "1024"
 	"mapwidth" "1024"
 	"objectivename" "escapeobj"
@@ -96490,6 +96495,7 @@ entity
 {
 	"id" "19309"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "destroy_mines_objective"
@@ -100499,6 +100505,7 @@ entity
 	"DefaultMusic" "tilarus.YanaurusBattleMusic"
 	"FadeInTime" "1.0"
 	"FadeOutTime" "5"
+	"InterruptCustomTrack" "1"
 	"targetname" "battle_music"
 	"origin" "6320 3696 0"
 	editor
@@ -101628,8 +101635,8 @@ cameras
 	"activecamera" "0"
 	camera
 	{
-		"position" "[8036.78 7081.8 156.516]"
-		"look" "[8230.73 7193.58 12.2515]"
+		"position" "[7571.36 6938.55 538.74]"
+		"look" "[7517.62 7131.59 363.321]"
 	}
 	camera
 	{

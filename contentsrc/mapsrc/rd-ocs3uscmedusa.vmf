@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "7397"
-	"mapversion" "107"
+	"mapversion" "109"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -14,13 +14,13 @@ viewsettings
 	"bSnapToGrid" "1"
 	"bShowGrid" "1"
 	"bShowLogicalGrid" "0"
-	"nGridSpacing" "8"
+	"nGridSpacing" "1"
 	"bShow3DGrid" "0"
 }
 world
 {
 	"id" "1"
-	"mapversion" "107"
+	"mapversion" "109"
 	"classname" "worldspawn"
 	"comment" "Decompiled by BSPSource v1.3.6 from ocs_3.bsp"
 	"detailmaterial" "detail/detailsprites"
@@ -36810,6 +36810,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -36835,6 +36836,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -39842,6 +39844,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -39875,6 +39878,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -39908,6 +39912,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -39941,6 +39946,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -39978,6 +39984,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -40015,6 +40022,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -40052,6 +40060,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -40089,6 +40098,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -40127,6 +40137,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -40164,6 +40175,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -40201,6 +40213,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"LongRange" "1"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
@@ -44302,6 +44315,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44327,6 +44341,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44352,6 +44367,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44377,6 +44393,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44504,6 +44521,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44529,6 +44547,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44554,6 +44573,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44580,6 +44600,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "573"
 	"renderamt" "255"
@@ -44623,6 +44644,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44648,6 +44670,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44673,6 +44696,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44698,6 +44722,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -44723,6 +44748,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -48714,6 +48740,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -48752,6 +48779,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -49708,6 +49736,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -49738,6 +49767,7 @@ entity
 {
 	"id" "1039"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "512"
 	"mapwidth" "512"
 	"objectivename" "biomass"
@@ -49755,6 +49785,7 @@ entity
 {
 	"id" "1040"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "512"
 	"mapwidth" "512"
 	"objectivename" "biomass"
@@ -49772,6 +49803,7 @@ entity
 {
 	"id" "1041"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "512"
 	"mapwidth" "512"
 	"objectivename" "biomass"
@@ -49789,6 +49821,7 @@ entity
 {
 	"id" "1042"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "512"
 	"mapwidth" "512"
 	"objectivename" "biomass"
@@ -49810,6 +49843,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49835,6 +49869,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49860,6 +49895,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49885,6 +49921,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49910,6 +49947,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49935,6 +49973,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49960,6 +49999,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -49985,6 +50025,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50014,6 +50055,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -50050,6 +50092,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -50088,6 +50131,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -50126,6 +50170,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -50160,6 +50205,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -50335,6 +50381,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "573"
 	"renderamt" "255"
@@ -50417,6 +50464,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50442,6 +50490,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50467,6 +50516,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50492,6 +50542,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50518,6 +50569,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "256"
 	"renderamt" "255"
@@ -50544,6 +50596,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50569,6 +50622,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50595,6 +50649,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "256"
 	"renderamt" "255"
@@ -50622,6 +50677,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "256"
 	"renderamt" "255"
@@ -50648,6 +50704,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"renderamt" "255"
 	"rendercolor" "255 255 255"
@@ -50674,6 +50731,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "256"
 	"renderamt" "255"
@@ -50701,6 +50759,7 @@ entity
 	"flammable" "1"
 	"flinchable" "1"
 	"freezable" "1"
+	"freezeresistance" "0.0"
 	"physdamagescale" "1.0"
 	"radius" "256"
 	"renderamt" "255"
@@ -50731,6 +50790,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"LongRange" "1"
 	"MaxLiveAliens" "3"
 	"maxoffset" "0 0 0"
@@ -50767,6 +50827,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"LongRange" "1"
 	"MaxLiveAliens" "3"
 	"maxoffset" "0 0 0"
@@ -50803,6 +50864,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"LongRange" "1"
 	"MaxLiveAliens" "3"
 	"maxoffset" "0 0 0"
@@ -51106,6 +51168,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"LongRange" "1"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
@@ -51205,6 +51268,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -51241,6 +51305,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -51445,6 +51510,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -51737,6 +51803,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -51773,6 +51840,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "1"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -51891,6 +51959,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -51925,6 +51994,7 @@ entity
 	"flammablesp" "1"
 	"flinchablesp" "1"
 	"freezablesp" "1"
+	"freezeresistancesp" "0.0"
 	"MaxLiveAliens" "2"
 	"maxoffset" "0 0 0"
 	"minoffset" "0 0 0"
@@ -82189,7 +82259,21 @@ entity
 entity
 {
 	"id" "1809"
-	"classname" "func_detail"
+	"classname" "func_brush"
+	"disablereceiveshadows" "0"
+	"disableshadows" "0"
+	"InputFilter" "0"
+	"invert_exclusion" "0"
+	"origin" "352 2524 28"
+	"renderamt" "255"
+	"rendercolor" "255 255 255"
+	"renderfx" "0"
+	"rendermode" "0"
+	"solidbsp" "0"
+	"Solidity" "1"
+	"spawnflags" "2"
+	"StartDisabled" "0"
+	"vrad_brush_cast_shadows" "0"
 	solid
 	{
 		"id" "1810"
@@ -82261,14 +82345,14 @@ entity
 		}
 		editor
 		{
-			"color" "0 180 0"
+			"color" "220 30 220"
 			"visgroupshown" "1"
 			"visgroupautoshown" "1"
 		}
 	}
 	editor
 	{
-		"color" "0 180 0"
+		"color" "220 30 220"
 		"visgroupshown" "1"
 		"visgroupautoshown" "1"
 		"logicalpos" "[9500 2500]"
@@ -159347,7 +159431,7 @@ entity
 	"origin" "284 560 12"
 	editor
 	{
-		"color" "220 30 220"
+		"color" "220 180 0"
 		"visgroupshown" "1"
 		"visgroupautoshown" "1"
 		"logicalpos" "[0 0]"
@@ -159670,7 +159754,7 @@ entity
 	"origin" "0 -2876 88"
 	editor
 	{
-		"color" "220 30 220"
+		"color" "220 180 0"
 		"visgroupshown" "1"
 		"visgroupautoshown" "1"
 		"logicalpos" "[0 0]"
@@ -167815,13 +167899,310 @@ entity
 		"logicalpos" "[0 1500]"
 	}
 }
+entity
+{
+	"id" "123761"
+	"classname" "asw_trigger_fall"
+	"origin" "352 2524 8"
+	"spawnflags" "16"
+	"StartDisabled" "0"
+	solid
+	{
+		"id" "123762"
+		side
+		{
+			"id" "9988"
+			"plane" "(248 2448 32) (248 2600 32) (456 2600 32)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "9987"
+			"plane" "(248 2600 -16) (248 2448 -16) (456 2448 -16)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "9986"
+			"plane" "(248 2448 -16) (248 2600 -16) (248 2600 32)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "9985"
+			"plane" "(456 2600 -16) (456 2448 -16) (456 2448 32)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "9984"
+			"plane" "(248 2600 -16) (456 2600 -16) (456 2600 32)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "9983"
+			"plane" "(456 2448 -16) (248 2448 -16) (248 2448 32)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "220 30 220"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 500]"
+	}
+}
+entity
+{
+	"id" "123780"
+	"classname" "func_brush"
+	"disablereceiveshadows" "0"
+	"disableshadows" "0"
+	"InputFilter" "0"
+	"invert_exclusion" "0"
+	"origin" "372 2443.5 926.15"
+	"parentname" "rightliftdoorinner"
+	"renderamt" "255"
+	"rendercolor" "255 255 255"
+	"renderfx" "0"
+	"rendermode" "0"
+	"solidbsp" "0"
+	"Solidity" "0"
+	"spawnflags" "2"
+	"StartDisabled" "0"
+	"vrad_brush_cast_shadows" "0"
+	solid
+	{
+		"id" "123778"
+		side
+		{
+			"id" "10024"
+			"plane" "(352 2445 988.148) (392 2445 988.148) (392 2442 988.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 -32] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10023"
+			"plane" "(352 2442 864.148) (392 2442 864.148) (392 2445 864.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 -32] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10022"
+			"plane" "(352 2445 988.148) (352 2442 988.148) (352 2442 864.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10021"
+			"plane" "(392 2445 864.148) (392 2442 864.148) (392 2442 988.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10020"
+			"plane" "(392 2445 988.148) (352 2445 988.148) (352 2445 864.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 -32] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10019"
+			"plane" "(392 2442 864.148) (352 2442 864.148) (352 2442 988.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 -32] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "220 30 220"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 1500]"
+	}
+}
+entity
+{
+	"id" "123814"
+	"classname" "func_brush"
+	"disablereceiveshadows" "0"
+	"disableshadows" "0"
+	"InputFilter" "0"
+	"invert_exclusion" "0"
+	"origin" "332 2443.5 926.15"
+	"parentname" "leftliftdoor_inner"
+	"renderamt" "255"
+	"rendercolor" "255 255 255"
+	"renderfx" "0"
+	"rendermode" "0"
+	"solidbsp" "0"
+	"Solidity" "0"
+	"spawnflags" "2"
+	"StartDisabled" "0"
+	"vrad_brush_cast_shadows" "0"
+	solid
+	{
+		"id" "123775"
+		side
+		{
+			"id" "10030"
+			"plane" "(312 2445 988.148) (352 2445 988.148) (352 2442 988.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10029"
+			"plane" "(312 2442 864.148) (352 2442 864.148) (352 2445 864.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10028"
+			"plane" "(312 2445 988.148) (312 2442 988.148) (312 2442 864.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10027"
+			"plane" "(352 2445 864.148) (352 2442 864.148) (352 2442 988.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10026"
+			"plane" "(352 2445 988.148) (312 2445 988.148) (312 2445 864.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "10025"
+			"plane" "(352 2442 864.148) (312 2442 864.148) (312 2442 988.148)"
+			"material" "TOOLS/TOOLSCLIP"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "220 30 220"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 2000]"
+	}
+}
 cameras
 {
 	"activecamera" "0"
 	camera
 	{
-		"position" "[1752.7 -1850.03 308.247]"
-		"look" "[1717.9 -1713.23 82.3587]"
+		"position" "[331.988 2439.14 939.497]"
+		"look" "[215.336 2552.31 728.457]"
 	}
 	camera
 	{
