@@ -2221,12 +2221,12 @@ public:
 		}
 
 		Assert( eMaterial > RD_CRAFTING_MATERIAL_NONE && eMaterial < NUM_RD_CRAFTING_MATERIAL_TYPES );
-		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bCanFindInMission );
 		if ( eMaterial <= 0 || eMaterial >= NUM_RD_CRAFTING_MATERIAL_TYPES )
 		{
 			Warning( "Cannot pick up crafting material at location %d with out of range type %d!\n", iLocation, eMaterial );
 			return;
 		}
+		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bCanFindInMission );
 
 		if ( m_CraftingMaterialType[iLocation] == RD_CRAFTING_MATERIAL_NONE || m_CraftingMaterialToken[iLocation] == k_SteamItemInstanceIDInvalid )
 		{
@@ -2266,13 +2266,13 @@ public:
 		GET_INVENTORY_OR_BAIL;
 
 		Assert( eMaterial > RD_CRAFTING_MATERIAL_NONE && eMaterial < NUM_RD_CRAFTING_MATERIAL_TYPES );
-		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bCanFindInMission );
-		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bAllowPickupAssist );
 		if ( eMaterial <= 0 || eMaterial >= NUM_RD_CRAFTING_MATERIAL_TYPES )
 		{
 			Warning( "Cannot pick up crafting material for assist with out of range type %d!\n", eMaterial );
 			return;
 		}
+		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bCanFindInMission );
+		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bAllowPickupAssist );
 
 		CUtlVector<ReactiveDropInventory::ItemInstance_t> optin;
 		ReactiveDropInventory::GetItemsForSlot( optin, "crafting_material_beta_opt_in" );
