@@ -190,6 +190,7 @@ namespace ReactiveDropInventory
 	void DeleteNotificationItem( SteamItemInstanceID_t id );
 #ifdef RD_7A_DROPS
 	void PickUpCraftingMaterialAtLocation( int iLocation, RD_Crafting_Material_t eMaterial );
+	void PickUpCraftingMaterialAssist( RD_Crafting_Material_t eMaterial );
 	int GetCraftingMaterialsFound();
 	int GetCraftingMaterialsMissed();
 #endif
@@ -207,6 +208,8 @@ namespace ReactiveDropInventory
 		CRAFT_CLAIM_MAJOR,
 		// picking up a crafting material. silent while in progress. in-game notification when complete.
 		CRAFT_PICKUP_MATERIAL,
+		// someone else picked up a material, and we get it too.
+		CRAFT_PICKUP_MATERIAL_ASSIST,
 		// behind-the-scenes item exchange. no notification.
 		CRAFT_BTS,
 		// set dynamic properties on newly created item to 0. modal while in progress. notifies user when complete (replaces notification from craft task that queued this).

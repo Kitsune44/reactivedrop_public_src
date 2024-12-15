@@ -82,6 +82,7 @@ struct RD_Crafting_Material_Rarity_Info
 	const char *m_szDisplayName;
 	const char *m_szPickupSound;
 	bool m_bCanFindInMission;
+	bool m_bAllowPickupAssist;
 };
 
 struct RD_Crafting_Contains_Any_List

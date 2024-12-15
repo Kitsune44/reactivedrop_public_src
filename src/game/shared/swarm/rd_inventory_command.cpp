@@ -463,6 +463,30 @@ static bool PreValidateInventoryCommand( CASW_Player *pPlayer, EInventoryCommand
 		}
 #endif
 		break;
+	case INVCMD_MATERIAL_PICKUP_ASSIST:
+#ifdef RD_7A_DROPS
+		if ( args.Count() != 2 )
+		{
+			Warning( "Player %s sent invalid InvCmdInit - wrong number of args for material pickup assist (%d).\n", pPlayer->GetASWNetworkID(), args.Count() );
+			return false;
+		}
+		if ( args[0] < 0 || args[0] >= NUM_RD_CRAFTING_MATERIAL_TYPES )
+		{
+			Warning( "Player %s sent invalid InvCmdInit - out of range location number for material pickup assist (%d).\n", pPlayer->GetASWNetworkID(), args[0] );
+			return false;
+		}
+		if ( !g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[args[0]].m_iRarity].m_bAllowPickupAssist )
+		{
+			Warning( "Player %s sent invalid InvCmdInit - invalid item type for material pickup assist (%d).\n", pPlayer->GetASWNetworkID(), args[0] );
+			return false;
+		}
+		if ( args[1] < 0 )
+		{
+			Warning( "Player %s sent invalid InvCmdInit - negative quantity for material pickup assist (%d).\n", pPlayer->GetASWNetworkID(), args[1] );
+			return false;
+		}
+#endif
+		break;
 	case INVCMD_PROMO_DROP:
 		if ( args.Count() != 0 )
 		{
@@ -848,10 +872,25 @@ static void ExecuteInventoryCommand( CASW_Player *pPlayer, EInventoryCommand eCm
 
 		CReliableBroadcastRecipientFilter filter;
 		UserMessageBegin( filter, "RDItemPickupMsg" );
-			WRITE_BYTE( 2 );
-			WRITE_BYTE( pPlayer->entindex() );
-			WRITE_LONG( g_RD_Crafting_Material_Info[eMaterial].m_iItemDef );
-			WRITE_LONG( nTotalQuantity );
+		WRITE_BYTE( 2 );
+		WRITE_BYTE( pPlayer->entindex() );
+		WRITE_LONG( g_RD_Crafting_Material_Info[eMaterial].m_iItemDef );
+		WRITE_LONG( nTotalQuantity );
+		MessageEnd();
+#endif
+		break;
+	}
+	case INVCMD_MATERIAL_PICKUP_ASSIST:
+	{
+#ifdef RD_7A_DROPS
+		// don't bother checking the inventory result for now; just require one so it's hard to make a fake message
+
+		CReliableBroadcastRecipientFilter filter;
+		UserMessageBegin( filter, "RDItemPickupMsg" );
+		WRITE_BYTE( 3 );
+		WRITE_BYTE( pPlayer->entindex() );
+		WRITE_LONG( g_RD_Crafting_Material_Info[args[0]].m_iItemDef );
+		WRITE_LONG( args[1] );
 		MessageEnd();
 #endif
 		break;

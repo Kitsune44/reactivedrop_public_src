@@ -374,6 +374,7 @@ static const char *const s_szItemPickupMessages[] =
 	"#rd_player_found_promo_item",
 	"#rd_player_found_crafting_material",
 	"#rd_player_found_crafting_materials",
+	"#rd_player_found_crafting_materials_assist"
 };
 
 void CHudChat::MsgFunc_RDItemPickupMsg( bf_read &msg )
@@ -422,6 +423,28 @@ void CHudChat::MsgFunc_RDItemPickupMsg( bf_read &msg )
 	{
 		Warning( "RDItemPickupMsg(%d, %d, %d, %d) no item def\n", iMessage, iPlayer, iDef, iQuantity );
 		return;
+	}
+
+	if ( iMessage == 2 )
+	{
+		C_ASW_Player *pLocalPlayer = C_ASW_Player::GetLocalASWPlayer();
+		if ( pLocalPlayer && pPlayer != pLocalPlayer && pLocalPlayer->GetNPC() && pLocalPlayer->GetNPC()->GetHealth() > 0 )
+		{
+			for ( int i = 0; i < NUM_RD_CRAFTING_MATERIAL_TYPES; i++ )
+			{
+				if ( g_RD_Crafting_Material_Info[i].m_iItemDef != iDef )
+				{
+					continue;
+				}
+
+				if ( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[i].m_iRarity].m_bAllowPickupAssist )
+				{
+					ReactiveDropInventory::PickUpCraftingMaterialAssist( static_cast< RD_Crafting_Material_t >( i ) );
+				}
+
+				break;
+			}
+		}
 	}
 
 	wchar_t wszItemName[256];

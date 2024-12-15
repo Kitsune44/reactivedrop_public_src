@@ -1192,6 +1192,7 @@ public:
 			case CRAFT_DELETE:
 				return true;
 			case CRAFT_PICKUP_MATERIAL:
+			case CRAFT_PICKUP_MATERIAL_ASSIST:
 			case CRAFT_BTS:
 			case CRAFT_DROP:
 			case CRAFT_PROMO:
@@ -1225,6 +1226,7 @@ public:
 		case CRAFT_DYNAMIC_PROPERTY_INIT_RETRY:
 			return pTask->m_iAccessoryDef != BaseModUI::ItemShowcase::MODE_ITEM_DROP;
 		case CRAFT_PICKUP_MATERIAL:
+		case CRAFT_PICKUP_MATERIAL_ASSIST:
 			// returning false to avoid popping up modal errors during gameplay
 			return false;
 		case CRAFT_BTS:
@@ -1347,6 +1349,51 @@ public:
 				CUtlVector<int> args;
 				args.AddToTail( pTask->m_iAccessoryDef );
 				UTIL_RD_SendInventoryCommand( INVCMD_MATERIAL_PICKUP, args, pTask->m_hResult );
+			}
+#endif
+			break;
+		case CRAFT_PICKUP_MATERIAL_ASSIST:
+#ifdef RD_7A_DROPS
+			{
+				RD_Crafting_Material_t eMaterialType = static_cast< RD_Crafting_Material_t >( pTask->m_iAccessoryDef );
+				RD_Crafting_Material_Rarity_t eMaterialRarity = g_RD_Crafting_Material_Info[eMaterialType].m_iRarity;
+				const char *szPickupSound = g_RD_Crafting_Material_Rarity_Info[eMaterialRarity].m_szPickupSound;
+
+				if ( szPickupSound )
+				{
+					CLocalPlayerFilter filter;
+					C_BaseEntity::EmitSound( filter, -1/*SOUND_FROM_LOCAL_PLAYER*/, szPickupSound );
+				}
+
+				uint32 nCount{};
+				pInventory->GetResultItems( pTask->m_hResult, NULL, &nCount );
+				CUtlVector<SteamItemDetails_t> diff;
+				diff.AddMultipleToTail( nCount );
+				pInventory->GetResultItems( pTask->m_hResult, diff.Base(), &nCount );
+
+				int added = 0;
+				FOR_EACH_VEC( diff, i )
+				{
+					if ( diff[i].m_unFlags & ( k_ESteamItemConsumed | k_ESteamItemRemoved ) )
+					{
+						continue;
+					}
+
+					if ( const ItemInstance_t *pCached = GetLocalItemCache( diff[i].m_itemId ) )
+					{
+						diff[i].m_unQuantity = MAX( 0, int( diff[i].m_unQuantity ) - pCached->Quantity );
+					}
+
+					if ( diff[i].m_iDefinition == g_RD_Crafting_Material_Info[eMaterialType].m_iItemDef )
+					{
+						added = diff[i].m_unQuantity;
+					}
+				}
+
+				CUtlVector<int> args;
+				args.AddToTail( eMaterialType );
+				args.AddToTail( added );
+				UTIL_RD_SendInventoryCommand( INVCMD_MATERIAL_PICKUP_ASSIST, args, pTask->m_hResult );
 			}
 #endif
 			break;
@@ -2174,7 +2221,8 @@ public:
 		}
 
 		Assert( eMaterial > RD_CRAFTING_MATERIAL_NONE && eMaterial < NUM_RD_CRAFTING_MATERIAL_TYPES );
-		if ( eMaterial <= 0 || eMaterial >= NUM_RD_CRAFTING_MATERIAL_TYPES)
+		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bCanFindInMission );
+		if ( eMaterial <= 0 || eMaterial >= NUM_RD_CRAFTING_MATERIAL_TYPES )
 		{
 			Warning( "Cannot pick up crafting material at location %d with out of range type %d!\n", iLocation, eMaterial );
 			return;
@@ -2206,6 +2254,77 @@ public:
 
 		m_CraftingMaterialToken[iLocation] = k_SteamItemInstanceIDInvalid;
 		// leave m_CraftingMaterialType[iLocation] set
+		if ( ItemInstance_t *pConsumed = GetLocalItemCacheForModify( m_CraftingMaterialToken[iLocation] ) )
+		{
+			pConsumed->Quantity--;
+		}
+
+	}
+
+	void PickUpCraftingMaterialAssist( RD_Crafting_Material_t eMaterial )
+	{
+		GET_INVENTORY_OR_BAIL;
+
+		Assert( eMaterial > RD_CRAFTING_MATERIAL_NONE && eMaterial < NUM_RD_CRAFTING_MATERIAL_TYPES );
+		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bCanFindInMission );
+		Assert( g_RD_Crafting_Material_Rarity_Info[g_RD_Crafting_Material_Info[eMaterial].m_iRarity].m_bAllowPickupAssist );
+		if ( eMaterial <= 0 || eMaterial >= NUM_RD_CRAFTING_MATERIAL_TYPES )
+		{
+			Warning( "Cannot pick up crafting material for assist with out of range type %d!\n", eMaterial );
+			return;
+		}
+
+		CUtlVector<ReactiveDropInventory::ItemInstance_t> optin;
+		ReactiveDropInventory::GetItemsForSlot( optin, "crafting_material_beta_opt_in" );
+		if ( !rd_crafting_material_pickups.GetBool() || !optin.Count() )
+		{
+			// we're pretending we don't have any material tokens.
+			return;
+		}
+
+		SteamItemDef_t generate[1] = { g_RD_Crafting_Material_Info[eMaterial].m_iRedeemDef };
+		SteamItemInstanceID_t consume[1] = { k_SteamItemInstanceIDInvalid };
+		uint32 one[1] = { 1 };
+
+		CUtlVector<ItemInstance_t> tokens;
+		GetItemsForDef( tokens, g_RD_Crafting_Material_Info[eMaterial].m_iTokenDef );
+
+		FOR_EACH_VEC( tokens, i )
+		{
+			int count = tokens[i].Quantity;
+			for ( int iLocation = 0; iLocation < RD_MAX_CRAFTING_MATERIAL_SPAWN_LOCATIONS; iLocation++ )
+			{
+				if ( m_CraftingMaterialToken[iLocation] == tokens[i].ItemID )
+				{
+					count--;
+				}
+			}
+
+			if ( count > 0 )
+			{
+				consume[0] = tokens[i].ItemID;
+				break;
+			}
+		}
+
+		if ( consume[0] == k_SteamItemInstanceIDInvalid )
+		{
+			// don't have a spare token.
+			return;
+		}
+
+		SteamInventoryResult_t *pResult = AddCraftItemTask( CRAFT_PICKUP_MATERIAL_ASSIST, eMaterial, consume[0] );
+		pInventory->ExchangeItems( pResult, generate, one, 1, consume, one, 1 );
+
+		if ( rd_debug_inventory.GetBool() )
+		{
+			Msg( "[C] Sent request to pick up %s (assist) (handle: %08x)\n", g_RD_Crafting_Material_Info[eMaterial].m_szName, *pResult );
+		}
+
+		if ( ItemInstance_t *pConsumed = GetLocalItemCacheForModify( consume[0] ) )
+		{
+			pConsumed->Quantity--;
+		}
 	}
 #endif
 
@@ -3488,6 +3607,15 @@ namespace ReactiveDropInventory
 		}
 
 		s_RD_Inventory_Manager.PickUpCraftingMaterialAtLocation( iLocation, eMaterial );
+	}
+	void PickUpCraftingMaterialAssist( RD_Crafting_Material_t eMaterial )
+	{
+		if ( engine->IsPlayingDemo() )
+		{
+			return;
+		}
+
+		s_RD_Inventory_Manager.PickUpCraftingMaterialAssist( eMaterial );
 	}
 	int GetCraftingMaterialsFound()
 	{
