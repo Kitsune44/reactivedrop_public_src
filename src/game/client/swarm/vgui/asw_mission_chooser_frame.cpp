@@ -714,7 +714,7 @@ CASW_Mission_Chooser_Entry::CASW_Mission_Chooser_Entry( TGD_Grid *parent, const 
 	}
 
 	CUtlVector<ReactiveDropInventory::ItemInstance_t> optin;
-	ReactiveDropInventory::GetItemsForDef( optin, 4029 );
+	ReactiveDropInventory::GetItemsForSlot( optin, "crafting_material_beta_opt_in" );
 	if ( optin.Count() )
 	{
 		CUtlVector<ReactiveDropInventory::ItemInstance_t> tokens;

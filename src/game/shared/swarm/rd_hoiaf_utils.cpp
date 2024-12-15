@@ -538,7 +538,7 @@ void CRD_HoIAF_System::RebuildNotificationList()
 
 #ifdef RD_7A_DROPS
 			CUtlVector<ReactiveDropInventory::ItemInstance_t> optin;
-			ReactiveDropInventory::GetItemsForDef( optin, 4029 );
+			ReactiveDropInventory::GetItemsForSlot( optin, "crafting_material_beta_opt_in" );
 			bCraftingBetaOptIn = optin.Count() != 0;
 #endif
 
