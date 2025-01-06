@@ -3059,6 +3059,20 @@ namespace ReactiveDropInventory
 			Assert( i == 0 || pItemDef->StrangeNotify[i - 1] < pItemDef->StrangeNotify[i] );
 			Assert( pItemDef->StrangeNotifyEvery == 0 || pItemDef->StrangeNotifyEvery > pItemDef->StrangeNotify[i] );
 		}
+		FETCH_PROPERTY( "strange_notify_color1" );
+		if ( *szValue )
+		{
+			Assert( V_strlen( szValue ) == 6 );
+			unsigned iColor = strtoul( szValue, NULL, 16 );
+			pItemDef->StrangeNotifyColor1 = Color( iColor >> 16, ( iColor >> 8 ) & 255, iColor & 255, 255 );
+		}
+		FETCH_PROPERTY( "strange_notify_color2" );
+		if ( *szValue )
+		{
+			Assert( V_strlen( szValue ) == 6 );
+			unsigned iColor = strtoul( szValue, NULL, 16 );
+			pItemDef->StrangeNotifyColor2 = Color( iColor >> 16, ( iColor >> 8 ) & 255, iColor & 255, 255 );
+		}
 
 		FETCH_PROPERTY( "notification_tags" );
 		if ( *szValue )

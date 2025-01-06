@@ -109,6 +109,8 @@ namespace ReactiveDropInventory
 		Color NameColor;
 		int64_t StrangeNotifyEvery{ 0 };
 		CUtlVector<int64_t> StrangeNotify;
+		Color StrangeNotifyColor1{ 204, 84, 0, 255 };
+		Color StrangeNotifyColor2{ 204, 129, 0, 255 };
 		CUtlStringList NotificationTags; // for notification items
 		bool AfterDescriptionOnlyMultiStack : 1;
 		bool HasInGameDescription : 1;

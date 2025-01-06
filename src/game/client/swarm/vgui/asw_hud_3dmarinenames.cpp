@@ -1738,6 +1738,8 @@ void CASWHud3DMarineNames::PaintStrangeDeviceNotifications()
 
 		if ( bOnScreen )
 		{
+			const ReactiveDropInventory::ItemDef_t *pAccessoryDef = ReactiveDropInventory::GetItemDef( pNotification->m_iAccessoryID );
+
 			int iCurrentCounterWide = pNotification->m_iCounterNumberWide;
 			if ( pNotification->m_iCurrentCounter != pNotification->m_iCounter )
 			{
@@ -1785,42 +1787,47 @@ void CASWHud3DMarineNames::PaintStrangeDeviceNotifications()
 
 			StackedNotificationY.InsertOrReplace( pNPC, y - flFadeOutScale * ( iNumberTall + iLinePadding * 3 + iLineThickness + iNameTall1 + iNameTall2 ) );
 
+			Color color1 = pAccessoryDef ? pAccessoryDef->StrangeNotifyColor1 : Color{ 204, 84, 0, 255 };
+			Color color2 = pAccessoryDef ? pAccessoryDef->StrangeNotifyColor2 : Color{ 204, 129, 0, 255 };
+			Vector color1Linear{ TextureToLinear( color1.r() ), TextureToLinear( color1.g() ), TextureToLinear( color1.b() ) };
+			Vector color2Linear{ TextureToLinear( color2.r() ), TextureToLinear( color2.g() ), TextureToLinear( color2.b() ) };
+
 			vgui::surface()->DrawSetTextFont( m_hNotificationNumberBlurFont );
-			vgui::surface()->DrawSetTextColor( 204, 84, 0, Lerp( flFadeScale * flGlowFlareScale, 0, 255 ) );
+			vgui::surface()->DrawSetTextColor( color1.r(), color1.g(), color1.b(), Lerp( flFadeScale * flGlowFlareScale, 0, color1.a() ) );
 			vgui::surface()->DrawSetTextPos( iNumberX + iNumberXOffset, iNumberY );
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszCounterNumber );
 
 			vgui::surface()->DrawSetTextFont( m_hNotificationNumberFont );
-			vgui::surface()->DrawSetTextColor( 204, 129, 0, Lerp( flFadeScale, 0, 255 ) );
+			vgui::surface()->DrawSetTextColor( color2.r(), color2.g(), color2.b(), Lerp( flFadeScale, 0, color2.a() ) );
 			vgui::surface()->DrawSetTextPos( iNumberX + iNumberXOffset, iNumberY );
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszCounterNumber );
 
-			vgui::surface()->DrawSetColor( 204, Lerp( flFadeOutScale * flLineColorScale, 84, 129 ), 0, 255 );
+			Vector lineColorLinear = Lerp( flFadeOutScale * flLineColorScale, color1Linear, color2Linear );
+			vgui::surface()->DrawSetColor( LinearToTexture( lineColorLinear.r() ), LinearToTexture( lineColorLinear.g() ), LinearToTexture( lineColorLinear.b() ), 255 );
 			vgui::surface()->DrawFilledRect( x - iLineQuarterWidth, iLineY - iLineThickness, x + iLineQuarterWidth, iLineY );
 			vgui::surface()->DrawFilledRectFade( x - iLineHalfWidth, iLineY - iLineThickness, x - iLineQuarterWidth, iLineY, 0, 255, true );
 			vgui::surface()->DrawFilledRectFade( x + iLineQuarterWidth, iLineY - iLineThickness, x + iLineHalfWidth, iLineY, 255, 0, true );
 
 			vgui::surface()->DrawSetTextFont( m_hNotificationNameBlurFont );
-			vgui::surface()->DrawSetTextColor( 204, 84, 0, Lerp( flFadeScale * flGlowFlareScale, 0, 255 ) );
+			vgui::surface()->DrawSetTextColor( color1.r(), color1.g(), color1.b(), Lerp( flFadeScale * flGlowFlareScale, 0, color1.a() ) );
 			vgui::surface()->DrawSetTextPos( iNameX1, iNameY1 );
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszAccessoryName );
 
 			vgui::surface()->DrawSetTextFont( m_hNotificationNameFont );
-			vgui::surface()->DrawSetTextColor( 204, 129, 0, Lerp( flFadeScale, 0, 255 ) );
+			vgui::surface()->DrawSetTextColor( color2.r(), color2.g(), color2.b(), Lerp( flFadeScale, 0, color2.a() ) );
 			vgui::surface()->DrawSetTextPos( iNameX1, iNameY1 );
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszAccessoryName );
 
 			vgui::surface()->DrawSetTextFont( m_hNotificationSmallNameBlurFont );
-			vgui::surface()->DrawSetTextColor( 204, 84, 0, Lerp( flFadeScale * flGlowFlareScale, 0, 255 ) );
+			vgui::surface()->DrawSetTextColor( color1.r(), color1.g(), color1.b(), Lerp( flFadeScale * flGlowFlareScale, 0, color1.a() ) );
 			vgui::surface()->DrawSetTextPos( iNameX2, iNameY2 );
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszItemName );
 
 			vgui::surface()->DrawSetTextFont( m_hNotificationSmallNameFont );
-			vgui::surface()->DrawSetTextColor( 204, 129, 0, Lerp( flFadeScale, 0, 255 ) );
+			vgui::surface()->DrawSetTextColor( color2.r(), color2.g(), color2.b(), Lerp( flFadeScale, 0, color2.a() ) );
 			vgui::surface()->DrawSetTextPos( iNameX2, iNameY2 );
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszItemName );
 
-			const ReactiveDropInventory::ItemDef_t *pAccessoryDef = ReactiveDropInventory::GetItemDef( pNotification->m_iAccessoryID );
 			if ( pAccessoryDef && pAccessoryDef->AccessoryImage && pAccessoryDef->AccessoryImage->GetNumFrames() )
 			{
 				vgui::surface()->DrawSetColor( 255, 255, 255, Lerp( flFadeScale, 0, 255 ) );
