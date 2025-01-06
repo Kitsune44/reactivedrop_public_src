@@ -1803,7 +1803,7 @@ void CASWHud3DMarineNames::PaintStrangeDeviceNotifications()
 			vgui::surface()->DrawUnicodeString( pNotification->m_wszCounterNumber );
 
 			Vector lineColorLinear = Lerp( flFadeOutScale * flLineColorScale, color1Linear, color2Linear );
-			vgui::surface()->DrawSetColor( LinearToTexture( lineColorLinear.r() ), LinearToTexture( lineColorLinear.g() ), LinearToTexture( lineColorLinear.b() ), 255 );
+			vgui::surface()->DrawSetColor( LinearToTexture( lineColorLinear.x ), LinearToTexture( lineColorLinear.y ), LinearToTexture( lineColorLinear.z ), 255 );
 			vgui::surface()->DrawFilledRect( x - iLineQuarterWidth, iLineY - iLineThickness, x + iLineQuarterWidth, iLineY );
 			vgui::surface()->DrawFilledRectFade( x - iLineHalfWidth, iLineY - iLineThickness, x - iLineQuarterWidth, iLineY, 0, 255, true );
 			vgui::surface()->DrawFilledRectFade( x + iLineQuarterWidth, iLineY - iLineThickness, x + iLineHalfWidth, iLineY, 255, 0, true );
