@@ -406,6 +406,9 @@ void C_PhysPropClientside::StartFadeOut( float fDelay )
 
 void C_PhysPropClientside::Break()
 {
+	if ( IsMarkedForDeletion() )
+		return;
+
 	m_takedamage = DAMAGE_NO;
 	
 	IPhysicsObject *pPhysics = VPhysicsGetObject();
@@ -443,10 +446,12 @@ void C_PhysPropClientside::Break()
 	// no damage/damage force? set a burst of 100 for some movement
 	params.defBurstScale = 100;
 
-	// spwan break chunks
+	// spawn break chunks
 	PropBreakableCreateAll( GetModelIndex(), pPhysics, params, this, -1, false );
 
-	Release(); // destroy object
+	// destroy object at end of frame
+	SetRemovalFlag( true );
+	AddToEntityList( ENTITY_LIST_DELETE );
 }
 
 void C_PhysPropClientside::Clone( Vector &velocity )
