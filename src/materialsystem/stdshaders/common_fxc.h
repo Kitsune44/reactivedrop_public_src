@@ -330,6 +330,60 @@ float4 tex2Dsrgb( sampler iSampler, float2 iUv )
 	#endif
 }
 
+float4 tex2Dsrgblod( sampler iSampler, float4 iUv )
+{
+	// This function is named as a hint that the texture is meant to be read with
+	// an sRGB->linear conversion. We have to do this in shader code on the 360 sometimes.
+#if ( SHADER_SRGB_READ == 0 )
+	{
+		// Don't fake the srgb read in shader code
+		return tex2Dlod( iSampler, iUv );
+	}
+#else
+	{
+		if ( IsX360() )
+		{
+			float4 vTextureValue = tex2Dlod( iSampler, iUv );
+			vTextureValue.rgb = X360GammaToLinear( vTextureValue.rgb );
+			return vTextureValue.rgba;
+		}
+		else
+		{
+			float4 vTextureValue = tex2Dlod( iSampler, iUv );
+			vTextureValue.rgb = SrgbGammaToLinear( vTextureValue.rgb );
+			return vTextureValue.rgba;
+		}
+	}
+#endif
+}
+
+float4 tex2Dsrgbgrad( sampler iSampler, float2 iUv, float2 iDdx, float2 iDdy )
+{
+	// This function is named as a hint that the texture is meant to be read with
+	// an sRGB->linear conversion. We have to do this in shader code on the 360 sometimes.
+#if ( SHADER_SRGB_READ == 0 )
+	{
+		// Don't fake the srgb read in shader code
+		return tex2Dgrad( iSampler, iUv, iDdx, iDdy );
+	}
+#else
+	{
+		if ( IsX360() )
+		{
+			float4 vTextureValue = tex2Dgrad( iSampler, iUv, iDdx, iDdy );
+			vTextureValue.rgb = X360GammaToLinear( vTextureValue.rgb );
+			return vTextureValue.rgba;
+		}
+		else
+		{
+			float4 vTextureValue = tex2Dgrad( iSampler, iUv, iDdx, iDdy );
+			vTextureValue.rgb = SrgbGammaToLinear( vTextureValue.rgb );
+			return vTextureValue.rgba;
+		}
+	}
+#endif
+}
+
 // Tangent transform helper functions
 float3 Vec3WorldToTangent( float3 iWorldVector, float3 iWorldNormal, float3 iWorldTangent, float3 iWorldBinormal )
 {
