@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "7397"
-	"mapversion" "174"
+	"mapversion" "175"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "174"
+	"mapversion" "175"
 	"classname" "worldspawn"
 	"comment" "Decompiled by BSPSource v1.3.6 from as_coldcatwalks.bsp"
 	"detailmaterial" "detail/detailsprites"
@@ -33449,6 +33449,7 @@ entity
 {
 	"id" "739"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "Alarm_obj"
@@ -43182,7 +43183,7 @@ entity
 		"OnComputerHackStarted" "normal_drone_spawn11StartSpawning0-1"
 		"OnComputerHackStarted" "easy_drone_spawn11StartSpawning0-1"
 		"OnComputerHackHalfway" "insane_ranger_spawn06StartSpawning0-1"
-		"OnComputerDataDownloaded" "tech_marine_requiredDisableTechMarineReq0-1"
+		"OnComputerHackCompleted" "tech_marine_requiredDisableTechMarineReq0-1"
 		"OnComputerDataDownloaded" "obstacles_node_linkTurnOn1-1"
 	}
 	solid
@@ -43273,6 +43274,7 @@ entity
 {
 	"id" "1120"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "Lower_obj"
@@ -148892,6 +148894,7 @@ entity
 {
 	"id" "101885"
 	"classname" "asw_marker"
+	"angles" "0 0 0"
 	"mapheight" "256"
 	"mapwidth" "256"
 	"objectivename" "ExitZone"
@@ -150602,6 +150605,7 @@ entity
 	"DefaultMusic" "tilarus.CatwalksBattleMusic"
 	"FadeInTime" "1.0"
 	"FadeOutTime" "5"
+	"InterruptCustomTrack" "1"
 	"targetname" "battle_music"
 	"origin" "-2688 896 0"
 	editor
@@ -156061,8 +156065,8 @@ cameras
 	"activecamera" "0"
 	camera
 	{
-		"position" "[-3433.94 -3563.03 -14.9912]"
-		"look" "[-3352.18 -3364.79 -173.086]"
+		"position" "[-2681.96 -3586.19 6.42201]"
+		"look" "[-2866.03 -3674.33 -164.825]"
 	}
 	camera
 	{
