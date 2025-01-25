@@ -6,6 +6,7 @@
 
 //  STATIC: "WVT"                       "0..1"
 //  STATIC: "LIGHTMAPPED"               "0..1"
+//  STATIC: "TREESWAY"                  "0..2"
 
 //  DYNAMIC: "COMPRESSED_VERTS"         "0..1"
 //  DYNAMIC: "DOWATERFOG"               "0..1"
@@ -15,9 +16,40 @@
 
 #include "common_vs_fxc.h"
 
+// SKIP: $TREESWAY && ( $WVT || $LIGHTMAPPED )
+
 static const bool g_bSkinning           = SKINNING ? true : false;
 static const int g_FogType              = DOWATERFOG;
 const float4 cBaseTexCoordTransform[2]  : register(SHADER_SPECIFIC_CONST_0);
+
+#if TREESWAY
+    const float4 g_TreeSwayParams1      : register(SHADER_SPECIFIC_CONST_2);
+    #define g_flFastSwaySpeedScale g_TreeSwayParams1.x
+    #define g_flScrumbleFalloffCurve g_TreeSwayParams1.y
+    #define g_flSwayFalloffCurve g_TreeSwayParams1.z
+    #define g_flScrumbleSpeed g_TreeSwayParams1.w
+
+    const float3 g_TreeSwayParams2      : register(SHADER_SPECIFIC_CONST_3);
+    #define g_flTime g_TreeSwayParams2.x
+    #define g_flWindSpeedLerpStart g_TreeSwayParams2.y
+    #define g_flWindSpeedLerpEnd g_TreeSwayParams2.z
+
+    const float4 g_TreeSwayParams3      : register(SHADER_SPECIFIC_CONST_4);
+    #define g_flHeight g_TreeSwayParams3.x
+    #define g_flStartHeight g_TreeSwayParams3.y
+    #define g_flRadius g_TreeSwayParams3.z
+    #define g_flStartRadius g_TreeSwayParams3.w
+
+    const float4 g_TreeSwayParams4      : register(SHADER_SPECIFIC_CONST_5);
+    #define g_flSwaySpeed g_TreeSwayParams4.x
+    #define g_flSwayIntensity g_TreeSwayParams4.y
+    #define g_flScrumbleWaveCount g_TreeSwayParams4.z
+    #define g_flScrumbleIntensity g_TreeSwayParams4.w
+
+    const float2 g_vWindDir             : register(SHADER_SPECIFIC_CONST_6);
+
+    #include "tree_sway.h"
+#endif
 
 //-----------------------------------------------------------------------------
 // Input vertex format
@@ -86,11 +118,17 @@ VS_OUTPUT main( const VS_INPUT v )
     float3 vNormal; float4 vTangent;
     DecompressVertex_NormalTangent(v.vNormal, v.vTangent, vNormal, vTangent);
 
+#if TREESWAY && !LIGHTING_PREVIEW
+    const float4 vPos = float4( ComputeTreeSway( v.vPos.xyz, g_flTime ), v.vPos.w );
+#else
+    const float4 vPos = v.vPos;
+#endif
+
     float3 worldNormal, worldPos, worldTangentS, worldTangentT;
 #if SKINNING
-    SkinPositionNormalAndTangentSpace(g_bSkinning, v.vPos, vNormal, vTangent, v.vBoneWeights, v.vBoneIndices, worldPos, worldNormal, worldTangentS, worldTangentT);
+    SkinPositionNormalAndTangentSpace(g_bSkinning, vPos, vNormal, vTangent, v.vBoneWeights, v.vBoneIndices, worldPos, worldNormal, worldTangentS, worldTangentT);
 #else
-    worldPos = mul4x3( v.vPos, cModel[0] );
+    worldPos = mul4x3( vPos, cModel[0] );
     worldNormal = mul3x3( vNormal, ( const float3x3 )cModel[0] );
     worldTangentS = mul3x3( vNormal, ( const float3x3 )cModel[1] );
 #endif
@@ -100,7 +138,7 @@ VS_OUTPUT main( const VS_INPUT v )
     o.projPosSetup = vProjPos;
 
     o.projPos = vProjPos.xyz;
-    o.fog = CalcFixedFunctionFog( worldPos, g_FogType );
+    o.fog = CalcFixedFunctionFog(worldPos, g_FogType);
 
     // Needed for water fog alpha and diffuse lighting 
     o.worldPos = worldPos;
@@ -118,11 +156,12 @@ VS_OUTPUT main( const VS_INPUT v )
         o.lightAtten.y = GetVertexAttenForLight(worldPos, 1);
     #endif
 
-    #if (NUM_LIGHTS > 2)
+    // drop lights if we're using tree sway or we run past the instruction limit
+    #if (NUM_LIGHTS > 2 && (!TREESWAY || !SKINNING))
         o.lightAtten.z = GetVertexAttenForLight(worldPos, 2);
     #endif
 
-    #if (NUM_LIGHTS > 3)
+    #if (NUM_LIGHTS > 3 && !TREESWAY)
         o.lightAtten.w = GetVertexAttenForLight(worldPos, 3);
     #endif
 

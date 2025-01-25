@@ -99,12 +99,12 @@ float GetAttenForLight(float4 lightAtten, int lightNum)
 }
 
 // Calculate direct light for one source
-float3 CalculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, float3 normal, float3 fresnelReflectance, float roughness, float metalness, float lightDirectionAngle, float3 albedo)
+float3 CalculateLight(float3 lightIn, float3 lightIntensity, float3 lightOut, float3 normal, float3 fresnelReflectance, float roughness, float metalness, float lightDirectionAngle, float3 albedo, bool ignoreNormal = false)
 {
 	// Lh
 	float3 HalfAngle = normalize(lightIn + lightOut); 
 	float cosLightIn = max(0.0, dot(normal, lightIn));
-	float cosHalfAngle = max(0.0, dot(normal, HalfAngle));
+	float cosHalfAngle = max(float(ignoreNormal), dot(normal, HalfAngle));
 
 	// F - Calculate Fresnel term for direct lighting
 	float3 F = FresnelSchlick(fresnelReflectance, max(0.0, dot(HalfAngle, lightOut)));

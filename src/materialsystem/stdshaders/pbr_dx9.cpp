@@ -95,6 +95,23 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 		SHADER_PARAM(BLENDTINTBYMRAOALPHA, SHADER_PARAM_TYPE_BOOL, "0", "Blend tint by the alpha channel in MRAO texture. Similar to $blendtintbybasealpha for VLG")
 		SHADER_PARAM(PARALLAXDITHER, SHADER_PARAM_TYPE_BOOL, "0", "When enabled, apply dithering to parallax to improve quality")
 		SHADER_PARAM(PARALLAXSCALE, SHADER_PARAM_TYPE_FLOAT, "1", "Multiply the number of parallax samples by this amount. DANGER: This can be EXPENSIVE!")
+		SHADER_PARAM(FLASHLIGHTNOLAMBERT, SHADER_PARAM_TYPE_BOOL, "0", "Ignore normals when computing dynamic lighting.")
+		// vertexlitgeneric tree sway animation control
+		SHADER_PARAM( TREESWAY, SHADER_PARAM_TYPE_INTEGER, "0", "" );
+		SHADER_PARAM( TREESWAYHEIGHT, SHADER_PARAM_TYPE_FLOAT, "1000", "" );
+		SHADER_PARAM( TREESWAYSTARTHEIGHT, SHADER_PARAM_TYPE_FLOAT, "0.2", "" );
+		SHADER_PARAM( TREESWAYRADIUS, SHADER_PARAM_TYPE_FLOAT, "300", "" );
+		SHADER_PARAM( TREESWAYSTARTRADIUS, SHADER_PARAM_TYPE_FLOAT, "0.1", "" );
+		SHADER_PARAM( TREESWAYSPEED, SHADER_PARAM_TYPE_FLOAT, "1", "" );
+		SHADER_PARAM( TREESWAYSPEEDHIGHWINDMULTIPLIER, SHADER_PARAM_TYPE_FLOAT, "2", "" );
+		SHADER_PARAM( TREESWAYSTRENGTH, SHADER_PARAM_TYPE_FLOAT, "10", "" );
+		SHADER_PARAM( TREESWAYSCRUMBLESPEED, SHADER_PARAM_TYPE_FLOAT, "0.1", "" );
+		SHADER_PARAM( TREESWAYSCRUMBLESTRENGTH, SHADER_PARAM_TYPE_FLOAT, "0.1", "" );
+		SHADER_PARAM( TREESWAYSCRUMBLEFREQUENCY, SHADER_PARAM_TYPE_FLOAT, "0.1", "" );
+		SHADER_PARAM( TREESWAYFALLOFFEXP, SHADER_PARAM_TYPE_FLOAT, "1.5", "" );
+		SHADER_PARAM( TREESWAYSCRUMBLEFALLOFFEXP, SHADER_PARAM_TYPE_FLOAT, "1.0", "" );
+		SHADER_PARAM( TREESWAYSPEEDLERPSTART, SHADER_PARAM_TYPE_FLOAT, "3", "" );
+		SHADER_PARAM( TREESWAYSPEEDLERPEND, SHADER_PARAM_TYPE_FLOAT, "6", "" );
 	END_SHADER_PARAMS;
 
 	// Initializing parameters
@@ -160,6 +177,10 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 			params[HSV]->SetVecValue(-1, -1, -1);
 		if (!params[BLENDTINTBYMRAOALPHA]->IsDefined())
 			params[BLENDTINTBYMRAOALPHA]->SetIntValue(0);
+		if (!params[FLASHLIGHTNOLAMBERT]->IsDefined())
+			params[FLASHLIGHTNOLAMBERT]->SetIntValue(0);
+		if (!params[TREESWAY]->IsDefined())
+			params[TREESWAY]->SetIntValue(0);
 	}
 
 	// Define shader fallback
@@ -244,6 +265,8 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 		const bool bBlendHSV = bHasHSV && IsBoolSet( HSV_BLEND, params );
 		const bool bHasParallaxCorrection = bHasEnvTexture && !!params[ENVMAPPARALLAX]->GetIntValue();
 		const bool bBlendTintByMRAOAlpha = !!params[BLENDTINTBYMRAOALPHA]->GetIntValue();
+		const bool bFlashlightNoLambert = !!params[FLASHLIGHTNOLAMBERT]->GetIntValue();
+		const int nTreeSway = clamp( params[TREESWAY]->GetIntValue(), 0, 2 );
 
 		// Determining whether we're dealing with a fully opaque material
 		const BlendType_t nBlendType = EvaluateBlendRequirements(BASETEXTURE, true);
@@ -305,6 +328,7 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 				DECLARE_STATIC_VERTEX_SHADER(pbr_vs20);
 				SET_STATIC_VERTEX_SHADER_COMBO(WVT, bIsWVT);
 				SET_STATIC_VERTEX_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
+				SET_STATIC_VERTEX_SHADER_COMBO(TREESWAY, nTreeSway);
 				SET_STATIC_VERTEX_SHADER(pbr_vs20);
 
 				// Setting up static pixel shader
@@ -329,6 +353,7 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 				DECLARE_STATIC_VERTEX_SHADER(pbr_vs30);
 				SET_STATIC_VERTEX_SHADER_COMBO(WVT, bIsWVT);
 				SET_STATIC_VERTEX_SHADER_COMBO(LIGHTMAPPED, bLightMapped);
+				SET_STATIC_VERTEX_SHADER_COMBO(TREESWAY, nTreeSway);
 				SET_STATIC_VERTEX_SHADER(pbr_vs30);
 
 				// Setting up static pixel shader
@@ -589,7 +614,7 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 				BindTexture( SAMPLER_FLASHLIGHT, state.m_pSpotlightTexture, state.m_nSpotlightTextureFrame );
 				bFlashlightShadows = state.m_bEnableShadows && (pFlashlightDepthTexture != NULL);
 
-				SetFlashLightColorFromState(state, pShaderAPI, PSREG_FLASHLIGHT_COLOR);
+				SetFlashLightColorFromState(state, pShaderAPI, false, PSREG_FLASHLIGHT_COLOR, bFlashlightNoLambert);
 
 				if (pFlashlightDepthTexture && g_pConfig->ShadowDepthTexture() && state.m_bEnableShadows)
 				{
@@ -646,6 +671,37 @@ BEGIN_VS_SHADER( PBR, "Physically Based Rendering shader for brushes and models"
 				s_pShaderAPI->BindStandardTexture(SAMPLER_LIGHTMAP, TEXTURE_LIGHTMAP_BUMPED);
 
 			BindTexture(SAMPLER_BRDF_INTEGRATION, BRDF_INTEGRATION);
+
+			if ( nTreeSway )
+			{
+				Vector4D vecTreeSwayParams[5];
+
+				vecTreeSwayParams[0].x = GetFloatParam( TREESWAYSPEEDHIGHWINDMULTIPLIER, params, 2.0f );
+				vecTreeSwayParams[0].y = GetFloatParam( TREESWAYSCRUMBLEFALLOFFEXP, params, 1.0f );
+				vecTreeSwayParams[0].z = GetFloatParam( TREESWAYFALLOFFEXP, params, 1.0f );
+				vecTreeSwayParams[0].w = GetFloatParam( TREESWAYSCRUMBLESPEED, params, 3.0f );
+
+
+				vecTreeSwayParams[1].x = pShaderAPI->CurrentTime();
+				vecTreeSwayParams[1].y = GetFloatParam( TREESWAYSPEEDLERPSTART, params, 3.0f );
+				vecTreeSwayParams[1].z = GetFloatParam( TREESWAYSPEEDLERPEND, params, 6.0f );
+
+				vecTreeSwayParams[2].x = GetFloatParam( TREESWAYHEIGHT, params, 1000.0f );
+				vecTreeSwayParams[2].y = GetFloatParam( TREESWAYSTARTHEIGHT, params, 0.1f );
+				vecTreeSwayParams[2].z = GetFloatParam( TREESWAYRADIUS, params, 300.0f );
+				vecTreeSwayParams[2].w = GetFloatParam( TREESWAYSTARTRADIUS, params, 0.2f );
+
+				vecTreeSwayParams[3].x = GetFloatParam( TREESWAYSPEED, params, 1.0f );
+				vecTreeSwayParams[3].y = GetFloatParam( TREESWAYSTRENGTH, params, 10.0f );
+				vecTreeSwayParams[3].z = GetFloatParam( TREESWAYSCRUMBLEFREQUENCY, params, 12.0f );
+				vecTreeSwayParams[3].w = GetFloatParam( TREESWAYSCRUMBLESTRENGTH, params, 10.0f );
+
+				Vector vecWindDirection = pShaderAPI->GetVectorRenderingParameter( VECTOR_RENDERPARM_WIND_DIRECTION );
+				vecTreeSwayParams[4].x = vecWindDirection.x;
+				vecTreeSwayParams[4].y = vecWindDirection.y;
+
+				pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_2, vecTreeSwayParams[0].Base(), 5 );
+			}
 
 			if ( !g_pHardwareConfig->HasFastVertexTextures() || mat_pbr_force_20b.GetBool() )
 			{

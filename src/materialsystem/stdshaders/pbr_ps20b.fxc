@@ -264,7 +264,7 @@ float4 main(PS_INPUT i) : COLOR
 	float3 flashLightIn = normalize(g_FlashlightPos.xyz - i.worldPos);
 
 	directLighting += max(0, CalculateLight(flashLightIn, flashLightIntensity, outgoingLightDirection,
-		normal, fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo.rgb));
+		normal, fresnelReflectance, roughness, metalness, lightDirectionAngle, albedo.rgb, cFlashlightColor.w >= 1.0));
 	// End flashlight
 
 #endif // !FLASHLIGHT

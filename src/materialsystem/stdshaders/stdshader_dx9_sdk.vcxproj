@@ -1227,6 +1227,7 @@
     <ClInclude Include="shader_constant_register_map.h" />
     <ClInclude Include="shielddome_dx9_helper.h" />
     <ClInclude Include="spline_fxc.h" />
+    <ClInclude Include="tree_sway.h" />
     <ClInclude Include="vertexlitgeneric_dx9_helper.h" />
     <ClInclude Include="volume_clouds_helper.h" />
     <ClInclude Include="vortwarp_vs20_helper.h" />

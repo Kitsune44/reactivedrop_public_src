@@ -530,6 +530,9 @@
     <ClInclude Include="shielddome_dx9_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tree_sway.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="stdshader_dx9_20b.txt">

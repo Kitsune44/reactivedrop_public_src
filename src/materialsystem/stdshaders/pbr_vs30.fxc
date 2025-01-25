@@ -6,6 +6,7 @@
 
 //  STATIC: "WVT"                       "0..1"
 //  STATIC: "LIGHTMAPPED"               "0..1"
+//  STATIC: "TREESWAY"                  "0..2"
 
 //  DYNAMIC: "COMPRESSED_VERTS"         "0..1"
 //  DYNAMIC: "DOWATERFOG"               "0..1"
@@ -15,9 +16,40 @@
 
 #include "common_vs_fxc.h"
 
+// SKIP: $TREESWAY && ( $WVT || $LIGHTMAPPED )
+
 static const bool g_bSkinning           = SKINNING ? true : false;
 static const int g_FogType              = DOWATERFOG;
 const float4 cBaseTexCoordTransform[2]  : register(SHADER_SPECIFIC_CONST_0);
+
+#if TREESWAY
+    const float4 g_TreeSwayParams1      : register(SHADER_SPECIFIC_CONST_2);
+    #define g_flFastSwaySpeedScale g_TreeSwayParams1.x
+    #define g_flScrumbleFalloffCurve g_TreeSwayParams1.y
+    #define g_flSwayFalloffCurve g_TreeSwayParams1.z
+    #define g_flScrumbleSpeed g_TreeSwayParams1.w
+
+    const float3 g_TreeSwayParams2      : register(SHADER_SPECIFIC_CONST_3);
+    #define g_flTime g_TreeSwayParams2.x
+    #define g_flWindSpeedLerpStart g_TreeSwayParams2.y
+    #define g_flWindSpeedLerpEnd g_TreeSwayParams2.z
+
+    const float4 g_TreeSwayParams3      : register(SHADER_SPECIFIC_CONST_4);
+    #define g_flHeight g_TreeSwayParams3.x
+    #define g_flStartHeight g_TreeSwayParams3.y
+    #define g_flRadius g_TreeSwayParams3.z
+    #define g_flStartRadius g_TreeSwayParams3.w
+
+    const float4 g_TreeSwayParams4      : register(SHADER_SPECIFIC_CONST_5);
+    #define g_flSwaySpeed g_TreeSwayParams4.x
+    #define g_flSwayIntensity g_TreeSwayParams4.y
+    #define g_flScrumbleWaveCount g_TreeSwayParams4.z
+    #define g_flScrumbleIntensity g_TreeSwayParams4.w
+
+    const float2 g_vWindDir             : register(SHADER_SPECIFIC_CONST_6);
+
+    #include "tree_sway.h"
+#endif
 
 //-----------------------------------------------------------------------------
 // Input vertex format
@@ -64,12 +96,12 @@ VS_OUTPUT main( const VS_INPUT v )
     VS_OUTPUT o = ( VS_OUTPUT )0;
 
 #if LIGHTMAPPED
-    o.lightmapTexCoord3.z = dot(v.vTexCoord0, cBaseTexCoordTransform[0]) + cBaseTexCoordTransform[0].w;
-    o.lightmapTexCoord3.w = dot(v.vTexCoord0, cBaseTexCoordTransform[1]) + cBaseTexCoordTransform[1].w;
-    o.lightmapTexCoord1And2.xy = v.vLightmapTexCoord + v.vLightmapTexCoordOffset;
+    o.lightmapTexCoord3.z = dot(v.vTexCoord0, cBaseTexCoordTransform[0].xy) + cBaseTexCoordTransform[0].w;
+    o.lightmapTexCoord3.w = dot(v.vTexCoord0, cBaseTexCoordTransform[1].xy) + cBaseTexCoordTransform[1].w;
+    o.lightmapTexCoord1And2.xy = v.vLightmapTexCoord.xy + v.vLightmapTexCoordOffset.xy;
 
-    float2 lightmapTexCoord2 = o.lightmapTexCoord1And2.xy + v.vLightmapTexCoordOffset;
-    float2 lightmapTexCoord3 = lightmapTexCoord2 + v.vLightmapTexCoordOffset;
+    float2 lightmapTexCoord2 = o.lightmapTexCoord1And2.xy + v.vLightmapTexCoordOffset.xy;
+    float2 lightmapTexCoord3 = lightmapTexCoord2 + v.vLightmapTexCoordOffset.xy;
 
     // Reversed component order
     o.lightmapTexCoord1And2.w = lightmapTexCoord2.x;
@@ -84,11 +116,17 @@ VS_OUTPUT main( const VS_INPUT v )
     float3 vNormal;
     DecompressVertex_Normal(v.vNormal, vNormal);
 
+#if TREESWAY
+    const float4 vPos = float4( ComputeTreeSway( v.vPos.xyz, g_flTime ), v.vPos.w );
+#else
+    const float4 vPos = v.vPos;
+#endif
+
     float3 worldNormal, worldPos;
 #if SKINNING
-    SkinPositionAndNormal(g_bSkinning, v.vPos, vNormal, v.vBoneWeights, v.vBoneIndices, worldPos, worldNormal);
+    SkinPositionAndNormal(g_bSkinning, vPos, vNormal, v.vBoneWeights, v.vBoneIndices, worldPos, worldNormal);
 #else
-    worldPos = mul4x3( v.vPos, cModel[0] );
+    worldPos = mul4x3( vPos, cModel[0] );
     worldNormal = mul3x3( vNormal, ( const float3x3 )cModel[0] );
 #endif
 
@@ -127,8 +165,8 @@ VS_OUTPUT main( const VS_INPUT v )
     #endif
 
     // Base texture coordinate transform
-    o.baseTexCoord.x = dot(v.vTexCoord0, cBaseTexCoordTransform[0]);
-    o.baseTexCoord.y = dot(v.vTexCoord0, cBaseTexCoordTransform[1]);
+    o.baseTexCoord.x = dot(v.vTexCoord0, cBaseTexCoordTransform[0].xy);
+    o.baseTexCoord.y = dot(v.vTexCoord0, cBaseTexCoordTransform[1].xy);
 
     return o;
 }

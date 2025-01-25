@@ -1,5 +1,6 @@
 // ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
 // defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
+// $TREESWAY && ( $WVT || $LIGHTMAPPED )
 
 #pragma once
 #include "shaderlib/cshader.h"
@@ -7,9 +8,11 @@ class pbr_vs20_Static_Index
 {
 	unsigned int m_nWVT : 2;
 	unsigned int m_nLIGHTMAPPED : 2;
+	unsigned int m_nTREESWAY : 2;
 #ifdef _DEBUG
 	bool m_bWVT : 1;
 	bool m_bLIGHTMAPPED : 1;
+	bool m_bTREESWAY : 1;
 #endif	// _DEBUG
 public:
 	void SetWVT( int i )
@@ -30,24 +33,36 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetTREESWAY( int i )
+	{
+		Assert( i >= 0 && i <= 2 );
+		m_nTREESWAY = i;
+#ifdef _DEBUG
+		m_bTREESWAY = true;
+#endif	// _DEBUG
+	}
+
 	pbr_vs20_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
 		m_nWVT = 0;
 		m_nLIGHTMAPPED = 0;
+		m_nTREESWAY = 0;
 #ifdef _DEBUG
 		m_bWVT = false;
 		m_bLIGHTMAPPED = false;
+		m_bTREESWAY = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bWVT && m_bLIGHTMAPPED );
-		return ( 80 * m_nWVT ) + ( 160 * m_nLIGHTMAPPED ) + 0;
+		Assert( m_bWVT && m_bLIGHTMAPPED && m_bTREESWAY );
+		AssertMsg( !( m_nTREESWAY && ( m_nWVT || m_nLIGHTMAPPED ) ), "Invalid combo combination ( TREESWAY && ( WVT || LIGHTMAPPED ) )" );
+		return ( 80 * m_nWVT ) + ( 160 * m_nLIGHTMAPPED ) + ( 320 * m_nTREESWAY ) + 0;
 	}
 };
 
-#define shaderStaticTest_pbr_vs20 vsh_forgot_to_set_static_WVT + vsh_forgot_to_set_static_LIGHTMAPPED
+#define shaderStaticTest_pbr_vs20 vsh_forgot_to_set_static_WVT + vsh_forgot_to_set_static_LIGHTMAPPED + vsh_forgot_to_set_static_TREESWAY
 
 
 class pbr_vs20_Dynamic_Index
