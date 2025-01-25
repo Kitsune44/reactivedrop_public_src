@@ -118,6 +118,7 @@ struct Character_DX9_Vars_t
 	int m_nPhongDisableHalfLambert;
 
 	int m_nTintMaskTexture;
+	int m_nHSV;
 
 	int m_nCharacterProxyAttached;
 	int m_nCharacterTeamColor;

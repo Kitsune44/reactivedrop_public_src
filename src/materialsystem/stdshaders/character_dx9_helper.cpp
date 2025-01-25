@@ -128,6 +128,11 @@ void InitParamsCharacter_DX9( CBaseVSShader *pShader, IMaterialVar **params, con
 	InitIntParam( info.m_nAllowDiffuseModulation, params, 1 );
 
 	InitIntParam( info.m_nPhongDisableHalfLambert, params, 0 );
+
+	if ( info.m_nHSV != -1 && !params[info.m_nHSV]->IsDefined() )
+	{
+		params[info.m_nHSV]->SetVecValue( -1, -1, -1 );
+	}
 }
 
 
@@ -257,6 +262,7 @@ void DrawCharacter_DX9( CBaseVSShader *pShader, IMaterialVar **params, IShaderDy
 		( info.m_nNormalWrinkle != -1 ) && params[info.m_nNormalWrinkle]->IsTexture() &&
 		( info.m_nNormalStretch != -1 ) && params[info.m_nNormalStretch]->IsTexture();
 	int nDetailBlendMode = ( info.m_nDetailTextureCombineMode == -1 ) ? 0 : params[info.m_nDetailTextureCombineMode]->GetIntValue();
+	bool bHasHSV = g_pHardwareConfig->HasFastVertexTextures() && info.m_nHSV != -1 && params[info.m_nHSV]->GetVecValue()[0] >= 0.0f;
 
 	constexpr static float s_flFourZeroes[4] = { 0, 0, 0, 0 };
 	const float *flCharacterStatusFx = info.m_nCharacterStatusFx == -1 ? s_flFourZeroes : params[info.m_nCharacterStatusFx]->GetVecValue();
@@ -443,6 +449,7 @@ void DrawCharacter_DX9( CBaseVSShader *pShader, IMaterialVar **params, IShaderDy
 			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
 			SET_STATIC_PIXEL_SHADER_COMBO( WORLD_NORMAL, 0 );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG_HALFLAMBERT, bPhongHalfLambert );
+			SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 			SET_STATIC_PIXEL_SHADER( character_ps20b );
 		}
 		else
@@ -468,6 +475,7 @@ void DrawCharacter_DX9( CBaseVSShader *pShader, IMaterialVar **params, IShaderDy
 			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
 			SET_STATIC_PIXEL_SHADER_COMBO( WORLD_NORMAL, bWorldNormal );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG_HALFLAMBERT, bPhongHalfLambert );
+			SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 			SET_STATIC_PIXEL_SHADER( character_ps30 );
 		}
 
@@ -848,6 +856,12 @@ void DrawCharacter_DX9( CBaseVSShader *pShader, IMaterialVar **params, IShaderDy
 						PSREG_UBERLIGHT_AABB, PSREG_UBERLIGHT_WORLD_TO_LIGHT );
 				}
 			}
+
+			if ( bHasHSV )
+			{
+				pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant( 46, params[info.m_nHSV]->GetVecValue(), 1 );
+			}
+
 			pContextData->m_SemiStaticCmdsOut.End();
 		}
 

@@ -106,6 +106,11 @@ void InitParamsPhong_DX9( CBaseVSShader *pShader, IMaterialVar** params, const c
 	InitIntParam( info.m_nAllowDiffuseModulation, params, 1 );
 
 	InitIntParam( info.m_nPhongDisableHalfLambert, params, 0 );
+
+	if ( info.m_nHSV != -1 && !params[info.m_nHSV]->IsDefined() )
+	{
+		params[info.m_nHSV]->SetVecValue( -1, -1, -1 );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -272,6 +277,7 @@ void DrawPhong_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynami
 #if !defined( PLATFORM_X360 )
 	bool bHasDisplacementWrinkles = (info.m_nDisplacementWrinkleMap != -1) && params[info.m_nDisplacementWrinkleMap]->GetIntValue();
 #endif
+	bool bHasHSV = g_pHardwareConfig->HasFastVertexTextures() && info.m_nHSV != -1 && params[info.m_nHSV]->GetVecValue()[0] >= 0.0f;
 
 	if( pShader->IsSnapshotting() )
 	{
@@ -469,6 +475,7 @@ void DrawPhong_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynami
 			SET_STATIC_PIXEL_SHADER_COMBO( SHADER_SRGB_READ, bShaderSrgbRead );
 			SET_STATIC_PIXEL_SHADER_COMBO( WORLD_NORMAL, 0 );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG_HALFLAMBERT, bPhongHalfLambert );
+			SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 			SET_STATIC_PIXEL_SHADER( phong_ps20b );
 		}
 #ifndef _X360
@@ -498,6 +505,7 @@ void DrawPhong_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynami
 			SET_STATIC_PIXEL_SHADER_COMBO( SHADER_SRGB_READ, bShaderSrgbRead );
 			SET_STATIC_PIXEL_SHADER_COMBO( WORLD_NORMAL, bWorldNormal );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG_HALFLAMBERT, bPhongHalfLambert );
+			SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 			SET_STATIC_PIXEL_SHADER( phong_ps30 );
 		}
 #endif
@@ -895,6 +903,12 @@ void DrawPhong_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynami
 						PSREG_UBERLIGHT_AABB,				PSREG_UBERLIGHT_WORLD_TO_LIGHT );
 				}
 			}
+
+			if ( bHasHSV )
+			{
+				pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant( 46, params[info.m_nHSV]->GetVecValue(), 1 );
+			}
+
 			pContextData->m_SemiStaticCmdsOut.End();
 		}
 

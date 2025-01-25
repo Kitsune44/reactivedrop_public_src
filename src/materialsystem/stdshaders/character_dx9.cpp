@@ -144,6 +144,7 @@ BEGIN_VS_SHADER( RDCharacter, "Alien Swarm: Reactive Drop character shader" )
 		SHADER_PARAM( PHONGDISABLEHALFLAMBERT, SHADER_PARAM_TYPE_BOOL, "0", "Disable half lambert for phong" )
 
 		SHADER_PARAM( TINTMASKTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "Separate tint mask texture (as opposed to using basetexture alpha)" )
+		SHADER_PARAM( HSV, SHADER_PARAM_TYPE_COLOR, "[1 1 1]", "HSV color to transform $basetexture texture with" )
 
 		SHADER_PARAM( CHARACTER_PROXY_ATTACHED, SHADER_PARAM_TYPE_BOOL, "0", "Flag to determine whether material proxy has been successfully attached" )
 		SHADER_PARAM( CHARACTER_TEAM_COLOR, SHADER_PARAM_TYPE_COLOR, "[0 0 0 0]", "Glow color and intensity for team highlights." )
@@ -238,6 +239,7 @@ BEGIN_VS_SHADER( RDCharacter, "Alien Swarm: Reactive Drop character shader" )
 		info.m_nPhongDisableHalfLambert = PHONGDISABLEHALFLAMBERT;
 
 		info.m_nTintMaskTexture = TINTMASKTEXTURE;
+		info.m_nHSV = HSV;
 
 		info.m_nCharacterProxyAttached = CHARACTER_PROXY_ATTACHED;
 		info.m_nCharacterTeamColor = CHARACTER_TEAM_COLOR;

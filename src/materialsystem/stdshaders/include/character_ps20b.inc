@@ -32,6 +32,7 @@ class character_ps20b_Static_Index
 	unsigned int m_nFLASHLIGHTDEPTHFILTERMODE : 2;
 	unsigned int m_nWORLD_NORMAL : 1;
 	unsigned int m_nPHONG_HALFLAMBERT : 2;
+	unsigned int m_nHSV : 1;
 #ifdef _DEBUG
 	bool m_bCUBEMAP : 1;
 	bool m_bSELFILLUM : 1;
@@ -42,6 +43,7 @@ class character_ps20b_Static_Index
 	bool m_bFLASHLIGHTDEPTHFILTERMODE : 1;
 	bool m_bWORLD_NORMAL : 1;
 	bool m_bPHONG_HALFLAMBERT : 1;
+	bool m_bHSV : 1;
 #endif	// _DEBUG
 public:
 	void SetCUBEMAP( int i )
@@ -125,6 +127,15 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetHSV( int i )
+	{
+		Assert( i >= 0 && i <= 0 );
+		m_nHSV = i;
+#ifdef _DEBUG
+		m_bHSV = true;
+#endif	// _DEBUG
+	}
+
 	character_ps20b_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
 		m_nCUBEMAP = 0;
@@ -136,6 +147,7 @@ public:
 		m_nFLASHLIGHTDEPTHFILTERMODE = 0;
 		m_nWORLD_NORMAL = 0;
 		m_nPHONG_HALFLAMBERT = 0;
+		m_nHSV = 0;
 #ifdef _DEBUG
 		m_bCUBEMAP = false;
 		m_bSELFILLUM = false;
@@ -146,20 +158,21 @@ public:
 		m_bFLASHLIGHTDEPTHFILTERMODE = false;
 		m_bWORLD_NORMAL = false;
 		m_bPHONG_HALFLAMBERT = false;
+		m_bHSV = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bCUBEMAP && m_bSELFILLUM && m_bSELFILLUMFRESNEL && m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE && m_bPHONGWARPTEXTURE && m_bFLASHLIGHTDEPTHFILTERMODE && m_bWORLD_NORMAL && m_bPHONG_HALFLAMBERT );
+		Assert( m_bCUBEMAP && m_bSELFILLUM && m_bSELFILLUMFRESNEL && m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE && m_bPHONGWARPTEXTURE && m_bFLASHLIGHTDEPTHFILTERMODE && m_bWORLD_NORMAL && m_bPHONG_HALFLAMBERT && m_bHSV );
 		AssertMsg( !( ( m_nSELFILLUM == 0 ) && ( m_nSELFILLUMFRESNEL == 1 ) ), "Invalid combo combination ( ( SELFILLUM == 0 ) && ( SELFILLUMFRESNEL == 1 ) )" );
 		AssertMsg( !( ( m_nFLASHLIGHT == 1 ) && ( m_nSELFILLUMFRESNEL == 1 ) ), "Invalid combo combination ( ( FLASHLIGHT == 1 ) && ( SELFILLUMFRESNEL == 1 ) )" );
 		AssertMsg( !( ( m_nFLASHLIGHT == 1 ) && ( m_nSELFILLUM == 1 ) ), "Invalid combo combination ( ( FLASHLIGHT == 1 ) && ( SELFILLUM == 1 ) )" );
-		return ( 44800 * m_nCUBEMAP ) + ( 89600 * m_nSELFILLUM ) + ( 179200 * m_nSELFILLUMFRESNEL ) + ( 358400 * m_nFLASHLIGHT ) + ( 716800 * m_nLIGHTWARPTEXTURE ) + ( 1433600 * m_nPHONGWARPTEXTURE ) + ( 2867200 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 8601600 * m_nWORLD_NORMAL ) + ( 8601600 * m_nPHONG_HALFLAMBERT ) + 0;
+		return ( 44800 * m_nCUBEMAP ) + ( 89600 * m_nSELFILLUM ) + ( 179200 * m_nSELFILLUMFRESNEL ) + ( 358400 * m_nFLASHLIGHT ) + ( 716800 * m_nLIGHTWARPTEXTURE ) + ( 1433600 * m_nPHONGWARPTEXTURE ) + ( 2867200 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 8601600 * m_nWORLD_NORMAL ) + ( 8601600 * m_nPHONG_HALFLAMBERT ) + ( 17203200 * m_nHSV ) + 0;
 	}
 };
 
-#define shaderStaticTest_character_ps20b psh_forgot_to_set_static_CUBEMAP + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_SELFILLUMFRESNEL + psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_LIGHTWARPTEXTURE + psh_forgot_to_set_static_PHONGWARPTEXTURE + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_WORLD_NORMAL + psh_forgot_to_set_static_PHONG_HALFLAMBERT
+#define shaderStaticTest_character_ps20b psh_forgot_to_set_static_CUBEMAP + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_SELFILLUMFRESNEL + psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_LIGHTWARPTEXTURE + psh_forgot_to_set_static_PHONGWARPTEXTURE + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_WORLD_NORMAL + psh_forgot_to_set_static_PHONG_HALFLAMBERT + psh_forgot_to_set_static_HSV
 
 
 class character_ps20b_Dynamic_Index

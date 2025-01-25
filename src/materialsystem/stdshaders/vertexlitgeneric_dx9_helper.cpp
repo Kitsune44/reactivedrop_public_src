@@ -263,6 +263,11 @@ void InitParamsVertexLitGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** para
 	{
 		InitIntParam( info.m_nBlendTintByBaseAlpha, params, 1 );
 	}
+
+	if ( info.m_nHSV != -1 && !params[info.m_nHSV]->IsDefined() )
+	{
+		params[info.m_nHSV]->SetVecValue( -1, -1, -1 );
+	}
 }
 
 
@@ -427,6 +432,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 	float fSinglePassFlashlight = bSinglePassFlashlight ? 1.0f : 0.0f;
 
 	bool hasDiffuseLighting = bVertexLitGeneric;
+	bool bHasHSV = g_pHardwareConfig->HasFastVertexTextures() && info.m_nHSV != -1 && params[info.m_nHSV]->GetVecValue()[0] >= 0.0f;
 
 	bool bShaderSrgbRead = ( IsX360() && IS_PARAM_DEFINED( info.m_nShaderSrgbRead360 ) && params[info.m_nShaderSrgbRead360]->GetIntValue() );
 
@@ -799,6 +805,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 						SET_STATIC_PIXEL_SHADER_COMBO( STATICLIGHT3, bStaticLight3Streams );
 						SET_STATIC_PIXEL_SHADER_COMBO( WORLD_NORMAL, 0 );
 						SET_STATIC_PIXEL_SHADER_COMBO( TINTMASKTEXTURE, bHasTintMaskTexture );
+						SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 						SET_STATIC_PIXEL_SHADER( vertexlit_and_unlit_generic_bump_ps20b );
 					}
 					else // ps_2_0
@@ -852,6 +859,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_PIXEL_SHADER_COMBO( STATICLIGHT3, bStaticLight3Streams );
 					SET_STATIC_PIXEL_SHADER_COMBO( WORLD_NORMAL, nLightingPreviewMode == 3 );
 					SET_STATIC_PIXEL_SHADER_COMBO( TINTMASKTEXTURE, bHasTintMaskTexture );
+					SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 					SET_STATIC_PIXEL_SHADER( vertexlit_and_unlit_generic_bump_ps30 );
 				}
 #endif
@@ -918,6 +926,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 						SET_STATIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nLightingPreviewMode );
 						SET_STATIC_PIXEL_SHADER_COMBO( FOW, bHasFoW );
 						SET_STATIC_PIXEL_SHADER_COMBO( TINTMASKTEXTURE, bHasTintMaskTexture );
+						SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 						SET_STATIC_PIXEL_SHADER( vertexlit_and_unlit_generic_ps20b );
 					}
 					else // ps_2_0
@@ -995,6 +1004,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					SET_STATIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nLightingPreviewMode );
 					SET_STATIC_PIXEL_SHADER_COMBO( FOW, bHasFoW );
 					SET_STATIC_PIXEL_SHADER_COMBO( TINTMASKTEXTURE, bHasTintMaskTexture );
+					SET_STATIC_PIXEL_SHADER_COMBO( HSV, bHasHSV );
 					SET_STATIC_PIXEL_SHADER( vertexlit_and_unlit_generic_ps30 );
 				}
 #endif
@@ -1403,6 +1413,11 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			else
 			{
 				pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant_W( 4, info.m_nSelfIllumTint, fBlendFactor );
+			}
+
+			if ( bHasHSV )
+			{
+				pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant( 46, params[info.m_nHSV]->GetVecValue(), 1 );
 			}
 			pContextData->m_SemiStaticCmdsOut.End();
 		}

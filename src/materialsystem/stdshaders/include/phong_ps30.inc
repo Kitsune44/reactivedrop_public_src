@@ -35,6 +35,7 @@ class phong_ps30_Static_Index
 	unsigned int m_nSHADER_SRGB_READ : 1;
 	unsigned int m_nWORLD_NORMAL : 2;
 	unsigned int m_nPHONG_HALFLAMBERT : 2;
+	unsigned int m_nHSV : 2;
 #ifdef _DEBUG
 	bool m_bCUBEMAP : 1;
 	bool m_bSELFILLUM : 1;
@@ -50,6 +51,7 @@ class phong_ps30_Static_Index
 	bool m_bSHADER_SRGB_READ : 1;
 	bool m_bWORLD_NORMAL : 1;
 	bool m_bPHONG_HALFLAMBERT : 1;
+	bool m_bHSV : 1;
 #endif	// _DEBUG
 public:
 	void SetCUBEMAP( int i )
@@ -178,6 +180,15 @@ public:
 #endif	// _DEBUG
 	}
 
+	void SetHSV( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nHSV = i;
+#ifdef _DEBUG
+		m_bHSV = true;
+#endif	// _DEBUG
+	}
+
 	phong_ps30_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
 		m_nCUBEMAP = 0;
@@ -194,6 +205,7 @@ public:
 		m_nSHADER_SRGB_READ = 0;
 		m_nWORLD_NORMAL = 0;
 		m_nPHONG_HALFLAMBERT = 0;
+		m_nHSV = 0;
 #ifdef _DEBUG
 		m_bCUBEMAP = false;
 		m_bSELFILLUM = false;
@@ -209,21 +221,22 @@ public:
 		m_bSHADER_SRGB_READ = false;
 		m_bWORLD_NORMAL = false;
 		m_bPHONG_HALFLAMBERT = false;
+		m_bHSV = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bCUBEMAP && m_bSELFILLUM && m_bSELFILLUMFRESNEL && m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE && m_bPHONGWARPTEXTURE && m_bWRINKLEMAP && m_bDETAIL_BLEND_MODE && m_bDETAILTEXTURE && m_bRIMLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bSHADER_SRGB_READ && m_bWORLD_NORMAL && m_bPHONG_HALFLAMBERT );
+		Assert( m_bCUBEMAP && m_bSELFILLUM && m_bSELFILLUMFRESNEL && m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE && m_bPHONGWARPTEXTURE && m_bWRINKLEMAP && m_bDETAIL_BLEND_MODE && m_bDETAILTEXTURE && m_bRIMLIGHT && m_bFLASHLIGHTDEPTHFILTERMODE && m_bSHADER_SRGB_READ && m_bWORLD_NORMAL && m_bPHONG_HALFLAMBERT && m_bHSV );
 		AssertMsg( !( !m_nDETAILTEXTURE && ( m_nDETAIL_BLEND_MODE != 0 ) ), "Invalid combo combination ( !DETAILTEXTURE && ( DETAIL_BLEND_MODE != 0 ) )" );
 		AssertMsg( !( ( m_nSELFILLUM == 0 ) && ( m_nSELFILLUMFRESNEL == 1 ) ), "Invalid combo combination ( ( SELFILLUM == 0 ) && ( SELFILLUMFRESNEL == 1 ) )" );
 		AssertMsg( !( ( m_nFLASHLIGHT == 1 ) && ( m_nSELFILLUMFRESNEL == 1 ) ), "Invalid combo combination ( ( FLASHLIGHT == 1 ) && ( SELFILLUMFRESNEL == 1 ) )" );
 		AssertMsg( !( ( m_nFLASHLIGHT == 1 ) && ( m_nSELFILLUM == 1 ) ), "Invalid combo combination ( ( FLASHLIGHT == 1 ) && ( SELFILLUM == 1 ) )" );
-		return ( 160 * m_nCUBEMAP ) + ( 320 * m_nSELFILLUM ) + ( 640 * m_nSELFILLUMFRESNEL ) + ( 1280 * m_nFLASHLIGHT ) + ( 2560 * m_nLIGHTWARPTEXTURE ) + ( 5120 * m_nPHONGWARPTEXTURE ) + ( 10240 * m_nWRINKLEMAP ) + ( 20480 * m_nDETAIL_BLEND_MODE ) + ( 143360 * m_nDETAILTEXTURE ) + ( 286720 * m_nRIMLIGHT ) + ( 573440 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 1720320 * m_nSHADER_SRGB_READ ) + ( 1720320 * m_nWORLD_NORMAL ) + ( 3440640 * m_nPHONG_HALFLAMBERT ) + 0;
+		return ( 160 * m_nCUBEMAP ) + ( 320 * m_nSELFILLUM ) + ( 640 * m_nSELFILLUMFRESNEL ) + ( 1280 * m_nFLASHLIGHT ) + ( 2560 * m_nLIGHTWARPTEXTURE ) + ( 5120 * m_nPHONGWARPTEXTURE ) + ( 10240 * m_nWRINKLEMAP ) + ( 20480 * m_nDETAIL_BLEND_MODE ) + ( 143360 * m_nDETAILTEXTURE ) + ( 286720 * m_nRIMLIGHT ) + ( 573440 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 1720320 * m_nSHADER_SRGB_READ ) + ( 1720320 * m_nWORLD_NORMAL ) + ( 3440640 * m_nPHONG_HALFLAMBERT ) + ( 6881280 * m_nHSV ) + 0;
 	}
 };
 
-#define shaderStaticTest_phong_ps30 psh_forgot_to_set_static_CUBEMAP + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_SELFILLUMFRESNEL + psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_LIGHTWARPTEXTURE + psh_forgot_to_set_static_PHONGWARPTEXTURE + psh_forgot_to_set_static_WRINKLEMAP + psh_forgot_to_set_static_DETAIL_BLEND_MODE + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_RIMLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_SHADER_SRGB_READ + psh_forgot_to_set_static_WORLD_NORMAL + psh_forgot_to_set_static_PHONG_HALFLAMBERT
+#define shaderStaticTest_phong_ps30 psh_forgot_to_set_static_CUBEMAP + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_SELFILLUMFRESNEL + psh_forgot_to_set_static_FLASHLIGHT + psh_forgot_to_set_static_LIGHTWARPTEXTURE + psh_forgot_to_set_static_PHONGWARPTEXTURE + psh_forgot_to_set_static_WRINKLEMAP + psh_forgot_to_set_static_DETAIL_BLEND_MODE + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_RIMLIGHT + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_SHADER_SRGB_READ + psh_forgot_to_set_static_WORLD_NORMAL + psh_forgot_to_set_static_PHONG_HALFLAMBERT + psh_forgot_to_set_static_HSV
 
 
 class phong_ps30_Dynamic_Index

@@ -23,6 +23,8 @@
 // STATIC: "WORLD_NORMAL"				"0..0"						[XBOX]
 // STATIC: "TINTMASKTEXTURE"			"0..1"						[ps30]
 // STATIC: "TINTMASKTEXTURE"			"0..0"						[ps20] [ps20b]
+// STATIC: "HSV"						"0..1"						[ps30]
+// STATIC: "HSV"						"0..0"						[ps20] [ps20b]
 
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"	"0..1"
 // DYNAMIC: "NUM_LIGHTS"				"0..2"						[ps20]
@@ -118,6 +120,10 @@ const float3 g_vSmoothOneOverWidth			: register( PSREG_UBERLIGHT_SMOOTH_EDGE_OOW
 const float4 g_vShearRound					: register( PSREG_UBERLIGHT_SHEAR_ROUND );
 const float4 g_aAbB							: register( PSREG_UBERLIGHT_AABB );
 const float4x4 g_FlashlightWorldToLight		: register( PSREG_UBERLIGHT_WORLD_TO_LIGHT );
+#endif
+
+#if HSV
+const float3 g_HsvParams					: register( c46 );
 #endif
 
 sampler BaseTextureSampler					: register( s0 );
@@ -304,6 +310,17 @@ float4 main( PS_INPUT i ) : COLOR
 		// Optionally use basealpha to blend in the diffuse modulation (saturated add of g_fInverseBlendTintByBaseAlpha turns this on/off)
 		diffuseLighting *= lerp( float3( 1.0f, 1.0f, 1.0f ), g_DiffuseModulation.rgb, saturate( baseColor.a + g_fInverseBlendTintByBaseAlpha ) );
 	#endif
+
+#if HSV
+	float3 albedoHSV = rgb2hsv(albedo.rgb);
+	albedoHSV.x = fmod(albedoHSV.x + g_HsvParams.x, 1.0);
+	albedoHSV.yz = clamp(albedoHSV.yz * g_HsvParams.yz, 0.0, 1.0);
+#if TINTMASKTEXTURE
+	albedo.xyz = lerp(albedo.xyz, hsv2rgb(albedoHSV), saturate(tintMask.g + g_fInverseBlendTintByBaseAlpha));
+#else
+	albedo.xyz = lerp(albedo.xyz, hsv2rgb(albedoHSV), saturate(baseColor.a + g_fInverseBlendTintByBaseAlpha));
+#endif
+#endif
 
 	alpha *= g_DiffuseModulation.a;
 
