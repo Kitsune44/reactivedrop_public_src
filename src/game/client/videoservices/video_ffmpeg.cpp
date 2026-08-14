@@ -422,13 +422,13 @@ void VideoFFmpegPlayer::PrintInfo( std::string &filePath ) noexcept {
     ConColorMsg( Color( 77, 166, 255, 150 ), "  Source:\n" );
     ConColorMsg( Color( 153, 204, 255, 255 ), "    File: %s\n", filePath.c_str() );
     ConColorMsg( Color( 153, 204, 255, 150 ), "    Resolution:      %d x %d px\n", m_videoStream->codecpar->width, m_videoStream->codecpar->height );
-    ConColorMsg( Color( 153, 204, 255, 255 ), "    Frame rate:      %.2f fps\n", ( fps.den != 0 ) ? static_cast< double >( fps.num ) / fps.den : 0.0 );
+    ConColorMsg( Color( 153, 204, 255, 255 ), "    Frame Rate:      %.2f fps\n", ( fps.den != 0 ) ? static_cast< double >( fps.num ) / fps.den : 0.0 );
     ConColorMsg( Color( 153, 204, 255, 150 ), "    Duration:        %.2f s\n", dur );
     if ( desc != nullptr ) {
-        ConColorMsg( Color( 153, 204, 255, 255 ), "    Codec:           %s (%s)\n", desc->name, desc->long_name );
+        ConColorMsg( Color( 153, 204, 255, 255 ), "    Encoder Name:     %s (%s)\n", desc->name, desc->long_name );
     }
     else {
-        ConColorMsg( Color( 153, 204, 255, 255 ), "    Codec:           unknown\n" );
+        ConColorMsg( Color( 153, 204, 255, 255 ), "    Encoder Name:     unknown\n" );
     }
     ConColorMsg( Color( 153, 204, 255, 150 ), "    Pixel Format:    %s\n", pixFmt ? pixFmt : "unknown" );
 
@@ -441,14 +441,14 @@ void VideoFFmpegPlayer::PrintInfo( std::string &filePath ) noexcept {
 
     ConColorMsg( Color( 77, 166, 255, 150 ), "  Decoder:\n" );
     if ( decoder != nullptr ) {
-        ConColorMsg( Color( 153, 204, 255, 255 ), "    Decoder:         %s (%s)\n", decoder->name ? decoder->name : "unknown", decoder->long_name ? decoder->long_name : "unknown" );
+        ConColorMsg( Color( 153, 204, 255, 255 ), "    Decoder Name:     %s (%s)\n", decoder->name ? decoder->name : "unknown", decoder->long_name ? decoder->long_name : "unknown" );
     }
     else {
-        ConColorMsg( Color( 153, 204, 255, 255 ), "    Decoder:         unknown\n" );
+        ConColorMsg( Color( 153, 204, 255, 255 ), "    Decoder Name:     unknown\n" );
     }
     ConColorMsg( Color( 153, 204, 255, 150 ), "    Pixel Format:    %s\n", pixFmt ? pixFmt : "unknown" );
-    ConColorMsg( Color( 153, 204, 255, 255 ), "    Color range:     %s\n", range_str ? range_str : "unknown" );
-    ConColorMsg( Color( 153, 204, 255, 150 ), "    Color space:     %s\n", space_str ? space_str : "unknown" );
+    ConColorMsg( Color( 153, 204, 255, 255 ), "    Color Range:     %s\n", range_str ? range_str : "unknown" );
+    ConColorMsg( Color( 153, 204, 255, 150 ), "    Color Space:     %s\n", space_str ? space_str : "unknown" );
     ConColorMsg( Color( 153, 204, 255, 255 ), "    Color Primaries: %s\n", primaries_str ? primaries_str : "unknown" );
     ConColorMsg( Color( 153, 204, 255, 150 ), "    Color Transfer:  %s\n", transfer_str ? transfer_str : "unknown" );
 }
