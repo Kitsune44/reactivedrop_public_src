@@ -4,10 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 18.5.11801.241
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client (Swarm)", "game\client\swarm_sdk_client.vcxproj", "{A26C0361-6B09-9E3D-5194-C9CB89243710}"
-	ProjectSection(ProjectDependencies) = postProject
-		{38AA6D4C-4ACE-4518-BC6C-BC42482C0E65} = {38AA6D4C-4ACE-4518-BC6C-BC42482C0E65}
-		{EE8FAD9C-DFAF-414B-A11D-7697E1A28A27} = {EE8FAD9C-DFAF-414B-A11D-7697E1A28A27}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server (Swarm)", "game\server\swarm_sdk_server.vcxproj", "{EE8FAD9C-DFAF-414B-A11D-7697E1A28A27}"
 EndProject

@@ -40,6 +40,7 @@ reactivedrop/screenshots
 reactivedrop/stats.txt
 reactivedrop/tilegen_log.txt
 reactivedrop/voice_ban.dt
+src/dx9sdk/lib/
 src/game/client/Debug_swarm/
 src/game/client/Release_swarm/
 src/game/missionchooser/Debug/
