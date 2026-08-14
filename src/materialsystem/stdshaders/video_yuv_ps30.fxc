@@ -74,7 +74,7 @@
     //#define MAX_UV  240.0f
     //static const float SCALE = 255.0f / MAX_VAL;
 
-    static const float SCALE =  1.0f;                               ///< (255.0f / MAX_VAL)
+    #define SCALE               1.0f                               ///< (255.0f / MAX_VAL)
     #define YUV_OFFSET          0.06274509803921568627450980392157f ///< (MIN_YUV / MAX_VAL)
     #define Y_SCALE             1.1643835616438356164383561643836f  ///< 1.0f / ((MAX_Y - MIN_YUV) / MAX_VAL)
     #define UV_SCALE            1.1383928571428571428571428571429f  ///< 1.0f / ((MAX_UV - MIN_YUV) / MAX_VAL)
@@ -86,7 +86,7 @@
     //#define MAX_UV  960.0f
     //static const float SCALE = 255.0f / MAX_VAL;
 
-    static const float SCALE =  0.24926686217008797653958944281525f;///< (255.0f / MAX_VAL)
+    #define SCALE               0.24926686217008797653958944281525f ///< (255.0f / MAX_VAL)
     #define YUV_OFFSET          0.06256109481915933528836754643206f ///< (MIN_YUV / MAX_VAL)
     #define Y_SCALE             1.1678082191780821917808219178082f  ///< 1.0f / ((MAX_Y - MIN_YUV) / MAX_VAL)
     #define UV_SCALE            1.1417410714285714285714285714286f  ///< 1.0f / ((MAX_UV - MIN_YUV) / MAX_VAL)
@@ -98,7 +98,7 @@
     //#define MAX_UV  3840.0f
     //static const float SCALE = 255.0f / MAX_VAL;
 
-    static const float SCALE =  0.06227106227106227106227106227106f;///< (255.0f / MAX_VAL)
+    #define SCALE               0.06227106227106227106227106227106f ///< (255.0f / MAX_VAL)
     #define YUV_OFFSET          0.06251526251526251526251526251526f ///< (MIN_YUV / MAX_VAL)
     #define Y_SCALE             1.1686643835616438356164383561644f  ///< 1.0f / ((MAX_Y - MIN_YUV) / MAX_VAL)
     #define UV_SCALE            1.142578125f                        ///< 1.0f / ((MAX_UV - MIN_YUV) / MAX_VAL)
@@ -190,10 +190,16 @@ static const float3x3 MATRIX_RGB_BT709 = float3x3(
 //------------------------------------------------------------------------------------------
 
 sampler samplerY : register( s0 );
+#if SRC_BIT_DEPTH == SRC_BIT_DEPTH_8
 sampler samplerU : register( s1 );
 sampler samplerV : register( s2 );
-
-float4 texSizeY : register(c0);
+#else
+sampler samplerYhi : register( s1 );
+sampler samplerU : register( s2 );
+sampler samplerUhi : register( s3 );
+sampler samplerV : register( s4 );
+sampler samplerVhi : register( s5 );
+#endif
 
 
 struct PS_INPUT
@@ -205,34 +211,11 @@ struct PS_INPUT
 //------------------------------------------------------------------------------------------
 // Sampling YUV textures
 //------------------------------------------------------------------------------------------
-
-
-/* 
- * @brief In the case of bit depth larger than 8 bits,
- * we saved uint16_t words in two 8-bit UV88 texture channels,
- * so we need to reconstruct them.
- *
- * @param rg - from sampler with UV88: float2 in [ -1, 1 ] range where uint8_t are mapped: [ 0, 127 ] => [ 0, 1 ] and [ 128, 255 ] => [ -1, 0 ]
- *
- * @return float in [ 0, 1 ] range ( [ 0, MAX_VAL ] => [ 0, 1 ]) )
- */
-
-//#if SRC_BIT_DEPTH != SRC_BIT_DEPTH_8
-//inline float unpackUV88( float2 uv88 )
-//{
-//    uv88 *= 0.5f;
-//    uv88 += step( uv88, float2( -1e-6f, -1e-6f ) );
-
-//    return ( 256 * uv88.g + uv88.r ) * SCALE;
-//}
-//#endif
-#if SRC_BIT_DEPTH != SRC_BIT_DEPTH_8
-inline float unpackUV88(float2 uv88)
-{
-    uv88 = mad(uv88, 0.5f, step(uv88, float2(-1e-6f, -1e-6f)));
-    return mad(256.0f, uv88.g, uv88.r) * SCALE;
-}
-#endif
+// 8-bit:     three I8 planes, unsigned [0,1], hardware bilinear.
+// 10/12-bit: Y split into two I8 planes (lo = even bytes, hi = odd bytes of uint16 LE),
+//            U+V interleaved in RGBA8888 (R=Ulo,G=Uhi,B=Vlo,A=Vhi). All channels are
+//            unsigned 8-bit, so the hardware bilinear interpolates them linearly and the
+//            reconstruction (lo + 256*hi) commutes with filtering. Raw -> SCALE -> [0,1].
 
 inline float3 getSampleYUV( float2 uv )
 {
@@ -243,11 +226,19 @@ inline float3 getSampleYUV( float2 uv )
         tex2D( samplerV, uv ).r
     );
 #else
+    // Six I8 planes (all .r channels, identical to the working 8-bit path):
+    // Y = lo + 256*hi, U = Ulo + 256*Uhi, V = Vlo + 256*Vhi, then /255 * SCALE = raw/1023
+    float yLo = tex2D( samplerY,   uv ).r;
+    float yHi = tex2D( samplerYhi, uv ).r;
+    float uLo = tex2D( samplerU,   uv ).r;
+    float uHi = tex2D( samplerUhi, uv ).r;
+    float vLo = tex2D( samplerV,   uv ).r;
+    float vHi = tex2D( samplerVhi, uv ).r;
     float3 yuv = float3(
-        unpackUV88( tex2D( samplerY, uv ).rg ),
-        unpackUV88( tex2D( samplerU, uv ).rg ),
-        unpackUV88( tex2D( samplerV, uv ).rg )
-    );
+        mad( 256.0f, yHi, yLo ),
+        mad( 256.0f, uHi, uLo ),
+        mad( 256.0f, vHi, vLo )
+    ) * SCALE;
 #endif
 
 //#if AVCOL_RANGE != AVCOL_RANGE_JPEG
@@ -263,84 +254,6 @@ inline float3 getSampleYUV( float2 uv )
     return yuv;
 }
 
-
-//// Catmull-Rom cubic weights
-//inline float4 cubicWeights(float t)
-//{
-//    float tt = t * t;
-//    float ttt = tt * t;
-//    return float4(
-//        -0.5 * ttt + tt - 0.5 * t,
-//         1.5 * ttt - 2.5 * tt + 1.0,
-//        -1.5 * ttt + 2.0 * tt + 0.5 * t,
-//         0.5 * ttt - 0.5 * tt
-//    );
-//}
-// Catmull-Rom cubic weights
-inline float4 cubicWeights(float t)
-{
-    float t2 = t * t;
-    float t3 = t2 * t;
-    return float4(
-        mad(-0.5f, t3, mad(1.0f, t2, -0.5f * t)),
-        mad(1.5f, t3, mad(-2.5f, t2, 1.0f)),
-        mad(-1.5f, t3, mad(2.0f, t2, 0.5f * t)),
-        mad(0.5f, t3, -0.5f * t2)
-    );
-}
-
-//// Bicubic sampling
-//inline float3 getSampleYUV_Bicubic(float2 uv)
-//{
-//    float2 f = frac(uv * texSizeY.zw);
-//    float4 wx = cubicWeights(f.x);
-//    float4 wy = cubicWeights(f.y);
-
-//    float3 result = float3(0, 0, 0);
-
-//    [unroll]
-//    for (int j = -1; j <= 2; ++j)
-//    {
-//        float wyj = wy[j + 1];
-//        [unroll]
-//        for (int i = -1; i <= 2; ++i)
-//        {
-//            float sampleWeight = wx[i + 1] * wyj;
-//            float2 sampleUV = uv + float2(i, j) * texSizeY.xy;
-//            result += getSampleYUV(sampleUV) * sampleWeight;
-//        }
-//    }
-
-//    return result;
-//}
-
-// Bicubic sampling
-inline float3 getSampleYUV_Bicubic(float2 uv)
-{
-    // frac in texel space
-    float2 f = frac(uv * texSizeY.zw);
-    float4 wx = cubicWeights(f.x);
-    float4 wy = cubicWeights(f.y);
-
-    float3 result = float3(0, 0, 0);
-    float2 texelSize = texSizeY.xy;
-    
-    [unroll]
-    for (int j = -1; j <= 2; j++)
-    {
-        float wyj = wy[j + 1];
-        float2 coord = mad(float2(0, j), texelSize, uv);
-
-        [unroll]
-        for (int i = -1; i <= 2; i++)
-        {
-            float2 sampleUV = mad(float2(i, 0), texelSize, coord);
-            result = mad(wx[i + 1] * wyj, getSampleYUV(sampleUV), result);
-        }
-    }
-
-    return result;
-}
 
 //------------------------------------------------------------------------------------------
 // Converting RGB to Linear RGB
@@ -466,14 +379,9 @@ inline float3 toneMapping(float3 rgb)
 
 float4 main( PS_INPUT input ) : SV_TARGET
 {
-    
-#if SRC_BIT_DEPTH == SRC_BIT_DEPTH_8 
-    float3 data = getSampleYUV(input.uv);
-#else
-    float3 data = getSampleYUV_Bicubic(input.uv);
-#endif
-    
-    data = mul(MATRIX_YUV_RGB, data);
+    float3 data = getSampleYUV( input.uv );
+
+    data = mul( MATRIX_YUV_RGB, data );
     data = max( data, 0.0f );
  
 #if AVCOL_SPC != AVCOL_SPC_BT709
