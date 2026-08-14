@@ -11,76 +11,47 @@
 #include <cstdint>
 #include <cstddef>
 
+// --------------------------------------------------------------------------------------------
+// SIMD backend: function-pointer jump table, selected ONCE via GetSIMD() (runtime CPUID dispatch).
+// Add new operations (converters, interleavers, ...) as function pointers in SIMDBackend and
+// wire them in GetSIMD() - the hot-path namespace wrappers stay zero-overhead.
+// --------------------------------------------------------------------------------------------
 
-#ifndef VMSM_INLINE
-#   if defined(_MSC_VER)
-#       define VMSM_INLINE __forceinline
-#   elif defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER)
-#       define VMSM_INLINE inline __attribute__((always_inline))
-#   else
-#       define VMSM_INLINE inline
-#   endif
-#endif
+struct SIMDBackend final
+{
+    using MemcpyFn = void( * )( uint8_t *, uint8_t *, size_t );
+    MemcpyFn memcpy = nullptr;
 
-#ifndef VMSM_RESTRICT
-#   if defined(_MSC_VER) || defined(__INTEL_COMPILER)
-#       define VMSM_RESTRICT __restrict
-#   elif defined(__GNUC__) || defined(__clang__)
-#       define VMSM_RESTRICT __restrict__
-#   else
-#       define VMSM_RESTRICT /* no restrict */
-#   endif
-#endif
+    // Future operations, e.g. uint16 -> float16 converters:
+    // using ConvFn  = void( * )( uint8_t *, uint8_t *, size_t );
+    // using Conv2Fn = void( * )( uint8_t *, uint8_t *, uint8_t *, size_t );
+    // ConvFn  conv_r  = nullptr;
+    // Conv2Fn conv_rg = nullptr;
+};
 
+// Runtime-initialized backend: CPUID executed exactly once (lazy, thread-safe).
+SIMDBackend &GetSIMD() noexcept;
 
-struct VideoMaterialSIMD final {
-
-    // --------------------------------------------------------------------------------------------
-    // Public API
-    // --------------------------------------------------------------------------------------------
-
-    static VideoMaterialSIMD &GetInstance() noexcept;
-
+namespace VideoMaterialSIMD
+{
     /**
-     * @brief Optimized memory copy; AVF to VTF
+     * @brief Optimized memory copy; AVF to VTF.
+     * Hot path: single function-pointer call through the backend. No per-call CPUID.
      * @param dst - destination buffer: Valve Source Engine: IVTFTexture I8/UV88, uint8_t, 16-byte aligned
      * @param src - source buffer: AVFrame uint8_t/uint16_t, 32/64-byte aligned
      * @param bts - Number of bytes to copy
      */
-    VMSM_INLINE void Memcpy( uint8_t *VMSM_RESTRICT dst, uint8_t *VMSM_RESTRICT src, size_t bts ) const noexcept {
-        m_memcpy_fn( dst, src, bts );
+    inline void Memcpy( uint8_t *dst, uint8_t *src, size_t bts ) noexcept
+    {
+        GetSIMD().memcpy( dst, src, bts );
     }
 
     // --------------------------------------------------------------------------------------------
-    // CPU feature queries
+    // CPU feature queries (cold path, used by GetSIMD())
     // --------------------------------------------------------------------------------------------
 
-    static bool CPUHasAVX512() noexcept;
-    static bool CPUHasAVX2() noexcept;
-    static bool CPUHasAVX() noexcept;
-    static bool CPUHasSSE41() noexcept;
-
-private:
-    VideoMaterialSIMD() noexcept;
-
-    void RuntimeDispatch() noexcept;
-
-    // --------------------------------------------------------------------------------------------
-    // Internal function pointers (types and jump table)
-    // --------------------------------------------------------------------------------------------
-
-    // Function pointer types
-    using MemcpyFn = void( * )( uint8_t *VMSM_RESTRICT, uint8_t *VMSM_RESTRICT, size_t );
-
-    // Function pointers (jump table)
-    MemcpyFn m_memcpy_fn = nullptr;
-
-    // --------------------------------------------------------------------------------------------
-    // Memcpy implementations
-    // --------------------------------------------------------------------------------------------
-
-    // AVX2
-    static VMSM_INLINE void memcpy_avx2( uint8_t *VMSM_RESTRICT dst, uint8_t *VMSM_RESTRICT src, size_t bts ) noexcept;
-    // SSE2
-    static VMSM_INLINE void memcpy_sse2( uint8_t *VMSM_RESTRICT dst, uint8_t *VMSM_RESTRICT src, size_t bts ) noexcept;
-};
+    bool CPUHasAVX512() noexcept;
+    bool CPUHasAVX2() noexcept;
+    bool CPUHasAVX() noexcept;
+    bool CPUHasSSE41() noexcept;
+}

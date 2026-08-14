@@ -34,7 +34,7 @@ public:
 
     void RegenerateTextureBits( ITexture *, IVTFTexture *dst, Rect_t * ) noexcept override {
 
-        VideoMaterialSIMD::GetInstance().Memcpy( dst->ImageData(), *m_src, dst->FaceSizeInBytes( 0 ) );
+        VideoMaterialSIMD::Memcpy( dst->ImageData(), *m_src, dst->FaceSizeInBytes( 0 ) );
         //memcpy( dst->ImageData(), *m_src, dst->FaceSizeInBytes(0) );
     }
 
