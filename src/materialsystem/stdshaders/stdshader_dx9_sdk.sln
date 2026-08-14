@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.7.33808.371
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11822.322 stable
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stdshader_dx9", "stdshader_dx9_sdk.vcxproj", "{C8D2DC83-E117-7576-7B43-10C844264C51}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game_shader_dx9", "stdshader_dx9_sdk.vcxproj", "{C8D2DC83-E117-7576-7B43-10C844264C51}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8} = {1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shaderlib", "..\shaderlib\shaderlib_sdk.vcxproj", "{1A1149D9-CB1B-BF85-19CA-C9C2996BFDE8}"
 EndProject

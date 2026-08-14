@@ -11,7 +11,6 @@
 #include "filesystem.h"
 #include "rd_workshop.h"
 #include "asw_util_shared.h"
-#include "video_services.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -52,7 +51,7 @@ void CASW_Background_Movie::SetCurrentMovie( const char *szFilename )
 	// Safety check as we're possibly going to overwrite a file here!
 	char szBaseName[ MAX_PATH ];
 	V_FileBase( szFilename, szBaseName, sizeof( szBaseName ) );
-	const char *szAllowedExtensions[] = { "bik", "webm", nullptr };
+	const char *szAllowedExtensions[] = { "bik", "webm", "mp4", "mov", nullptr};
 
 	bool bValidExtension = false;
 	const char *szExt = V_GetFileExtension( szFilename );
@@ -78,13 +77,16 @@ void CASW_Background_Movie::SetCurrentMovie( const char *szFilename )
 		char szExpectedPrefix[] = "media/";
 		if ( !Q_strnicmp( szFilename, szExpectedPrefix, sizeof( szExpectedPrefix ) - 1 ) )
 		{
-			bValidPath = true;
+			if ( g_pFullFileSystem->FileExists( szFilename, "GAME" ) )
+			{
+				bValidPath = true;
+			}
 		}
 	}
 
 	if ( !bValidExtension || !bValidPath )
 	{
-		Warning( "Invalid video path: %s (must be in media/ folder with .bik or .webm extension)\n", szFilename );
+		Warning( "Invalid video path: %s\n", szFilename );
 
 		const char *szDefaultFiles[] = {
 			"media/BGFX_03.webm",
@@ -105,45 +107,31 @@ void CASW_Background_Movie::SetCurrentMovie( const char *szFilename )
 	szFilename = g_ReactiveDropWorkshop.GetNativeFileSystemFile( szFilename );
 	if ( Q_strcmp( m_szCurrentMovie, szFilename ) )
 	{
-		if ( m_nMaterialType != MATERIAL_INVALID )
-		{
-			switch ( m_nMaterialType )
-			{
-			case MATERIAL_WEBM:
-				g_pWEBM->DestroyVideoMaterial( m_pWEBMMaterial );
-				break;
-			case MATERIAL_BIK:
-				g_pBIK->DestroyMaterial( m_nBIKMaterial );
-				break;
-			}
-			m_nMaterialType = MATERIAL_INVALID;
-			m_nTextureID = -1;
-		}
+		ClearCurrentMovie();
 
 		const char *ext = Q_GetFileExtension( szFilename );
-		if ( ext && !Q_stricmp( ext, "webm" ) )
-		{
-			char szMaterialName[ MAX_PATH ];
-			Q_snprintf( szMaterialName, sizeof( szMaterialName ), "BackgroundWebMMaterial%i", g_pWEBM->GetUniqueMaterialID() );
-
-			m_pWEBMMaterial = g_pWEBM->CreateVideoMaterial(
-				szMaterialName, szFilename, "GAME",
-				VideoPlaybackFlags::LOOP_VIDEO | VideoPlaybackFlags::DEFAULT_MATERIAL_OPTIONS,
-				VideoSystem::WEBM );
-
-			if ( m_pWEBMMaterial )
-			{
-				m_nMaterialType = MATERIAL_WEBM;
-				m_pWEBMMaterial->StartVideo();
-			}
-		}
-		else
+		if ( ext && !Q_stricmp( ext, "bik" ) )
 		{
 			char szMaterialName[ MAX_PATH ];
 			Q_snprintf( szMaterialName, sizeof( szMaterialName ), "BackgroundBIKMaterial%i", g_pBIK->GetGlobalMaterialAllocationNumber() );
 
 			m_nBIKMaterial = bik->CreateMaterial( szMaterialName, szFilename, "GAME", BIK_LOOP );
 			m_nMaterialType = MATERIAL_BIK;
+
+		}
+		else
+		{
+			char szFilePath[ MAX_PATH ];
+			g_pFullFileSystem->RelativePathToFullPath( szFilename, "GAME", szFilePath, sizeof( szFilePath ) );
+			if ( m_videoFFmpegPlayer.Init( szFilePath ) )
+			{
+				m_videoFFmpegPlayer.Play();
+				m_nMaterialType = MATERIAL_FFMPEG;
+			}
+			else{
+				Warning( "Failed to create video material for:\n  %s\n  %s\n", szFilePath, m_videoFFmpegPlayer.GetError() );
+				m_videoFFmpegPlayer.Reset();
+			}
 		}
 
 		Q_snprintf( m_szCurrentMovie, sizeof( m_szCurrentMovie ), "%s", szFilename );
@@ -158,8 +146,8 @@ void CASW_Background_Movie::ClearCurrentMovie()
 	{
 		switch ( m_nMaterialType )
 		{
-		case MATERIAL_WEBM:
-			g_pWEBM->DestroyVideoMaterial( m_pWEBMMaterial );
+		case MATERIAL_FFMPEG:
+			m_videoFFmpegPlayer.Reset();
 			break;
 		case MATERIAL_BIK:
 			g_pBIK->DestroyMaterial( m_nBIKMaterial );
@@ -182,9 +170,9 @@ int CASW_Background_Movie::SetTextureMaterial()
 
 	switch ( m_nMaterialType )
 	{
-	case MATERIAL_WEBM:
+	case MATERIAL_FFMPEG:
 	{
-		g_pMatSystemSurface->DrawSetTextureMaterial( m_nTextureID, m_pWEBMMaterial->GetMaterial() );
+		g_pMatSystemSurface->DrawSetTextureMaterial( m_nTextureID, m_videoFFmpegPlayer.GetMaterial() );
 		break;
 	}
 	case MATERIAL_BIK:
@@ -196,7 +184,7 @@ int CASW_Background_Movie::SetTextureMaterial()
 }
 
 void CASW_Background_Movie::Update( bool bForce )
-{
+{	
 	if ( engine->IsConnected() && ASWGameRules() )
 	{
 		int nGameState = ASWGameRules()->GetGameState();
@@ -253,22 +241,22 @@ void CASW_Background_Movie::Update( bool bForce )
 
 	switch ( m_nMaterialType )
 	{
-	case MATERIAL_WEBM:
+	case MATERIAL_FFMPEG:
 		if ( !s_bLastReduceMotion && rd_reduce_motion.GetBool() )
 		{
 			s_bLastReduceMotion = true;
-			m_pWEBMMaterial->SetPaused( true );
+			m_videoFFmpegPlayer.Pause();
 		}
 		else if ( s_bLastReduceMotion && !rd_reduce_motion.GetBool() )
 		{
 			s_bLastReduceMotion = false;
-			m_pWEBMMaterial->SetPaused( false );
+			m_videoFFmpegPlayer.Play();
 		}
-
-		if ( !m_pWEBMMaterial->Update() )
+		if ( !m_videoFFmpegPlayer.Update() )
 		{
-			g_pWEBM->DestroyVideoMaterial( m_pWEBMMaterial );
+			m_videoFFmpegPlayer.Reset();
 			m_nMaterialType = MATERIAL_INVALID;
+			m_nTextureID = -1;
 		}
 		break;
 	case MATERIAL_BIK:
@@ -278,6 +266,7 @@ void CASW_Background_Movie::Update( bool bForce )
 			{
 				g_pBIK->DestroyMaterial( m_nBIKMaterial );
 				m_nMaterialType = MATERIAL_INVALID;
+				m_nTextureID = -1;
 			}
 			else if ( !s_bLastReduceMotion && rd_reduce_motion.GetBool() )
 			{
@@ -291,8 +280,9 @@ void CASW_Background_Movie::Update( bool bForce )
 			s_bLastReduceMotion = false;
 			bik->Unpause( m_nBIKMaterial );
 		}
-		break;
+		break;		
 	}
+	
 }
 
 // ======================================

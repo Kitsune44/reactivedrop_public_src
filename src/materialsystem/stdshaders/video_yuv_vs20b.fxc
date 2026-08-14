@@ -1,0 +1,25 @@
+// video_yuv_vs20b.fxc
+
+#include "common_vs_fxc.h"
+
+struct VS_INPUT
+{
+    float3 vPos         : POSITION;
+    float2 vTexCoord    : TEXCOORD;
+};
+
+struct PS_INPUT
+{
+    float4 projPos      : SV_POSITION;
+    float2 uv           : TEXCOORD;
+};
+
+PS_INPUT main(const VS_INPUT input)
+{
+    PS_INPUT output;
+
+    output.projPos = mul(float4(input.vPos, 1.0f), cModelViewProj);
+    output.uv = input.vTexCoord;
+
+    return output;
+}

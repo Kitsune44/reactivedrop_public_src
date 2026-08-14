@@ -1,232 +1,177 @@
-#ifndef VIDEO_MATERIAL_H
-	#define VIDEO_MATERIAL_H
+﻿// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Grimowy
+/**
+ * @file video_ffmpeg_material.h
+ * Project   : FFmpeg Video Services for Valve Source Engine
+ * Component : Video Material Module
+ */
 
-#ifdef _WIN32
-	#pragma once
-#endif
+#pragma once
 
-#include <vector>
-#include "materialsystem/itexture.h"
-#include "materialsystem/MaterialSystemUtil.h"
-#include "ivideoservices.h"
-#include "tier1/utlqueue.h"
+#include "video_material_simd.h"
 
-#include "OpusVorbisDecoder.hpp"
-#include "VPXDecoder.hpp"
-#include "libwebm/mkvparser/mkvparser.h"
+#include "materialsystem/imaterial.h"           // For IMaterial
+#include "materialsystem/itexture.h"            // For ITexture
+#include "materialsystem/MaterialSystemUtil.h"  // For ITextureRegenerator
+#include "keyvalues.h"                          // For KeyValues
 
-#ifdef _WIN32
-	#include <windows.h>
-	#include "dsound.h"
-#endif
+#include <cstdint>								// For uint8_t
+#include <cstddef>								// For size_t
+#include <string>								// For std::string
 
-typedef enum YUVChannel_e {
-	YUVCHANNEL_Y,
-	YUVCHANNEL_CB,
-	YUVCHANNEL_CR,
-} YUVChannel_t;
 
-#include "filesystem.h"
 
-class MkvReader : public mkvparser::IMkvReader
-{
+ /**
+  * @class CTextureRegenerator
+  * @brief Regenerates procedural texture I8/UV88 bits from raw planar uint8_t/uint16_t Y/U/V buffer.
+  * src - Pointer to externally managed planar data pointer: AVFrame uint8_t/uint16_t, 32/64-byte aligned
+  */
+class CTextureRegenerator final : public ITextureRegenerator {
 public:
-	MkvReader(const char* filePath) :
-		m_fileHandle(g_pFullFileSystem->Open(filePath, "rb", "GAME"))
-	{
-	}
+    explicit CTextureRegenerator( uint8_t **src ) noexcept
+        : m_src( src ) {
+    }
 
-	~MkvReader()
-	{
-		if (m_fileHandle)
-			g_pFullFileSystem->Close(m_fileHandle);
-	}
+    void RegenerateTextureBits( ITexture *, IVTFTexture *dst, Rect_t * ) noexcept override {
 
-	int Read(long long pos, long len, unsigned char* buf)
-	{
-		if (!m_fileHandle)
-			return -1;
+        VideoMaterialSIMD::GetInstance().Memcpy( dst->ImageData(), *m_src, dst->FaceSizeInBytes( 0 ) );
+        //memcpy( dst->ImageData(), *m_src, dst->FaceSizeInBytes(0) );
+    }
 
-		g_pFullFileSystem->Seek(m_fileHandle, pos, FILESYSTEM_SEEK_HEAD);
-		const auto size = static_cast<long>(g_pFullFileSystem->Read(buf, len, m_fileHandle));
-		if (size < len)
-			return -1;
-		return 0;
-	}
-
-	int Length(long long* total, long long* available)
-	{
-		if (!m_fileHandle)
-			return -1;
-
-		const int pos = g_pFullFileSystem->Tell(m_fileHandle);
-		g_pFullFileSystem->Seek(m_fileHandle, 0, FILESYSTEM_SEEK_TAIL);
-
-		if (total)
-			*total = g_pFullFileSystem->Tell(m_fileHandle);
-		if (available)
-			*available = g_pFullFileSystem->Tell(m_fileHandle);
-
-		g_pFullFileSystem->Seek(m_fileHandle, pos, FILESYSTEM_SEEK_HEAD);
-		return 0;
-	}
+    void Release() noexcept override {
+        delete this;
+    }
 
 private:
-	FileHandle_t m_fileHandle;
+    uint8_t **m_src{ nullptr }; // Pointer to externally managed planar data pointer.
 };
 
-template <YUVChannel_t Channel>
-class CYUVTextureRegenerator : public ITextureRegenerator
-{
+
+/**
+ * @class VideoSEMaterial
+ * @brief Manages YUV textures, regeneartos and procedural material for video rendering.
+ */
+class VideoSEMaterial final {
 public:
-	CYUVTextureRegenerator( int w, int h )
-	{
-		m_decodedImage = nullptr;
-		m_videoWidth = w;
-		m_videoHeight = h;
-	}
+    VideoSEMaterial() noexcept {}
+    ~VideoSEMaterial() noexcept {
+        Reset();
+    }
 
-	// ITextureRegenerator
-	virtual void RegenerateTextureBits( ITexture *pTexture, IVTFTexture *pVTFTexture, Rect_t *pSubRect );
-	virtual void Release() {};
-	VPXDecoder::Image *m_decodedImage;
+    /**
+     * @brief Safely shuts down textures, regenerators and material.
+     * This method ensures that all resources are released properly to avoid memory leaks.
+     */
+    void Reset() noexcept
+    {
+        auto ShutdownTexture = []( const char *&pTextureName, ITexture *&pTexture, ITextureRegenerator *&pTextureRegen ) {
+            if ( !g_pMaterialSystem->IsTextureLoaded( pTextureName ) )
+                return;
+            pTexture->SetTextureRegenerator( nullptr, true );
+            pTextureRegen = nullptr;
+            pTexture->DecrementReferenceCount();
+            pTexture->DecrementReferenceCount();
+            pTexture->DecrementReferenceCount();
+            pTexture->DeleteIfUnreferenced();
+            pTexture = nullptr;
+            };
+        ShutdownTexture( m_pTextureNameY, m_pTextureY, m_pTextureRegenY );
+        ShutdownTexture( m_pTextureNameU, m_pTextureU, m_pTextureRegenU );
+        ShutdownTexture( m_pTextureNameV, m_pTextureV, m_pTextureRegenV );
+        g_pMaterialSystem->EvictManagedResources();
+
+        if ( m_pMaterial ) {
+            m_pMaterial->DecrementReferenceCount();
+            m_pMaterial->DeleteIfUnreferenced();
+            m_pMaterial = nullptr;
+        }
+    }
+
+    /**
+     * @brief Initializes textures, regenerators, and material.
+     * @param videoWidthY    - Width of Y plane.
+     * @param videoHeightY   - Height of Y plane.
+     * @param videoWidthUV   - Width of U and V planes.
+     * @param videoHeightUV  - Height of U and V planes.
+     * @param srcY           - Reference to pointer to Y plane buffer.
+     * @param srcU           - Reference to pointer to U plane buffer.
+     * @param srcV           - Reference to pointer to V plane buffer.
+     * @param bitDepth       - Bit depth of the video frames.
+     * @param colorRange     - Color range (1=Limited, 2=Full).
+     * @param colorSpace     - Color space (FFmpeg: AVColorSpace).
+     * @param colorTransferC - Color transfer characteristic (FFmpeg: AVColorTransferCharacteristic).
+     * @param colorPrimaries - Color primaries (FFmpeg: AVColorPrimaries).
+     */
+    void Init(
+        const size_t videoWidthY, const size_t videoHeightY,
+        const size_t videoWidthUV, const size_t videoHeightUV,
+        uint8_t *&srcY, uint8_t *&srcU, uint8_t *&srcV,
+        int bitDepth = 8, int colorRange = 1, int colorSpace = 1,
+        int colorTransferC = 0, int colorPrimaries = 1
+    ) noexcept
+    {
+        const int nFlags = TEXTUREFLAGS_PROCEDURAL | TEXTUREFLAGS_SINGLECOPY
+            | TEXTUREFLAGS_NOMIP | TEXTUREFLAGS_NOLOD | TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT
+            | ( ( bitDepth != 8 ) ? TEXTUREFLAGS_POINTSAMPLE : 0 );
+
+        const ImageFormat fmt = ( bitDepth == 8 ) ? IMAGE_FORMAT_I8 : IMAGE_FORMAT_UV88;
+
+        auto CreateTexture = [ & ]( const char *pTextureName, ITexture *&pTexture,
+            ITextureRegenerator *&pTextureRegen, uint8_t **pSrc, int w, int h )
+            {
+                pTextureRegen = new CTextureRegenerator( pSrc );
+                pTexture = g_pMaterialSystem->CreateProceduralTexture( pTextureName, "VideoFFmpegCacheTextures", w, h, fmt, nFlags );
+                pTexture->IncrementReferenceCount();
+                pTexture->SetTextureRegenerator( pTextureRegen );
+            };
+        CreateTexture( m_pTextureNameY, m_pTextureY, m_pTextureRegenY, &srcY,
+            static_cast< int >( videoWidthY ), static_cast< int >( videoHeightY ) );
+        CreateTexture( m_pTextureNameU, m_pTextureU, m_pTextureRegenU, &srcU,
+            static_cast< int >( videoWidthUV ), static_cast< int >( videoHeightUV ) );
+        CreateTexture( m_pTextureNameV, m_pTextureV, m_pTextureRegenV, &srcV,
+            static_cast< int >( videoWidthUV ), static_cast< int >( videoHeightUV ) );
+
+        KeyValues *pVMTKeyValues = new KeyValues( "VideoYUV" );
+        pVMTKeyValues->SetString( "$textureY", m_pTextureY->GetName() );
+        pVMTKeyValues->SetString( "$textureU", m_pTextureU->GetName() );
+        pVMTKeyValues->SetString( "$textureV", m_pTextureV->GetName() );
+        pVMTKeyValues->SetInt( "$bitdepth", bitDepth );
+        pVMTKeyValues->SetInt( "$colorrange", colorRange );
+        pVMTKeyValues->SetInt( "$colorspace", colorSpace );
+        pVMTKeyValues->SetInt( "$colortransferc", colorTransferC );
+        pVMTKeyValues->SetInt( "$colorprimaries", colorPrimaries );
+        pVMTKeyValues->SetInt( "$nobasetexture", 1 );
+        pVMTKeyValues->SetInt( "$nolod", 1 );
+        pVMTKeyValues->SetInt( "$nomip", 1 );
+        pVMTKeyValues->SetInt( "$nofog", 1 );
+        pVMTKeyValues->SetInt( "$translucent", 0 );
+        pVMTKeyValues->SetInt( "$vertexcolor", 0 );
+        pVMTKeyValues->SetInt( "$vertexalpha", 0 );
+        pVMTKeyValues->SetInt( "$gammacolorread", 0 );
+        pVMTKeyValues->SetInt( "$spriteorientation", 3 );
+        m_pMaterial = g_pMaterialSystem->CreateMaterial( "videoFFmpeg_background", pVMTKeyValues );
+        m_pMaterial->Refresh();
+    }
+
+    /** @return The material ready for rendering. */
+    IMaterial *GetMaterial() noexcept { return m_pMaterial; }
+
+    /** @brief Update textures with new YUV data. */
+    void Update() noexcept {
+        m_pTextureY->Download();
+        m_pTextureU->Download();
+        m_pTextureV->Download();
+    }
 
 private:
-	int m_videoWidth;
-	int m_videoHeight;
+    ITextureRegenerator *m_pTextureRegenY{ nullptr };
+    ITextureRegenerator *m_pTextureRegenU{ nullptr };
+    ITextureRegenerator *m_pTextureRegenV{ nullptr };
+    const char *m_pTextureNameY{ "videoFFmpeg_background_y" };
+    const char *m_pTextureNameU{ "videoFFmpeg_background_u" };
+    const char *m_pTextureNameV{ "videoFFmpeg_background_v" };
+    ITexture *m_pTextureY{ nullptr };
+    ITexture *m_pTextureU{ nullptr };
+    ITexture *m_pTextureV{ nullptr };
+    IMaterial *m_pMaterial{ nullptr };
 };
-
-class CVideoMaterial : public IVideoMaterial
-{
-public:
-	CVideoMaterial();
-	~CVideoMaterial();
-
-	// Video information functions		
-	virtual const char *GetVideoFileName();
-	virtual VideoResult_t		GetLastResult();
-
-	virtual VideoFrameRate_t &GetVideoFrameRate();
-
-	bool LoadVideo( const char *pMaterialName, const char *pVideoFileName, void *pSoundDevice = nullptr );
-
-	// Audio Functions
-	virtual bool				HasAudio();
-
-	virtual bool				SetVolume( float fVolume );
-	virtual float				GetVolume();
-
-	virtual void				SetMuted( bool bMuteState );
-	virtual bool				IsMuted();
-
-	virtual VideoResult_t		SoundDeviceCommand( VideoSoundDeviceOperation_t operation, void *pDevice = nullptr, void *pData = nullptr );
-
-	// Video playback state functions
-	virtual bool				IsVideoReadyToPlay();
-	virtual bool				IsVideoPlaying();
-	virtual bool				IsNewFrameReady();
-	virtual bool				IsFinishedPlaying();
-
-	virtual bool				StartVideo();
-	virtual bool				StopVideo();
-
-	virtual void				SetLooping( bool bLoopVideo );
-	virtual bool				IsLooping();
-
-	virtual void				SetPaused( bool bPauseState );
-	virtual bool				IsPaused();
-
-	// Position in playback functions
-	virtual float				GetVideoDuration();
-	virtual int					GetFrameCount();
-
-	virtual bool				SetFrame( int FrameNum );
-	virtual int					GetCurrentFrame();
-
-	virtual bool				SetTime( float flTime );
-	virtual float				GetCurrentVideoTime();
-
-	// Update functions
-	virtual bool				Update();
-
-	// Material / Texture Info functions
-	virtual IMaterial *GetMaterial();
-
-	virtual void				GetVideoTexCoordRange( float *pMaxU, float *pMaxV );
-	virtual void				GetVideoImageSize( int *pWidth, int *pHeight );
-
-#ifdef _WIN32
-	static unsigned int HandleBufferUpdates(void *params);
-#endif
-
-private:
-	bool NeedNewFrame( double timepassed );
-	bool CreateSoundBuffer(void *pSoundDevice = nullptr);
-	void DestroySoundBuffer();
-	void RestartVideo();
-	void CreateVideoMaterial(const char *pMaterialName);
-
-private:
-
-	MkvReader *m_mkvReader;
-	WebMDemuxer *m_demuxer;
-	VPXDecoder *m_videoDecoder;
-	OpusVorbisDecoder *m_audioDecoder;
-	WebMFrame *m_audioFrame;
-	VideoFrameRate_t m_frameRate;
-	VPXDecoder::Image *m_image;
-
-	CMaterialReference m_videoMaterial;
-	CYUVTextureRegenerator<YUVCHANNEL_Y> *m_yTextureRegen;
-	CYUVTextureRegenerator<YUVCHANNEL_CB> *m_cbTextureRegen;
-	CYUVTextureRegenerator<YUVCHANNEL_CR> *m_crTextureRegen;
-
-	CTextureReference m_yTexture;
-	CTextureReference m_cbTexture;
-	CTextureReference m_crTexture;
-
-	int m_videoWidth; // actual video width
-	int m_videoHeight; // actual video height
-	int m_textureWidth;
-	int m_textureHeight;
-
-	bool m_videoReady;
-	bool m_videoStarted;
-	bool m_videoStopped;
-	bool m_videoPlaying;
-	bool m_videoLooping;
-	bool m_videoEnded;
-
-	char m_videoPath[MAX_PATH];
-
-	float m_volume;
-	double m_curTime;
-	double m_videoTime;
-
-	unsigned int m_prevTicks;
-	unsigned int m_currentFrame;
-	CUtlQueue< WebMFrame*> m_videoFrames;
-
-#ifdef _WIN32
-	IDirectSound* m_pAudioDevice;
-	IDirectSoundBuffer* m_pAudioBuffer;
-
-	CThreadMutex m_mutex;
-	IDirectSoundNotify *m_directSoundNotify;
-	HANDLE m_endEventHandle;
-	HANDLE m_halfwayEventHandle;
-	HANDLE m_videoOverEventHandle;
-	ThreadHandle_t m_hBufferThreadHandle;
-#endif
-
-	bool m_soundKilled;
-	short* m_pcm;
-	int m_nAudioBufferWriteOffset;
-	int m_nAudioBufferReadOffset;
-	int m_nAudioBufferFilledSize;
-
-	int m_nAudioBufferSize;
-	int m_nBytesPerSample;
-};
-
-#endif // VIDEO_MATERIAL_H

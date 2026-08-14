@@ -12,18 +12,20 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectName>stdshader_dx9</ProjectName>
+    <ProjectName>game_shader_dx9</ProjectName>
     <ProjectGuid>{C8D2DC83-E117-7576-7B43-10C844264C51}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -47,6 +49,7 @@
     <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <TargetName>game_shader_dx9</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>Release_dx9\</OutDir>
@@ -56,28 +59,30 @@
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <TargetName>game_shader_dx9</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
       <Command />
     </PreBuildEvent>
     <CustomBuildStep>
-      <Message>Publishing to target directory (..\..\game\swarm\bin\)...</Message>
-      <Command>if exist "..\..\game\swarm\bin\game_shader_dx9.dll" attrib -r "..\..\game\swarm\bin\game_shader_dx9.dll"
-</Command>
-      <Outputs>..\..\game\swarm\bin\game_shader_dx9.dll;%(Outputs)</Outputs>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;include;..\..\dx9sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;DLLNAME=stdshader_dx9;VPCGAME=valve;VPCGAMECAPS=VALVE;_DLL_EXT=.dll;COMPILER_MSVC32;VPCGAME=valve;VPCGAMECAPS=VALVE;_DLL_EXT=.dll;COMPILER_MSVC;MEMOVERRIDE_MODULE=stdshader_dx9;_DLL_EXT=.dll;VPCGAME=valve;VPCGAMECAPS=VALVE;_DLL_EXT=.dll;DLLNAME=stdshader_dx9;VPCGAME=valve;VPCGAMECAPS=VALVE;_DLL_EXT=.dll;STDSHADER_DX9_DLL_EXPORT;FAST_MATERIALVAR_ACCESS;VPCGAME=valve;VPCGAMECAPS=VALVE;_DLL_EXT=.dll;USE_ACTUAL_DX;VPCGAME=valve;VPCGAMECAPS=VALVE;_DLL_EXT=.dll;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling />
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -93,6 +98,11 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>CompileAsCpp</CompileAs>
       <ErrorReporting>Prompt</ErrorReporting>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -101,7 +111,7 @@
     <Link>
       <AdditionalDependencies>version.lib;winmm.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
-      <OutputFile>$(OutDir)game_shader_dx9.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\lib\common\.;..\..\lib\public\.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -115,16 +125,28 @@
       <TargetMachine>MachineX86</TargetMachine>
       <LinkErrorReporting>PromptImmediately</LinkErrorReporting>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Xdcmake>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>$(OutDir)stdshader_dx9.bsc</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command />
+      <Command>set "DEST_DIR=..\..\game\swarm\bin"
+mkdir "%25DEST_DIR%25" 2&gt;nul
+
+robocopy "$(TargetDir)\" "%25DEST_DIR%25" "$(TargetFileName)" "$(TargetName).map" "$(TargetName).pdb" /IS /IT /COPY:DAT /R:1 /W:0 /NP
+if %errorlevel% GEQ 8 exit /b %errorlevel%
+REM normalize robocopy success range (0–7) to MSBuild success (0)
+cmd /c exit /b 0
+
+exit /b 0
+</Command>
+      <Message>Publishing to ..\..\game\swarm\bin\.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,13 +154,14 @@
       <Command />
     </PreBuildEvent>
     <CustomBuildStep>
-      <Message>Publishing to target directory (..\..\game\swarm\bin\)...</Message>
-      <Command>if exist "..\..\game\swarm\bin\game_shader_dx9.dll" attrib -r "..\..\game\swarm\bin\game_shader_dx9.dll"
-</Command>
-      <Outputs>..\..\game\swarm\bin\game_shader_dx9.dll;%(Outputs)</Outputs>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
     <ClCompile>
-      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -148,7 +171,7 @@
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -165,6 +188,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>CompileAsCpp</CompileAs>
       <ErrorReporting>Prompt</ErrorReporting>
+      <OmitFramePointers>true</OmitFramePointers>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -173,7 +198,7 @@
     <Link>
       <AdditionalDependencies>version.lib;winmm.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
-      <OutputFile>$(OutDir)game_shader_dx9.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\lib\common\.;..\..\lib\public\.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -188,16 +213,28 @@
       </BaseAddress>
       <TargetMachine>MachineX86</TargetMachine>
       <LinkErrorReporting>PromptImmediately</LinkErrorReporting>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <SetChecksum>true</SetChecksum>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Xdcmake>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>$(OutDir)stdshader_dx9.bsc</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command />
+      <Command>set "DEST_DIR=..\..\game\swarm\bin"
+mkdir "%25DEST_DIR%25" 2&gt;nul
+
+robocopy "$(TargetDir)\" "%25DEST_DIR%25" "$(TargetFileName)" "$(TargetName).map" "$(TargetName).pdb" /IS /IT /COPY:DAT /R:1 /W:0 /NP
+if %errorlevel% GEQ 8 exit /b %errorlevel%
+REM normalize robocopy success range (0–7) to MSBuild success (0)
+cmd /c exit /b 0
+
+exit /b 0
+</Command>
+      <Message>Publishing to ..\..\game\swarm\bin\.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -1182,6 +1219,7 @@
     <ClCompile Include="worldvertextransition_dx8_helper.cpp" />
     <ClCompile Include="writestencil_dx9.cpp" />
     <ClCompile Include="writez_dx9.cpp" />
+    <ClCompile Include="video_yuv_dx9.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\dx9sdk\lib\d3dx9.lib" />

@@ -8,9 +8,7 @@
 #include <vgui_controls/EditablePanel.h>
 
 #include "avi/ibik.h"
-#include "ivideoservices.h"
-
-extern IVideoServices *g_pWEBM;
+#include "video_ffmpeg.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
 class vgui::Label;
@@ -49,14 +47,13 @@ public:
 	{
 		MATERIAL_INVALID = -1,
 		MATERIAL_BIK,
-		MATERIAL_WEBM
+		MATERIAL_FFMPEG
 	};
 
 private:
-	union {
-		BIKMaterial_t m_nBIKMaterial;
-		IVideoMaterial *m_pWEBMMaterial;
-	};
+	BIKMaterial_t m_nBIKMaterial;
+	VideoFFmpegPlayer m_videoFFmpegPlayer;
+
 	VideoMaterialType m_nMaterialType;
 
 	int m_nTextureID;

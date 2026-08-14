@@ -1033,19 +1033,10 @@
     <ClCompile Include="weapons_resource.cpp" />
     <ClCompile Include="weapon_selection.cpp" />
     <ClCompile Include="WorldDimsProxy.cpp" />
-    <ClCompile Include="videoservices\OpusVorbisDecoder.cpp">
+    <ClCompile Include="videoservices\video_ffmpeg.cpp">
       <Filter>videoservices</Filter>
     </ClCompile>
-    <ClCompile Include="videoservices\video_material.cpp">
-      <Filter>videoservices</Filter>
-    </ClCompile>
-    <ClCompile Include="videoservices\video_services.cpp">
-      <Filter>videoservices</Filter>
-    </ClCompile>
-    <ClCompile Include="videoservices\VPXDecoder.cpp">
-      <Filter>videoservices</Filter>
-    </ClCompile>
-    <ClCompile Include="videoservices\WebMDemuxer.cpp">
+    <ClCompile Include="videoservices\video_material_simd.cpp">
       <Filter>videoservices</Filter>
     </ClCompile>
     <ClCompile Include="swarm\rd_collections_crafting_research.cpp" />
@@ -2207,19 +2198,13 @@
     <ClInclude Include="vscript_client_nut.h" />
     <ClInclude Include="weapons_resource.h" />
     <ClInclude Include="weapon_selection.h" />
-    <ClInclude Include="videoservices\OpusVorbisDecoder.hpp">
+    <ClInclude Include="videoservices\video_ffmpeg.h">
       <Filter>videoservices</Filter>
     </ClInclude>
     <ClInclude Include="videoservices\video_material.h">
       <Filter>videoservices</Filter>
     </ClInclude>
-    <ClInclude Include="videoservices\video_services.h">
-      <Filter>videoservices</Filter>
-    </ClInclude>
-    <ClInclude Include="videoservices\VPXDecoder.hpp">
-      <Filter>videoservices</Filter>
-    </ClInclude>
-    <ClInclude Include="videoservices\WebMDemuxer.hpp">
+    <ClInclude Include="videoservices\video_material_simd.h">
       <Filter>videoservices</Filter>
     </ClInclude>
     <ClInclude Include="swarm\rd_collections_crafting_research.h" />
@@ -2247,31 +2232,13 @@
     <Library Include="..\..\lib\public\vpklib.lib" />
     <Library Include="..\..\lib\public\vstdlib.lib" />
     <Library Include="..\..\lib\public\vtf.lib" />
-    <Library Include="videoservices\lib\win32\dsound.lib">
+    <Library Include="videoservices\lib\win32\avcodec.lib">
       <Filter>videoservices\lib</Filter>
     </Library>
-    <Library Include="videoservices\lib\win32\dxguid.lib">
+    <Library Include="videoservices\lib\win32\avformat.lib">
       <Filter>videoservices\lib</Filter>
     </Library>
-    <Library Include="videoservices\lib\win32\ogg.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\opus.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\vorbis.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\vpx_mt.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\webm_mt.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\debug\vpx_mtd.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\debug\webm_mtd.lib">
+    <Library Include="videoservices\lib\win32\avutil.lib">
       <Filter>videoservices\lib</Filter>
     </Library>
   </ItemGroup>

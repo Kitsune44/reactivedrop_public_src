@@ -2,12 +2,11 @@ name: Continuous integration
 on:
   push:
     branches:
-      - reactivedrop_public
-      - reactivedrop_beta
+      - '**'
   pull_request:
     branches:
-      - reactivedrop_public
-      - reactivedrop_beta
+      - '**'
+  workflow_dispatch:
 
 # GitHub Actions usage is FREE for both public repositories and self-hosted runners.
 # We can use it to build our project and do some automated builds and in future quality tests.

@@ -1,0 +1,494 @@
+// video_yuv_ps20b.fxc
+
+#include "common_ps_fxc.h"
+#include "shader_constant_register_map.h"
+
+//------------------------------------------------------------------------------------------
+// Static parameters
+// match with video_yuv_dx9.cpp
+//
+// STATIC: "SRC_BIT_DEPTH"      "0..2"
+// STATIC: "AVCOL_RANGE"        "0..1"
+// STATIC: "AVCOL_SPC"          "0..5"
+// STATIC: "AVCOL_TRC"          "0..12"
+// STATIC: "AVCOL_PRI"          "0..8"
+//
+//------------------------------------------------------------------------------------------
+
+#define SRC_BIT_DEPTH_8          0
+#define SRC_BIT_DEPTH_10         1
+#define SRC_BIT_DEPTH_12         2
+
+#define AVCOL_RANGE_MPEG         0
+#define AVCOL_RANGE_JPEG         1
+
+#define AVCOL_SPC_RGB            0  ///< order of coefficients is actually GBR, also IEC 61966-2-1 (sRGB), YZX and ST 428-1
+#define AVCOL_SPC_BT709          1  ///< ITU-R BT709 / ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / derived in SMPTE RP 177 Annex B
+#define AVCOL_SPC_UNSPECIFIED    1
+#define AVCOL_SPC_FCC            2  ///< FCC Title 47 Code of Federal Regulations 73.682 (a)(20)
+#define AVCOL_SPC_BT470BG        3  ///< ITU-R BT470BG / ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
+#define AVCOL_SPC_SMPTE170M      3  ///< SMPTE ST 170M / ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC / functionally identical to above
+#define AVCOL_SPC_SMPTE240M      4  ///< derived from 170M primaries and D65 white point, 170M is derived from BT470 System M's primaries
+#define AVCOL_SPC_BT2020_NCL     5  ///< ITU-R BT2020 non-constant luminance system
+#define AVCOL_SPC_BT2020_CL      5  ///< ITU-R BT2020 constant luminance system
+
+#define AVCOL_TRC_BT709          0  ///< ITU-R BT709 / ITU-R BT1361
+#define AVCOL_TRC_UNSPECIFIED    0
+#define AVCOL_TRC_GAMMA22        1  ///< ITU-R BT470M / ITU-R BT1700 625 PAL & SECAM
+#define AVCOL_TRC_GAMMA28        2  ///< ITU-R BT470BG
+#define AVCOL_TRC_SMPTE170M      0  ///< SMPTE ST 170M / ITU-R BT601-6 525 or 625 / ITU-R BT1358 525 or 625 / ITU-R BT1700 NTSC
+#define AVCOL_TRC_SMPTE240M      3  ///< SMPTE ST 240M
+#define AVCOL_TRC_LINEAR         4  ///< "Linear transfer characteristic"
+#define AVCOL_TRC_LOG100         5  ///< "Logarithmic transfer characteristic (100:1 range)"
+#define AVCOL_TRC_LOG_SQRT       6  ///< "Logarithmic transfer characteristic (100 * Sqrt(10) : 1 range)"
+#define AVCOL_TRC_IEC61966_2_4   7  ///< IEC 61966-2-4
+#define AVCOL_TRC_BT1361_ECG     8  ///< ITU-R BT1361 Extended Colour Gamut
+#define AVCOL_TRC_IEC61966_2_1   9  ///< IEC 61966-2-1 (sRGB or sYCC)
+#define AVCOL_TRC_BT2020_10      0  ///< ITU-R BT2020 for 10-bit system
+#define AVCOL_TRC_BT2020_12      0  ///< ITU-R BT2020 for 12-bit system
+#define AVCOL_TRC_SMPTE2084     10  ///< SMPTE ST 2084 for 10-, 12-, 14- and 16-bit systems (PQ)
+#define AVCOL_TRC_SMPTE428      11  ///< SMPTE ST 428-1
+#define AVCOL_TRC_ARIB_STD_B67  12  ///< ARIB STD-B67, known as "Hybrid log-gamma" (HLG)
+
+#define AVCOL_PRI_BT709          0  ///< ITU-R BT709 / ITU-R BT1361 / IEC 61966-2-4 / SMPTE RP 177 Annex B
+#define AVCOL_PRI_UNSPECIFIED    0
+#define AVCOL_PRI_BT470M         1  ///< ITU-R BT470M / FCC Title 47 Code of Federal Regulations 73.682 (a)(20)
+#define AVCOL_PRI_BT470BG        2  ///< ITU-R BT470BG / ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM
+#define AVCOL_PRI_SMPTE170M      3  ///< SMPTE ST 170M / ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC
+#define AVCOL_PRI_SMPTE240M      3  ///< SMPTE ST 240M, also called "SMPTE C" even though it uses D65
+#define AVCOL_PRI_FILM           4  ///< colour filters using Illuminant C
+#define AVCOL_PRI_BT2020         5  ///< ITU-R BT2020
+#define AVCOL_PRI_SMPTE428       6  ///< SMPTE ST 428-1 (CIE 1931 XYZ)
+#define AVCOL_PRI_SMPTE431       7  ///< SMPTE ST 431-2 (2011) / DCI P3
+#define AVCOL_PRI_SMPTE432       7  ///< SMPTE ST 432-1 (2010) / P3 D65 / Display P3
+#define AVCOL_PRI_EBU3213        8  ///< EBU Tech. 3213-E (nothing there) / one of JEDEC P22 group phosphors
+
+//------------------------------------------------------------------------------------------
+// Macros based on static parameters
+//------------------------------------------------------------------------------------------
+
+#if SRC_BIT_DEPTH == SRC_BIT_DEPTH_8
+    //#define MAX_VAL 255.0f
+    //#define MIN_YUV 16.0f
+    //#define MAX_Y   235.0f
+    //#define MAX_UV  240.0f
+    //static const float SCALE = 255.0f / MAX_VAL;
+
+    static const float SCALE =  1.0f;                               ///< (255.0f / MAX_VAL)
+    #define YUV_OFFSET          0.06274509803921568627450980392157f ///< (MIN_YUV / MAX_VAL)
+    #define Y_SCALE             1.1643835616438356164383561643836f  ///< 1.0f / ((MAX_Y - MIN_YUV) / MAX_VAL)
+    #define UV_SCALE            1.1383928571428571428571428571429f  ///< 1.0f / ((MAX_UV - MIN_YUV) / MAX_VAL)
+
+#elif SRC_BIT_DEPTH == SRC_BIT_DEPTH_10
+    //#define MAX_VAL 1023.0f
+    //#define MIN_YUV 64.0f
+    //#define MAX_Y   940.0f
+    //#define MAX_UV  960.0f
+    //static const float SCALE = 255.0f / MAX_VAL;
+
+    static const float SCALE =  0.24926686217008797653958944281525f;///< (255.0f / MAX_VAL)
+    #define YUV_OFFSET          0.06256109481915933528836754643206f ///< (MIN_YUV / MAX_VAL)
+    #define Y_SCALE             1.1678082191780821917808219178082f  ///< 1.0f / ((MAX_Y - MIN_YUV) / MAX_VAL)
+    #define UV_SCALE            1.1417410714285714285714285714286f  ///< 1.0f / ((MAX_UV - MIN_YUV) / MAX_VAL)
+
+#else  // #elif SRC_BIT_DEPTH == SRC_BIT_DEPTH_12
+    //#define MAX_VAL 4095.0f
+    //#define MIN_YUV  256.0f
+    //#define MAX_Y   3760.0f
+    //#define MAX_UV  3840.0f
+    //static const float SCALE = 255.0f / MAX_VAL;
+
+    static const float SCALE =  0.06227106227106227106227106227106f;///< (255.0f / MAX_VAL)
+    #define YUV_OFFSET          0.06251526251526251526251526251526f ///< (MIN_YUV / MAX_VAL)
+    #define Y_SCALE             1.1686643835616438356164383561644f  ///< 1.0f / ((MAX_Y - MIN_YUV) / MAX_VAL)
+    #define UV_SCALE            1.142578125f                        ///< 1.0f / ((MAX_UV - MIN_YUV) / MAX_VAL)
+#endif
+
+#if AVCOL_RANGE != AVCOL_RANGE_JPEG
+    static const float3 YUV_SCALE_VEC   = float3(Y_SCALE, UV_SCALE, UV_SCALE);
+    static const float3 YUV_OFFSET_VEC  = float3(
+            -YUV_OFFSET * Y_SCALE,
+            -YUV_OFFSET * UV_SCALE - 0.5f,
+            -YUV_OFFSET * UV_SCALE - 0.5f
+        );
+#endif
+
+static const float3x3 MATRIX_YUV_RGB = float3x3(
+#if AVCOL_SPC == AVCOL_SPC_BT709
+        1.000000f,  0.000000f,      1.574803f,
+        1.000000f, -0.187325f,     -0.468125f,
+        1.000000f,  1.855600f,      0.000000f
+#elif AVCOL_SPC == AVCOL_SPC_FCC
+        1.000000f,  0.000000f,      1.402000f,
+        1.000000f, -0.344136f,     -0.714136f,
+        1.000000f,  1.772000f,      0.000000f
+#elif AVCOL_SPC == AVCOL_SPC_BT470BG \
+   || AVCOL_SPC == AVCOL_SPC_SMPTE170M
+        1.000000f,  0.000000f,      1.402000f,
+        1.000000f, -0.344136f,     -0.714136f,
+        1.000000f,  1.772000f,      0.000000f
+#elif AVCOL_SPC == AVCOL_SPC_SMPTE240M
+        1.000000f,  0.000000f,      1.581000f,
+        1.000000f, -0.188100f,     -0.469200f,
+        1.000000f,  1.862900f,      0.000000f
+#elif AVCOL_SPC == AVCOL_SPC_BT2020_NCL \
+   || AVCOL_SPC == AVCOL_SPC_BT2020_CL
+        1.000000f,  0.000000f,      1.474600f,
+        1.000000f, -0.164553f,     -0.571353f,
+        1.000000f,  1.881400f,      0.000000f
+#else //#elif AVCOL_SPC == AVCOL_SPC_RGB
+        1.000000f, 0.000000f, 0.000000f,
+        0.000000f, 1.000000f, 0.000000f,
+        0.000000f, 0.000000f, 1.000000f
+#endif
+);
+
+static const float3x3 MATRIX_RGB_BT709 = float3x3(
+#if AVCOL_PRI == AVCOL_PRI_BT709
+        1.000000f, 0.000000f, 0.000000f,
+        0.000000f, 1.000000f, 0.000000f,
+        0.000000f, 0.000000f, 1.000000f
+#elif AVCOL_PRI == AVCOL_PRI_BT470M
+        1.391758f, -0.369110f, -0.022648f,
+       -0.202196f,  1.147988f,  0.054208f,
+        0.016348f, -0.046688f,  1.030340f
+#elif AVCOL_PRI == AVCOL_PRI_BT470BG
+        1.164383f, -0.213249f, -0.010522f,
+       -0.269369f,  1.072540f,  0.180826f,
+        0.008028f, -0.301247f,  1.293219f
+#elif AVCOL_PRI == AVCOL_PRI_SMPTE170M
+        1.164383f, -0.208080f, -0.003953f,
+       -0.321980f,  1.027600f,  0.207071f,
+        0.012209f, -0.286916f,  1.271548f
+#elif AVCOL_PRI == AVCOL_PRI_FILM
+        1.232100f, -0.258700f,  0.018600f,
+       -0.314700f,  1.238800f,  0.175900f,
+        0.082800f, -0.296300f,  1.213500f
+#elif AVCOL_PRI == AVCOL_PRI_BT2020
+        1.660503f, -0.587600f, -0.072903f,
+       -0.124627f,  1.132900f, -0.008273f,
+       -0.018462f, -0.100600f,  1.119053f
+#elif AVCOL_PRI == AVCOL_PRI_SMPTE428
+        3.240479f, -1.537150f, -0.498535f,
+       -0.969256f,  1.875991f,  0.041556f,
+        0.055648f, -0.204043f,  1.057311f
+#elif AVCOL_PRI == AVCOL_PRI_SMPTE431
+        1.224940f, -0.224930f, -0.000107f,
+       -0.042056f,  1.014099f, -0.040043f,
+       -0.019638f, -0.131435f,  1.151076f
+#else //#elif AVCOL_PRI == AVCOL_PRI_EBU3213
+        1.264490f, -0.254490f, 0.000000f,
+       -0.218820f, 1.193760f, 0.050000f,
+        0.022330f, -0.188120f, 1.165790f
+#endif
+);
+
+#define IS_HDR ( ( AVCOL_TRC == AVCOL_TRC_SMPTE2084 ) || ( AVCOL_TRC == AVCOL_TRC_ARIB_STD_B67 ) )
+
+//------------------------------------------------------------------------------------------
+// Inputs
+//------------------------------------------------------------------------------------------
+
+sampler samplerY : register( s0 );
+sampler samplerU : register( s1 );
+sampler samplerV : register( s2 );
+
+float4 texSizeY : register(c0);
+
+
+struct PS_INPUT
+{
+    float4 projPos  : SV_POSITION;
+    float2 uv       : TEXCOORD;
+};
+
+//------------------------------------------------------------------------------------------
+// Sampling YUV textures
+//------------------------------------------------------------------------------------------
+
+
+/* 
+ * @brief In the case of bit depth larger than 8 bits,
+ * we saved uint16_t words in two 8-bit UV88 texture channels,
+ * so we need to reconstruct them.
+ *
+ * @param rg - from sampler with UV88: float2 in [ -1, 1 ] range where uint8_t are mapped: [ 0, 127 ] => [ 0, 1 ] and [ 128, 255 ] => [ -1, 0 ]
+ *
+ * @return float in [ 0, 1 ] range ( [ 0, MAX_VAL ] => [ 0, 1 ]) )
+ */
+
+//#if SRC_BIT_DEPTH != SRC_BIT_DEPTH_8
+//inline float unpackUV88( float2 uv88 )
+//{
+//    uv88 *= 0.5f;
+//    uv88 += step( uv88, float2( -1e-6f, -1e-6f ) );
+
+//    return ( 256 * uv88.g + uv88.r ) * SCALE;
+//}
+//#endif
+#if SRC_BIT_DEPTH != SRC_BIT_DEPTH_8
+inline float unpackUV88(float2 uv88)
+{
+    uv88 = mad(uv88, 0.5f, step(uv88, float2(-1e-6f, -1e-6f)));
+    return mad(256.0f, uv88.g, uv88.r) * SCALE;
+}
+#endif
+
+inline float3 getSampleYUV( float2 uv )
+{
+#if SRC_BIT_DEPTH == SRC_BIT_DEPTH_8 
+    float3 yuv = float3(
+        tex2D( samplerY, uv ).r,
+        tex2D( samplerU, uv ).r,
+        tex2D( samplerV, uv ).r
+    );
+#else
+    float3 yuv = float3(
+        unpackUV88( tex2D( samplerY, uv ).rg ),
+        unpackUV88( tex2D( samplerU, uv ).rg ),
+        unpackUV88( tex2D( samplerV, uv ).rg )
+    );
+#endif
+
+//#if AVCOL_RANGE != AVCOL_RANGE_JPEG
+//    yuv = (yuv - YUV_OFFSET_VEC) * YUV_SCALE_VEC;
+//#endif
+//    yuv.yz -= 0.5;
+#if AVCOL_RANGE != AVCOL_RANGE_JPEG
+    yuv = mad( yuv, YUV_SCALE_VEC, YUV_OFFSET_VEC );
+#else
+    yuv.yz -= 0.5f;
+#endif
+
+    return yuv;
+}
+
+
+//// Catmull-Rom cubic weights
+//inline float4 cubicWeights(float t)
+//{
+//    float tt = t * t;
+//    float ttt = tt * t;
+//    return float4(
+//        -0.5 * ttt + tt - 0.5 * t,
+//         1.5 * ttt - 2.5 * tt + 1.0,
+//        -1.5 * ttt + 2.0 * tt + 0.5 * t,
+//         0.5 * ttt - 0.5 * tt
+//    );
+//}
+// Catmull-Rom cubic weights
+inline float4 cubicWeights(float t)
+{
+    float t2 = t * t;
+    float t3 = t2 * t;
+    return float4(
+        mad(-0.5f, t3, mad(1.0f, t2, -0.5f * t)),
+        mad(1.5f, t3, mad(-2.5f, t2, 1.0f)),
+        mad(-1.5f, t3, mad(2.0f, t2, 0.5f * t)),
+        mad(0.5f, t3, -0.5f * t2)
+    );
+}
+
+//// Bicubic sampling
+//inline float3 getSampleYUV_Bicubic(float2 uv)
+//{
+//    float2 f = frac(uv * texSizeY.zw);
+//    float4 wx = cubicWeights(f.x);
+//    float4 wy = cubicWeights(f.y);
+
+//    float3 result = float3(0, 0, 0);
+
+//    [unroll]
+//    for (int j = -1; j <= 2; ++j)
+//    {
+//        float wyj = wy[j + 1];
+//        [unroll]
+//        for (int i = -1; i <= 2; ++i)
+//        {
+//            float sampleWeight = wx[i + 1] * wyj;
+//            float2 sampleUV = uv + float2(i, j) * texSizeY.xy;
+//            result += getSampleYUV(sampleUV) * sampleWeight;
+//        }
+//    }
+
+//    return result;
+//}
+
+// Bicubic sampling
+inline float3 getSampleYUV_Bicubic(float2 uv)
+{
+    // frac in texel space
+    float2 f = frac(uv * texSizeY.zw);
+    float4 wx = cubicWeights(f.x);
+    float4 wy = cubicWeights(f.y);
+
+    float3 result = float3(0, 0, 0);
+    float2 texelSize = texSizeY.xy;
+    
+    [unroll]
+    for (int j = -1; j <= 2; j++)
+    {
+        float wyj = wy[j + 1];
+        float2 coord = mad(float2(0, j), texelSize, uv);
+
+        [unroll]
+        for (int i = -1; i <= 2; i++)
+        {
+            float2 sampleUV = mad(float2(i, 0), texelSize, coord);
+            result = mad(wx[i + 1] * wyj, getSampleYUV(sampleUV), result);
+        }
+    }
+
+    return result;
+}
+
+//------------------------------------------------------------------------------------------
+// Converting RGB to Linear RGB
+//------------------------------------------------------------------------------------------
+
+inline float3 rgbInverseEOTF(float3 rgb)
+{
+#if AVCOL_TRC == AVCOL_TRC_BT709 || AVCOL_TRC == AVCOL_TRC_SMPTE170M || AVCOL_TRC == AVCOL_TRC_BT2020_10 || AVCOL_TRC == AVCOL_TRC_BT2020_12
+    const float a = 1.099296826809442;
+    const float b = 4.5f * 0.018053968510807;
+    return (rgb < b)
+        ? (rgb / 4.5f)
+        : pow(max((rgb + (a - 1.0f)) / a, 0.0f), 1.0f / 0.45f);
+
+#elif AVCOL_TRC == AVCOL_TRC_GAMMA22
+    return pow(max(rgb, 0.0f), 2.2f);
+
+#elif AVCOL_TRC == AVCOL_TRC_GAMMA28
+    return pow(max(rgb, 0.0f), 2.8f);
+    
+#elif AVCOL_TRC == AVCOL_TRC_SMPTE240M
+    const float a = 1.1115f;
+    const float b = 4.0f * 0.022824f;
+    return (rgb < b)
+        ? (rgb / 4.0f)
+        : pow(max((rgb + (a - 1.0f)) / a, 0.0f), 1.0f / 0.45f);
+
+#elif AVCOL_TRC == AVCOL_TRC_LINEAR
+    return rgb;
+
+#elif AVCOL_TRC == AVCOL_TRC_LOG100
+    return (rgb <= 0.0f)
+        ? 0.01f
+        : pow(10.0f, 2.0f * (rgb - 1.0f));
+
+#elif AVCOL_TRC == AVCOL_TRC_LOG_SQRT
+    return (rgb <= 0.0f)
+        ? 0.00316227766
+        : pow(10.0f, 2.5f * (rgb - 1.0f));
+
+#elif AVCOL_TRC == AVCOL_TRC_IEC61966_2_4
+    const float a = 1.099296826809442;
+    const float b = 4.5f * 0.018053968510807;
+    return (rgb <= -b)
+        ? -pow(max((-(rgb) + (a - 1.0f)) / a, 0.0f), 1.0f / 0.45f)
+        : (rgb < b)
+            ? (rgb / 4.5f)
+            : pow(max((rgb + (a - 1.0f)) / a, 0.0f), 1.0f / 0.45f);
+
+#elif AVCOL_TRC == AVCOL_TRC_BT1361_ECG
+    const float a = 1.099296826809442;
+    const float b = 4.5f * 0.018053968510807;
+     return ( rgb <= -0.02025)
+        ? -pow(max((-4.0f * rgb - (a - 1.0f)) / a, 0.0f), 1.0f / 0.45f) / 4.0f
+        : (rgb < b)
+            ? rgb / 4.5f
+            : pow(max(( rgb + (a - 1.0f)) / a, 0.0f), 1.0f / 0.45f);
+
+#elif AVCOL_TRC == AVCOL_TRC_IEC61966_2_1
+     const float a = 1.055f;
+     const float b = 12.92f * 0.0031308f;
+     return ( rgb < b)
+        ? rgb / 12.92f
+        : pow(max((rgb + (a - 1.0f)) / a, 0.0f), 2.4f);
+
+#elif AVCOL_TRC == AVCOL_TRC_SMPTE2084
+    #define DST_LUMA_SCALE 0.01f
+    const float  c1 = (        3424.0 / 4096.0);
+    const float  c2 = ( 32.0 * 2413.0 / 4096.0);
+    const float  c3 = ( 32.0 * 2392.0 / 4096.0);
+    const float  m  = (128.0 * 2523.0 / 4096.0);
+    const float  n  = ( 0.25 * 2610.0 / 4096.0);
+    const float3 Em = pow(max(rgb, 0.0f), 1.0f / m);
+    return (c1 > Em)
+        ? 0.0f
+        : 10000.0f * pow(max((Em - c1) / (c2 - c3 * Em), 0.0f), 1.0f / n);
+
+#elif AVCOL_TRC == AVCOL_TRC_SMPTE428
+    const float scale428 = 52.37f / 48.0f;
+    return pow(max(rgb, 0.0f), 2.6f) * scale428;
+    
+#else //#elif AVCOL_TRC == AVCOL_TRC_ARIB_STD_B67
+    #define DST_LUMA_SCALE 10
+    const float a = 0.17883277f;
+    const float b = 0.28466892f;
+    const float c = 0.55991073f;
+    return (rgb <= 0.5f)
+        ? (rgb * rgb * (1.0f / 3.0f))
+        : ((exp((rgb - c) / a) + b) * (1.0f / 12.0f));
+#endif
+}
+
+//------------------------------------------------------------------------------------------
+// Tone Mapping
+//------------------------------------------------------------------------------------------
+
+#if IS_HDR
+/* http://filmicworlds.com/blog/filmic-tonemapping-operators/ */
+inline float3 hable(float3 rgb)
+{
+    //const float A = 0.15, B = 0.50, C = 0.10, D = 0.20, E = 0.02, F = 0.30;
+    //return ((rgb * (A * rgb + (C * B)) + (D * E)) / (rgb * (A * rgb + B) + (D * F))) - E / F;
+
+    return ((rgb * (0.15 * rgb + 0.05) + 0.004) / (rgb * (0.15 * rgb + 0.50) + (0.06))) - 0.06666666;
+}
+
+inline float3 toneMapping(float3 rgb)
+{
+#ifndef DST_LUMA_SCALE
+    #define DST_LUMA_SCALE 1
+#endif
+    //const float3 HABLE_DIV = 1 / hable(11.2);
+    //rgb = rgb * DST_LUMA_SCALE;
+    //return hable(rgb) * HABLE_DIV;
+
+    return hable(rgb * DST_LUMA_SCALE) * 1.3790642466494378;
+}
+#endif
+
+//------------------------------------------------------------------------------------------
+// Main function
+//------------------------------------------------------------------------------------------
+
+float4 main( PS_INPUT input ) : SV_TARGET
+{
+    
+#if SRC_BIT_DEPTH == SRC_BIT_DEPTH_8 
+    float3 data = getSampleYUV(input.uv);
+#else
+    float3 data = getSampleYUV_Bicubic(input.uv);
+#endif
+    
+    data = mul(MATRIX_YUV_RGB, data);
+    data = max( data, 0.0f );
+ 
+#if AVCOL_SPC != AVCOL_SPC_BT709
+ 
+    data = rgbInverseEOTF(data);
+    
+#if IS_HDR
+    data = toneMapping( data );
+#endif
+
+    data = mul(MATRIX_RGB_BT709, data);
+    
+    data = pow(max(data, 0.0f), 1.0 / 2.2);
+    
+#endif
+
+    return float4(data, 1.0f);
+}
