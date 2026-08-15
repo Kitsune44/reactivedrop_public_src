@@ -1033,10 +1033,10 @@
     <ClCompile Include="weapons_resource.cpp" />
     <ClCompile Include="weapon_selection.cpp" />
     <ClCompile Include="WorldDimsProxy.cpp" />
-    <ClCompile Include="videoservices\video_ffmpeg.cpp">
+    <ClCompile Include="videoservices\video_ffmpeg_player.cpp">
       <Filter>videoservices</Filter>
     </ClCompile>
-    <ClCompile Include="videoservices\video_material_simd.cpp">
+    <ClCompile Include="videoservices\video_ffmpeg_material_simd.cpp">
       <Filter>videoservices</Filter>
     </ClCompile>
     <ClCompile Include="swarm\rd_collections_crafting_research.cpp" />
@@ -2198,13 +2198,13 @@
     <ClInclude Include="vscript_client_nut.h" />
     <ClInclude Include="weapons_resource.h" />
     <ClInclude Include="weapon_selection.h" />
-    <ClInclude Include="videoservices\video_ffmpeg.h">
+    <ClInclude Include="videoservices\video_ffmpeg_player.h">
       <Filter>videoservices</Filter>
     </ClInclude>
-    <ClInclude Include="videoservices\video_material.h">
+    <ClInclude Include="videoservices\video_ffmpeg_material.h">
       <Filter>videoservices</Filter>
     </ClInclude>
-    <ClInclude Include="videoservices\video_material_simd.h">
+    <ClInclude Include="videoservices\video_ffmpeg_material_simd.h">
       <Filter>videoservices</Filter>
     </ClInclude>
     <ClInclude Include="swarm\rd_collections_crafting_research.h" />

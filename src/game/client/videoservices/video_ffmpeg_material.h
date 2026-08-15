@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "video_material_simd.h"
+#include "video_ffmpeg_material_simd.h"
 
 #include "materialsystem/imaterial.h"           // For IMaterial
 #include "materialsystem/itexture.h"            // For ITexture
@@ -16,9 +16,6 @@
 #include "keyvalues.h"                          // For KeyValues
 
 #include <cstdint>								// For uint8_t
-#include <cstddef>								// For size_t
-#include <string>								// For std::string
-
 
 
  /**
@@ -75,6 +72,33 @@ private:
 };
 
 
+ /**
+  * @class CUVInterleaveRegenerator
+  * @brief Interleaves U and V uint16 LE planes into BGRA8888 texels (10/12-bit path).
+  *        Texel memory = [Ulo][Uhi][Vlo][Vhi], which maps 1:1 to D3D A8R8G8B8
+  *        (B=Ulo, G=Uhi, R=Vlo, A=Vhi) with no byte swap. Branchless SIMD interleave.
+  * srcU/srcV - Pointers to externally managed planar data pointers.
+  */
+class CUVInterleaveRegenerator final : public ITextureRegenerator {
+public:
+    CUVInterleaveRegenerator( uint8_t **srcU, uint8_t **srcV ) noexcept
+        : m_srcU( srcU ), m_srcV( srcV ) {
+    }
+
+    void RegenerateTextureBits( ITexture *, IVTFTexture *dst, Rect_t * ) noexcept override {
+        VideoMaterialSIMD::InterleaveUV( *m_srcU, *m_srcV, dst->ImageData(), dst->FaceSizeInBytes( 0 ) );
+    }
+
+    void Release() noexcept override {
+        delete this;
+    }
+
+private:
+    uint8_t **m_srcU{ nullptr }; // Pointer to externally managed U plane data pointer.
+    uint8_t **m_srcV{ nullptr }; // Pointer to externally managed V plane data pointer.
+};
+
+
 /**
  * @class VideoSEMaterial
  * @brief Manages YUV textures, regeneartos and procedural material for video rendering.
@@ -105,10 +129,7 @@ public:
             };
         ShutdownTexture( m_pTextureNameY, m_pTextureY, m_pTextureRegenY );
         ShutdownTexture( m_pTextureNameYHi, m_pTextureYHi, m_pTextureRegenYHi );
-        ShutdownTexture( m_pTextureNameU, m_pTextureU, m_pTextureRegenU );
-        ShutdownTexture( m_pTextureNameUHi, m_pTextureUHi, m_pTextureRegenUHi );
-        ShutdownTexture( m_pTextureNameV, m_pTextureV, m_pTextureRegenV );
-        ShutdownTexture( m_pTextureNameVHi, m_pTextureVHi, m_pTextureRegenVHi );
+        ShutdownTexture( m_pTextureNameUV, m_pTextureUV, m_pTextureRegenUV );
         g_pMaterialSystem->EvictManagedResources();
 
         if ( m_pMaterial ) {
@@ -174,9 +195,8 @@ public:
         }
         else
         {
-            // 10/12-bit: six I8 planes - Y lo/hi, U lo/hi, V lo/hi.
-            // Only I8 is used (proven by the working 8-bit path); no RGBA8888/IA88,
-            // so no channel-order or alpha-range uncertainty in the engine's texture handling.
+            // 10/12-bit: Y as two I8 split planes (lo/hi) + U/V interleaved into one BGRA8888.
+            // BGRA8888 memory [B][G][R][A] == D3D A8R8G8B8 (no swap); texel = [Ulo][Uhi][Vlo][Vhi].
             m_pTextureRegenY = new CSplit16Regenerator( &srcY, VideoMaterialSIMD::SplitUint16Lo );
             CreateTexture( m_pTextureNameY, m_pTextureY, m_pTextureRegenY, IMAGE_FORMAT_I8,
                 static_cast< int >( videoWidthY ), static_cast< int >( videoHeightY ) );
@@ -184,26 +204,13 @@ public:
             CreateTexture( m_pTextureNameYHi, m_pTextureYHi, m_pTextureRegenYHi, IMAGE_FORMAT_I8,
                 static_cast< int >( videoWidthY ), static_cast< int >( videoHeightY ) );
 
-            m_pTextureRegenU = new CSplit16Regenerator( &srcU, VideoMaterialSIMD::SplitUint16Lo );
-            CreateTexture( m_pTextureNameU, m_pTextureU, m_pTextureRegenU, IMAGE_FORMAT_I8,
-                static_cast< int >( videoWidthUV ), static_cast< int >( videoHeightUV ) );
-            m_pTextureRegenUHi = new CSplit16Regenerator( &srcU, VideoMaterialSIMD::SplitUint16Hi );
-            CreateTexture( m_pTextureNameUHi, m_pTextureUHi, m_pTextureRegenUHi, IMAGE_FORMAT_I8,
-                static_cast< int >( videoWidthUV ), static_cast< int >( videoHeightUV ) );
-
-            m_pTextureRegenV = new CSplit16Regenerator( &srcV, VideoMaterialSIMD::SplitUint16Lo );
-            CreateTexture( m_pTextureNameV, m_pTextureV, m_pTextureRegenV, IMAGE_FORMAT_I8,
-                static_cast< int >( videoWidthUV ), static_cast< int >( videoHeightUV ) );
-            m_pTextureRegenVHi = new CSplit16Regenerator( &srcV, VideoMaterialSIMD::SplitUint16Hi );
-            CreateTexture( m_pTextureNameVHi, m_pTextureVHi, m_pTextureRegenVHi, IMAGE_FORMAT_I8,
+            m_pTextureRegenUV = new CUVInterleaveRegenerator( &srcU, &srcV );
+            CreateTexture( m_pTextureNameUV, m_pTextureUV, m_pTextureRegenUV, IMAGE_FORMAT_BGRA8888,
                 static_cast< int >( videoWidthUV ), static_cast< int >( videoHeightUV ) );
 
             pVMTKeyValues->SetString( "$textureY", m_pTextureY->GetName() );
             pVMTKeyValues->SetString( "$textureYhi", m_pTextureYHi->GetName() );
-            pVMTKeyValues->SetString( "$textureU", m_pTextureU->GetName() );
-            pVMTKeyValues->SetString( "$textureUhi", m_pTextureUHi->GetName() );
-            pVMTKeyValues->SetString( "$textureV", m_pTextureV->GetName() );
-            pVMTKeyValues->SetString( "$textureVhi", m_pTextureVHi->GetName() );
+            pVMTKeyValues->SetString( "$textureUV", m_pTextureUV->GetName() );
         }
 
         pVMTKeyValues->SetInt( "$bitdepth", bitDepth );
@@ -230,18 +237,15 @@ public:
     /** @brief Update textures with new YUV data. */
     void Update() noexcept {
         m_pTextureY->Download();
-        m_pTextureYHi->Download();
-        if ( m_pTextureUHi )
+        if ( m_pTextureUV )
         {
-            // 10/12-bit: six planes
-            m_pTextureU->Download();
-            m_pTextureUHi->Download();
-            m_pTextureV->Download();
-            m_pTextureVHi->Download();
+            // 10/12-bit: Y lo/hi + UV (BGRA8888)
+            m_pTextureYHi->Download();
+            m_pTextureUV->Download();
         }
         else
         {
-            // 8-bit: three planes (m_pTextureYHi also exists but is unused; safe to skip)
+            // 8-bit: three I8 planes
             m_pTextureU->Download();
             m_pTextureV->Download();
         }
@@ -251,20 +255,17 @@ private:
     ITextureRegenerator *m_pTextureRegenY{ nullptr };
     ITextureRegenerator *m_pTextureRegenYHi{ nullptr };
     ITextureRegenerator *m_pTextureRegenU{ nullptr };
-    ITextureRegenerator *m_pTextureRegenUHi{ nullptr };
     ITextureRegenerator *m_pTextureRegenV{ nullptr };
-    ITextureRegenerator *m_pTextureRegenVHi{ nullptr };
+    ITextureRegenerator *m_pTextureRegenUV{ nullptr };
     const char *m_pTextureNameY{ "videoFFmpeg_background_y" };
     const char *m_pTextureNameYHi{ "videoFFmpeg_background_yhi" };
     const char *m_pTextureNameU{ "videoFFmpeg_background_u" };
-    const char *m_pTextureNameUHi{ "videoFFmpeg_background_uhi" };
     const char *m_pTextureNameV{ "videoFFmpeg_background_v" };
-    const char *m_pTextureNameVHi{ "videoFFmpeg_background_vhi" };
+    const char *m_pTextureNameUV{ "videoFFmpeg_background_uv" };
     ITexture *m_pTextureY{ nullptr };
     ITexture *m_pTextureYHi{ nullptr };
     ITexture *m_pTextureU{ nullptr };
-    ITexture *m_pTextureUHi{ nullptr };
     ITexture *m_pTextureV{ nullptr };
-    ITexture *m_pTextureVHi{ nullptr };
+    ITexture *m_pTextureUV{ nullptr };
     IMaterial *m_pMaterial{ nullptr };
 };

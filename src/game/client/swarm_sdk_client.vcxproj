@@ -2457,12 +2457,12 @@ exit /b 0
     <ClCompile Include="vgui_netgraphpanel.cpp" />
     <ClCompile Include="vgui_slideshow_display_screen.cpp" />
     <ClCompile Include="vgui_video.cpp" />
-    <ClCompile Include="videoservices\video_material_simd.cpp">
+    <ClCompile Include="videoservices\video_ffmpeg_material_simd.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">All</AssemblerOutput>
       <UseUnicodeForAssemblerListing Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</UseUnicodeForAssemblerListing>
       <AssemblerListingLocation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)TEST</AssemblerListingLocation>
     </ClCompile>
-    <ClCompile Include="videoservices\video_ffmpeg.cpp" />
+    <ClCompile Include="videoservices\video_ffmpeg_player.cpp" />
     <ClCompile Include="view.cpp" />
     <ClCompile Include="viewangleanim.cpp" />
     <ClCompile Include="ViewConeImage.cpp" />
@@ -3579,9 +3579,9 @@ exit /b 0
     <ClInclude Include="vgui_hudvideo.h" />
     <ClInclude Include="vgui_int.h" />
     <ClInclude Include="vgui_video.h" />
-    <ClInclude Include="videoservices\video_material_simd.h" />
-    <ClInclude Include="videoservices\video_material.h" />
-    <ClInclude Include="videoservices\video_ffmpeg.h" />
+    <ClInclude Include="videoservices\video_ffmpeg_material_simd.h" />
+    <ClInclude Include="videoservices\video_ffmpeg_material.h" />
+    <ClInclude Include="videoservices\video_ffmpeg_player.h" />
     <ClInclude Include="view.h" />
     <ClInclude Include="viewangleanim.h" />
     <ClInclude Include="ViewConeImage.h" />

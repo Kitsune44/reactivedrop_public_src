@@ -10,10 +10,9 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
     BEGIN_SHADER_PARAMS
         SHADER_PARAM( textureY, SHADER_PARAM_TYPE_TEXTURE, "", "Y Plane (I8, 8-bit full / 10-12-bit lo)" )
         SHADER_PARAM( textureYhi, SHADER_PARAM_TYPE_TEXTURE, "", "Y High byte plane (10/12-bit I8)" )
-        SHADER_PARAM( textureU, SHADER_PARAM_TYPE_TEXTURE, "", "U Plane (I8, 8-bit full / 10-12-bit lo)" )
-        SHADER_PARAM( textureUhi, SHADER_PARAM_TYPE_TEXTURE, "", "U High byte plane (10/12-bit I8)" )
-        SHADER_PARAM( textureV, SHADER_PARAM_TYPE_TEXTURE, "", "V Plane (I8, 8-bit full / 10-12-bit lo)" )
-        SHADER_PARAM( textureVhi, SHADER_PARAM_TYPE_TEXTURE, "", "V High byte plane (10/12-bit I8)" )
+        SHADER_PARAM( textureU, SHADER_PARAM_TYPE_TEXTURE, "", "U Plane (8-bit I8)" )
+        SHADER_PARAM( textureV, SHADER_PARAM_TYPE_TEXTURE, "", "V Plane (8-bit I8)" )
+        SHADER_PARAM( textureUV, SHADER_PARAM_TYPE_TEXTURE, "", "UV Plane (10/12-bit BGRA8888)" )
         SHADER_PARAM( bitdepth, SHADER_PARAM_TYPE_INTEGER, "", "8=8bit, 10=10bit, 12=12bit" )
         SHADER_PARAM( colorrange, SHADER_PARAM_TYPE_INTEGER, "", "1=Limited, 2=Full" )
         SHADER_PARAM( colorspace, SHADER_PARAM_TYPE_INTEGER, "", "FFmpeg: AVColorSpace" )
@@ -44,7 +43,7 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
         }
 
         // Texture layout depends on bit depth: 8-bit uses 3 I8 planes,
-        // 10/12-bit uses 6 I8 planes (lo/hi split of Y, U, V).
+        // 10/12-bit uses Y (I8 lo/hi) + UV (BGRA8888).
         {
             const bool bHighBitDepth = ( params[ bitdepth ]->GetIntValue() != 0 );
             if ( bHighBitDepth )
@@ -53,13 +52,9 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
                 {
                     Warning( "Shader 'video_yuv': 10/12-bit requires $textureYhi (I8 high byte plane).\n" );
                 }
-                if ( !params[ textureUhi ]->IsDefined() )
+                if ( !params[ textureUV ]->IsDefined() )
                 {
-                    Warning( "Shader 'video_yuv': 10/12-bit requires $textureUhi (I8 high byte plane).\n" );
-                }
-                if ( !params[ textureVhi ]->IsDefined() )
-                {
-                    Warning( "Shader 'video_yuv': 10/12-bit requires $textureVhi (I8 high byte plane).\n" );
+                    Warning( "Shader 'video_yuv': 10/12-bit requires $textureUV (BGRA8888).\n" );
                 }
             }
             else
@@ -218,14 +213,8 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
         {
             if ( params[ textureYhi ]->IsDefined() )
                 LoadTexture( textureYhi );
-            if ( params[ textureU ]->IsDefined() )
-                LoadTexture( textureU );
-            if ( params[ textureUhi ]->IsDefined() )
-                LoadTexture( textureUhi );
-            if ( params[ textureV ]->IsDefined() )
-                LoadTexture( textureV );
-            if ( params[ textureVhi ]->IsDefined() )
-                LoadTexture( textureVhi );
+            if ( params[ textureUV ]->IsDefined() )
+                LoadTexture( textureUV );
         }
         else
         {
@@ -243,16 +232,10 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
             pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
             pShaderShadow->EnableTexture( SHADER_SAMPLER1, true );
             pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
-            pShaderShadow->EnableTexture( SHADER_SAMPLER3, params[ bitdepth ]->GetIntValue() != 0 );
-            pShaderShadow->EnableTexture( SHADER_SAMPLER4, params[ bitdepth ]->GetIntValue() != 0 );
-            pShaderShadow->EnableTexture( SHADER_SAMPLER5, params[ bitdepth ]->GetIntValue() != 0 );
 
             pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
             pShaderShadow->EnableSRGBRead( SHADER_SAMPLER1, false );
             pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, false );
-            pShaderShadow->EnableSRGBRead( SHADER_SAMPLER3, false );
-            pShaderShadow->EnableSRGBRead( SHADER_SAMPLER4, false );
-            pShaderShadow->EnableSRGBRead( SHADER_SAMPLER5, false );
 
             unsigned int nFlags = VERTEX_POSITION;
             int nTexCoordCount = 1;
@@ -278,10 +261,7 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
             if ( params[ bitdepth ]->GetIntValue() != 0 )
             {
                 BindTexture( SHADER_SAMPLER1, textureYhi, FRAME );
-                BindTexture( SHADER_SAMPLER2, textureU, FRAME );
-                BindTexture( SHADER_SAMPLER3, textureUhi, FRAME );
-                BindTexture( SHADER_SAMPLER4, textureV, FRAME );
-                BindTexture( SHADER_SAMPLER5, textureVhi, FRAME );
+                BindTexture( SHADER_SAMPLER2, textureUV, FRAME );
             }
             else
             {

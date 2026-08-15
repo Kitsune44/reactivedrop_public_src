@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include "video_material.h"
+#include "video_ffmpeg_material.h"
 
 #include <string>
+
 
  // -------------------------------------------------------------------
  // Forward declarations
@@ -22,7 +23,6 @@ class AVCodecContext;
 class AVFrame;
 class AVPacket;
 
-class VideoSEMaterial;
 
  // -------------------------------------------------------------------
  // VideoFFmpegPlayer class declaration

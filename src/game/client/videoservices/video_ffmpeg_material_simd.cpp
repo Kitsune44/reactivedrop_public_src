@@ -8,17 +8,12 @@
 
 #include "cbase.h"
 
-#include "video_material_simd.h"
+#include "video_ffmpeg_material_simd.h"
 
 #include <immintrin.h>
 #include <intrin.h>
 #include <cstring>
 
-#if defined(__clang__)
-#define __m128i_u __m128i
-#define __m256i_u __m256i
-#define __m512i_u __m512i
-#endif
 
 // --------------------------------------------------------------------------------------------
 // CPU Feature Detection
@@ -168,6 +163,167 @@ namespace
         }
         if ( rem > 0 )
             memcpy( d, s, rem );
+    }
+
+    //-----------------------------------------------------------------
+    // INTERLEAVE UV: U + V (uint16 LE, 2 B/sample) -> BGRA8888 texels
+    // texel memory = [Ulo][Uhi][Vlo][Vhi] == D3D A8R8G8B8 (B=Ulo,G=Uhi,R=Vlo,A=Vhi)
+    // unpacklo/hi_epi16 interleaves 16-bit words: u0,v0,u1,v1 -> exactly our layout.
+    //-----------------------------------------------------------------
+
+    void interleave_uv_sse2( uint8_t *srcU, uint8_t *srcV, uint8_t *dst, size_t bts ) noexcept
+    {
+        const size_t samples = bts >> 2;                    // BGRA8888: 4 bytes per sample
+
+        // Head: align dst to 16B (streaming stores require alignment); loads stay unaligned.
+        // dst advances 4 B/sample, so convert the byte distance to alignment into samples.
+        size_t head = ( ( 16 - ( reinterpret_cast< uintptr_t >( dst ) & MASK_16B ) ) & MASK_16B ) >> 2;
+        if ( head > samples )
+            head = samples;
+
+        {
+            const uint16_t *pu = reinterpret_cast< const uint16_t * >( srcU );
+            const uint16_t *pv = reinterpret_cast< const uint16_t * >( srcV );
+            uint8_t *pd = dst;
+            size_t h = head;
+            while ( h-- )
+            {
+                const uint32_t uv = static_cast< uint32_t >( *pu++ ) | ( static_cast< uint32_t >( *pv++ ) << 16 );
+                *pd++ = static_cast< uint8_t >( uv & 0xFF );            // Ulo
+                *pd++ = static_cast< uint8_t >( ( uv >> 8 ) & 0xFF );   // Uhi
+                *pd++ = static_cast< uint8_t >( ( uv >> 16 ) & 0xFF );  // Vlo
+                *pd++ = static_cast< uint8_t >( uv >> 24 );             // Vhi
+            }
+            srcU += head * 2;
+            srcV += head * 2;
+            dst += head * 4;
+        }
+
+        const size_t rem_samples = samples - head;
+
+        const uint8_t *u = srcU;
+        const uint8_t *v = srcV;
+        uint8_t *d = dst;
+
+        // 8 samples per iteration (16 B src per plane -> 32 B dst)
+        const size_t n8 = rem_samples >> 3;
+        for ( size_t i = 0; i < n8; ++i )
+        {
+            __m128i u0 = _mm_loadu_si128( reinterpret_cast< const __m128i * >( u ) );
+            u += 16;
+            __m128i v0 = _mm_loadu_si128( reinterpret_cast< const __m128i * >( v ) );
+            v += 16;
+            __m128i lo = _mm_unpacklo_epi16( u0, v0 );      // s0..s3 texels
+            __m128i hi = _mm_unpackhi_epi16( u0, v0 );      // s4..s7 texels
+            _mm_stream_si128( reinterpret_cast< __m128i * >( d ), lo );
+            d += 16;
+            _mm_stream_si128( reinterpret_cast< __m128i * >( d ), hi );
+            d += 16;
+        }
+
+        // Tail: 0-7 samples, scalar
+        size_t rem = rem_samples & 7;
+        const uint16_t *pu = reinterpret_cast< const uint16_t * >( u );
+        const uint16_t *pv = reinterpret_cast< const uint16_t * >( v );
+        uint8_t *pd = d;
+        while ( rem-- )
+        {
+            const uint32_t uv = static_cast< uint32_t >( *pu++ ) | ( static_cast< uint32_t >( *pv++ ) << 16 );
+            *pd++ = static_cast< uint8_t >( uv & 0xFF );
+            *pd++ = static_cast< uint8_t >( ( uv >> 8 ) & 0xFF );
+            *pd++ = static_cast< uint8_t >( ( uv >> 16 ) & 0xFF );
+            *pd++ = static_cast< uint8_t >( uv >> 24 );
+        }
+
+        // Wait for all streaming stores before returning.
+        _mm_sfence();
+    }
+
+    void interleave_uv_avx2( uint8_t *srcU, uint8_t *srcV, uint8_t *dst, size_t bts ) noexcept
+    {
+        const size_t samples = bts >> 2;
+
+        // Head: align dst to 32B (two _mm256_stream_si256 per iteration -> 64B dst/iter).
+        // dst advances 4 B/sample, so convert the byte distance to alignment into samples.
+        size_t head = ( ( 32 - ( reinterpret_cast< uintptr_t >( dst ) & MASK_32B ) ) & MASK_32B ) >> 2;
+        if ( head > samples )
+            head = samples;
+        {
+            const uint16_t *pu = reinterpret_cast< const uint16_t * >( srcU );
+            const uint16_t *pv = reinterpret_cast< const uint16_t * >( srcV );
+            uint8_t *pd = dst;
+            size_t h = head;
+            while ( h-- )
+            {
+                const uint32_t uv = static_cast< uint32_t >( *pu++ ) | ( static_cast< uint32_t >( *pv++ ) << 16 );
+                *pd++ = static_cast< uint8_t >( uv & 0xFF );
+                *pd++ = static_cast< uint8_t >( ( uv >> 8 ) & 0xFF );
+                *pd++ = static_cast< uint8_t >( ( uv >> 16 ) & 0xFF );
+                *pd++ = static_cast< uint8_t >( uv >> 24 );
+            }
+            srcU += head * 2;
+            srcV += head * 2;
+            dst += head * 4;
+        }
+
+        const size_t rem_samples = samples - head;
+
+        const uint8_t *u = srcU;
+        const uint8_t *v = srcV;
+        uint8_t *d = dst;
+
+        // 16 samples per iteration (32 B src per plane -> 64 B dst)
+        const size_t n16 = rem_samples >> 4;
+        for ( size_t i = 0; i < n16; ++i )
+        {
+            __m256i u0 = _mm256_loadu_si256( reinterpret_cast< const __m256i * >( u ) );
+            u += 32;
+            __m256i v0 = _mm256_loadu_si256( reinterpret_cast< const __m256i * >( v ) );
+            v += 32;
+
+            // unpacklo/hi_epi16 operate per 128-bit lane:
+            //   lo = [s0..s3 | s8..s11], hi = [s4..s7 | s12..s15]
+            // permute2x128 reorders the 128-bit halves into linear sample order:
+            //   out0 = [s0..s3, s4..s7], out1 = [s8..s11, s12..s15]
+            __m256i lo = _mm256_unpacklo_epi16( u0, v0 );
+            __m256i hi = _mm256_unpackhi_epi16( u0, v0 );
+            _mm256_stream_si256( reinterpret_cast< __m256i * >( d ),
+                _mm256_permute2x128_si256( lo, hi, 0x20 ) );
+            d += 32;
+            _mm256_stream_si256( reinterpret_cast< __m256i * >( d ),
+                _mm256_permute2x128_si256( lo, hi, 0x31 ) );
+            d += 32;
+        }
+
+        // SSE2 tail for the remaining 8 samples (regular stores; main loop sfence orders streaming)
+        const __m128i *us = reinterpret_cast< const __m128i * >( u );
+        const __m128i *vs = reinterpret_cast< const __m128i * >( v );
+        __m128i *ds = reinterpret_cast< __m128i * >( d );
+        size_t n8 = ( rem_samples & 15 ) >> 3;
+        while ( n8-- )
+        {
+            __m128i u0 = _mm_loadu_si128( us++ );
+            __m128i v0 = _mm_loadu_si128( vs++ );
+            _mm_storeu_si128( ds++, _mm_unpacklo_epi16( u0, v0 ) );
+            _mm_storeu_si128( ds++, _mm_unpackhi_epi16( u0, v0 ) );
+        }
+
+        // Tail: 0-7 samples, scalar
+        size_t rem = rem_samples & 7;
+        const uint16_t *pu = reinterpret_cast< const uint16_t * >( us );
+        const uint16_t *pv = reinterpret_cast< const uint16_t * >( vs );
+        uint8_t *pd = reinterpret_cast< uint8_t * >( ds );
+        while ( rem-- )
+        {
+            const uint32_t uv = static_cast< uint32_t >( *pu++ ) | ( static_cast< uint32_t >( *pv++ ) << 16 );
+            *pd++ = static_cast< uint8_t >( uv & 0xFF );
+            *pd++ = static_cast< uint8_t >( ( uv >> 8 ) & 0xFF );
+            *pd++ = static_cast< uint8_t >( ( uv >> 16 ) & 0xFF );
+            *pd++ = static_cast< uint8_t >( uv >> 24 );
+        }
+
+        // Wait for all streaming stores before returning.
+        _mm_sfence();
     }
 
     //-----------------------------------------------------------------
@@ -635,12 +791,14 @@ SIMDBackend &GetSIMD() noexcept
                 b.copy_bytes = copy_bytes_avx2;
                 b.split_lo = split_lo_avx2;
                 b.split_hi = split_hi_avx2;
+                b.interleave_uv = interleave_uv_avx2;
             }
             else
             {
                 b.copy_bytes = copy_bytes_sse2;
                 b.split_lo = split_lo_sse2;
                 b.split_hi = split_hi_sse2;
+                b.interleave_uv = interleave_uv_sse2;
             }
 
             return b;
