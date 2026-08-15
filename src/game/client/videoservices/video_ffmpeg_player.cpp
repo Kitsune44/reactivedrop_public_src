@@ -11,7 +11,7 @@
  */
 
 #include "cbase.h"
-#include "video_ffmpeg.h"
+#include "video_ffmpeg_player.h"
 
 extern "C" {
 #include <libavformat/avformat.h>

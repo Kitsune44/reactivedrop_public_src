@@ -195,10 +195,7 @@ sampler samplerU : register( s1 );
 sampler samplerV : register( s2 );
 #else
 sampler samplerYhi : register( s1 );
-sampler samplerU : register( s2 );
-sampler samplerUhi : register( s3 );
-sampler samplerV : register( s4 );
-sampler samplerVhi : register( s5 );
+sampler samplerUV : register( s2 );
 #endif
 
 
@@ -212,9 +209,10 @@ struct PS_INPUT
 // Sampling YUV textures
 //------------------------------------------------------------------------------------------
 // 8-bit:     three I8 planes, unsigned [0,1], hardware bilinear.
-// 10/12-bit: Y split into two I8 planes (lo = even bytes, hi = odd bytes of uint16 LE),
-//            U+V interleaved in RGBA8888 (R=Ulo,G=Uhi,B=Vlo,A=Vhi). All channels are
-//            unsigned 8-bit, so the hardware bilinear interpolates them linearly and the
+// 10/12-bit: Y split into two I8 planes (lo/hi); U+V interleaved in BGRA8888.
+//            BGRA8888 memory [B][G][R][A] == D3D A8R8G8B8 (no byte swap), texel = [Ulo][Uhi][Vlo][Vhi],
+//            so: B=Ulo, G=Uhi, R=Vlo, A=Vhi -> U = .b + 256*.g, V = .r + 256*.a.
+//            All channels unsigned 8-bit -> hardware bilinear interpolates linearly and the
 //            reconstruction (lo + 256*hi) commutes with filtering. Raw -> SCALE -> [0,1].
 
 inline float3 getSampleYUV( float2 uv )
@@ -226,18 +224,14 @@ inline float3 getSampleYUV( float2 uv )
         tex2D( samplerV, uv ).r
     );
 #else
-    // Six I8 planes (all .r channels, identical to the working 8-bit path):
-    // Y = lo + 256*hi, U = Ulo + 256*Uhi, V = Vlo + 256*Vhi, then /255 * SCALE = raw/1023
+    // Y: I8 lo/hi planes; UV: BGRA8888 (B=Ulo, G=Uhi, R=Vlo, A=Vhi)
     float yLo = tex2D( samplerY,   uv ).r;
     float yHi = tex2D( samplerYhi, uv ).r;
-    float uLo = tex2D( samplerU,   uv ).r;
-    float uHi = tex2D( samplerUhi, uv ).r;
-    float vLo = tex2D( samplerV,   uv ).r;
-    float vHi = tex2D( samplerVhi, uv ).r;
+    float4 uvS = tex2D( samplerUV, uv );
     float3 yuv = float3(
         mad( 256.0f, yHi, yLo ),
-        mad( 256.0f, uHi, uLo ),
-        mad( 256.0f, vHi, vLo )
+        mad( 256.0f, uvS.g, uvS.b ),
+        mad( 256.0f, uvS.a, uvS.r )
     ) * SCALE;
 #endif
 

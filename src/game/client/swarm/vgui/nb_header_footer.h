@@ -8,7 +8,8 @@
 #include <vgui_controls/EditablePanel.h>
 
 #include "avi/ibik.h"
-#include "video_ffmpeg.h"
+#include "video_ffmpeg_player.h"
+
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
 class vgui::Label;
