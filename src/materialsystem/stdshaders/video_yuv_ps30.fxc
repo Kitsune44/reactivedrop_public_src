@@ -7,6 +7,7 @@
 // Static parameters
 // match with video_yuv_dx9.cpp
 //
+// STATIC: "SRC_RGB"           "0..1"
 // STATIC: "SRC_BIT_DEPTH"      "0..2"
 // STATIC: "AVCOL_RANGE"        "0..1"
 // STATIC: "AVCOL_SPC"          "0..5"
@@ -356,12 +357,9 @@ inline float3 hable(float3 rgb)
 
 inline float3 toneMapping(float3 rgb)
 {
-#ifndef DST_LUMA_SCALE
-    #define DST_LUMA_SCALE 1
+#if !defined(DST_LUMA_SCALE)
+    #define DST_LUMA_SCALE 1.0f
 #endif
-    //const float3 HABLE_DIV = 1 / hable(11.2);
-    //rgb = rgb * DST_LUMA_SCALE;
-    //return hable(rgb) * HABLE_DIV;
 
     return hable(rgb * DST_LUMA_SCALE) * 1.3790642466494378;
 }
@@ -373,23 +371,54 @@ inline float3 toneMapping(float3 rgb)
 
 float4 main( PS_INPUT input ) : SV_TARGET
 {
-    float3 data = getSampleYUV( input.uv );
+#if SRC_RGB
+    // HW (DXVA2) RGB input: the render target already holds RGB, so YUV
+    // reconstruction is bypassed. The conversion is split by content type:
+    //   SDR - the processor was asked (via DestFormat) for non-linear BT.709
+    //         RGB, so this is a straight passthrough.
+    //   HDR - the processor was asked (via DestFormat.VideoTransferFunction =
+    //         DXVA2_VideoTransFunc_10) for LINEAR RGB in the source gamut;
+    //         tone map, map to BT.709 and apply the output transfer. No EOTF
+    //         here - the input is already linear.
+    float3 data = tex2D( samplerY, input.uv ).rgb;
+    data = max( data, 0.0f );
 
+    #if IS_HDR
+        static const float3x3 MATRIX_BT709_RGB_YUV = float3x3(
+            0.212600f,  0.715200f,  0.072200f,
+           -0.114572f, -0.385428f,  0.500000f,
+            0.500000f, -0.454153f, -0.045847f);
+        data = mul(MATRIX_BT709_RGB_YUV, data);
+        data = mul( MATRIX_YUV_RGB, data );
+        #if AVCOL_SPC != AVCOL_SPC_BT709
+            data = rgbInverseEOTF(data);
+
+            #if IS_HDR
+                data = toneMapping( data );
+            #endif
+
+            data = mul(MATRIX_RGB_BT709, data);
+            data = pow(max(data, 0.0f), 1.0 / 2.2);
+        #endif
+    #endif
+
+#else
+    // YUV path (unchanged).
+    float3 data = getSampleYUV( input.uv );
     data = mul( MATRIX_YUV_RGB, data );
     data = max( data, 0.0f );
- 
-#if AVCOL_SPC != AVCOL_SPC_BT709
- 
-    data = rgbInverseEOTF(data);
-    
-#if IS_HDR
-    data = toneMapping( data );
-#endif
 
-    data = mul(MATRIX_RGB_BT709, data);
-    
-    data = pow(max(data, 0.0f), 1.0 / 2.2);
-    
+    #if AVCOL_SPC != AVCOL_SPC_BT709
+        data = rgbInverseEOTF(data);
+
+        #if IS_HDR
+            data = toneMapping( data );
+        #endif
+
+        data = mul(MATRIX_RGB_BT709, data);
+        data = pow(max(data, 0.0f), 1.0 / 2.2);
+    #endif
+
 #endif
 
     return float4(data, 1.0f);

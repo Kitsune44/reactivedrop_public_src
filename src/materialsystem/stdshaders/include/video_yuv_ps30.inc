@@ -14,12 +14,14 @@
 #include "shaderlib/cshader.h"
 class video_yuv_ps30_Static_Index
 {
+	unsigned int m_nSRC_RGB : 2;
 	unsigned int m_nSRC_BIT_DEPTH : 2;
 	unsigned int m_nAVCOL_RANGE : 2;
 	unsigned int m_nAVCOL_SPC : 3;
 	unsigned int m_nAVCOL_TRC : 4;
 	unsigned int m_nAVCOL_PRI : 4;
 #ifdef _DEBUG
+	bool m_bSRC_RGB : 1;
 	bool m_bSRC_BIT_DEPTH : 1;
 	bool m_bAVCOL_RANGE : 1;
 	bool m_bAVCOL_SPC : 1;
@@ -27,6 +29,15 @@ class video_yuv_ps30_Static_Index
 	bool m_bAVCOL_PRI : 1;
 #endif	// _DEBUG
 public:
+	void SetSRC_RGB( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nSRC_RGB = i;
+#ifdef _DEBUG
+		m_bSRC_RGB = true;
+#endif	// _DEBUG
+	}
+
 	void SetSRC_BIT_DEPTH( int i )
 	{
 		Assert( i >= 0 && i <= 2 );
@@ -74,12 +85,14 @@ public:
 
 	video_yuv_ps30_Static_Index( IShaderShadow* pShaderShadow, IMaterialVar** params )
 	{
+		m_nSRC_RGB = 0;
 		m_nSRC_BIT_DEPTH = 0;
 		m_nAVCOL_RANGE = 0;
 		m_nAVCOL_SPC = 0;
 		m_nAVCOL_TRC = 0;
 		m_nAVCOL_PRI = 0;
 #ifdef _DEBUG
+		m_bSRC_RGB = false;
 		m_bSRC_BIT_DEPTH = false;
 		m_bAVCOL_RANGE = false;
 		m_bAVCOL_SPC = false;
@@ -90,12 +103,12 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bSRC_BIT_DEPTH && m_bAVCOL_RANGE && m_bAVCOL_SPC && m_bAVCOL_TRC && m_bAVCOL_PRI );
-		return ( 1 * m_nSRC_BIT_DEPTH ) + ( 3 * m_nAVCOL_RANGE ) + ( 6 * m_nAVCOL_SPC ) + ( 36 * m_nAVCOL_TRC ) + ( 468 * m_nAVCOL_PRI ) + 0;
+		Assert( m_bSRC_RGB && m_bSRC_BIT_DEPTH && m_bAVCOL_RANGE && m_bAVCOL_SPC && m_bAVCOL_TRC && m_bAVCOL_PRI );
+		return ( 1 * m_nSRC_RGB ) + ( 2 * m_nSRC_BIT_DEPTH ) + ( 6 * m_nAVCOL_RANGE ) + ( 12 * m_nAVCOL_SPC ) + ( 72 * m_nAVCOL_TRC ) + ( 936 * m_nAVCOL_PRI ) + 0;
 	}
 };
 
-#define shaderStaticTest_video_yuv_ps30 psh_forgot_to_set_static_SRC_BIT_DEPTH + psh_forgot_to_set_static_AVCOL_RANGE + psh_forgot_to_set_static_AVCOL_SPC + psh_forgot_to_set_static_AVCOL_TRC + psh_forgot_to_set_static_AVCOL_PRI
+#define shaderStaticTest_video_yuv_ps30 psh_forgot_to_set_static_SRC_RGB + psh_forgot_to_set_static_SRC_BIT_DEPTH + psh_forgot_to_set_static_AVCOL_RANGE + psh_forgot_to_set_static_AVCOL_SPC + psh_forgot_to_set_static_AVCOL_TRC + psh_forgot_to_set_static_AVCOL_PRI
 
 
 class video_yuv_ps30_Dynamic_Index

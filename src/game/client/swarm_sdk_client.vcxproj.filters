@@ -1040,6 +1040,9 @@
       <Filter>videoservices</Filter>
     </ClCompile>
     <ClCompile Include="swarm\rd_collections_crafting_research.cpp" />
+    <ClCompile Include="videoservices\rd_d3d9hook.cpp">
+      <Filter>videoservices</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\steam\isteamapps.h" />
@@ -2208,6 +2211,9 @@
       <Filter>videoservices</Filter>
     </ClInclude>
     <ClInclude Include="swarm\rd_collections_crafting_research.h" />
+    <ClInclude Include="videoservices\rd_d3d9hook.h">
+      <Filter>videoservices</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\common\jpeglib.lib" />
@@ -2232,13 +2238,19 @@
     <Library Include="..\..\lib\public\vpklib.lib" />
     <Library Include="..\..\lib\public\vstdlib.lib" />
     <Library Include="..\..\lib\public\vtf.lib" />
-    <Library Include="videoservices\lib\win32\avcodec.lib">
+    <Library Include="videoservices\lib\win32\ms\dxguid.lib">
       <Filter>videoservices\lib</Filter>
     </Library>
-    <Library Include="videoservices\lib\win32\avformat.lib">
+    <Library Include="videoservices\lib\win32\ms\dxva2.lib">
       <Filter>videoservices\lib</Filter>
     </Library>
-    <Library Include="videoservices\lib\win32\avutil.lib">
+    <Library Include="videoservices\lib\win32\ffmpeg\avcodec.lib">
+      <Filter>videoservices\lib</Filter>
+    </Library>
+    <Library Include="videoservices\lib\win32\ffmpeg\avformat.lib">
+      <Filter>videoservices\lib</Filter>
+    </Library>
+    <Library Include="videoservices\lib\win32\ffmpeg\avutil.lib">
       <Filter>videoservices\lib</Filter>
     </Library>
   </ItemGroup>
