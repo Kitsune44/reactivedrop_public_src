@@ -22,6 +22,9 @@ class AVStream;
 class AVCodecContext;
 class AVFrame;
 class AVPacket;
+struct AVBufferRef;
+struct AVCodec;
+struct IDirect3DDeviceManager9;
 
 
  // -------------------------------------------------------------------
@@ -75,6 +78,25 @@ private:
     bool TryReceiveFrame() noexcept;
     bool DecodeNextFrame() noexcept;
     void PrintInfo( std::string &filePath ) noexcept;
+
+    // -------------------------------------------------------------------
+    // Hardware (DXVA2) decode path
+    // -------------------------------------------------------------------
+    static void DeviceResetCallback( bool bPreReset );   // registered in RD_D3D9
+    void HandleDeviceReset( bool bPreReset );
+    bool InitHardwareDecode() noexcept;
+    void ShutdownHardwareDecode() noexcept;
+    bool RecreateHardwareDecode() noexcept;
+    bool RestartSoftwareDecode( const AVCodec *codec ) noexcept;
+
+    bool m_bHardwareDecode{ false };
+    bool m_bHWReinitPending{ false };
+    AVBufferRef *m_hwDeviceCtx{ nullptr };
+    AVBufferRef *m_hwFramesCtx{ nullptr };
+    IDirect3DDeviceManager9 *m_devMgr{ nullptr };
+    unsigned int m_devMgrResetToken{ 0 };
+    const AVCodec *m_swCodec{ nullptr };
+    int m_hwSwFormat{ -1 };   // AVPixelFormat of the decoder surfaces
 
     char m_errbuf[ 64 ]{};
     bool m_isValid{ false };

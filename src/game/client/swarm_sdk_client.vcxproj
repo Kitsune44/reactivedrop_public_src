@@ -22,7 +22,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <VCToolsVersion>
@@ -210,7 +210,7 @@ exit /b 0
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\hl2;.\swarm;.\swarm\vgui;..\statemachine;..\..\game\shared\multiplayer;..\..\game\shared\swarm;.\;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\shared;.\game_controls;$(IntDir);..\..\game\client\swarm\gameui;..\..\public\video;.\videoservices;.\videoservices\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\hl2;.\swarm;.\swarm\vgui;..\statemachine;..\..\game\shared\multiplayer;..\..\game\shared\swarm;.\;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\shared;.\game_controls;$(IntDir);..\..\game\client\swarm\gameui;..\..\public\video;.\videoservices;.\videoservices\include;.\videoservices\include\ms;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;DLLNAME=client;VPCGAME=swarm;VPCGAMECAPS=SWARM;_DLL_EXT=.dll;COMPILER_MSVC32;COMPILER_MSVC;MEMOVERRIDE_MODULE=client;NO_STRING_T;CLIENT_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;ENABLE_HTMLWINDOW;fopen=dont_use_fopen;INFESTED_DLL;SWARM_DLL;HL2_EPISODIC;INFESTED_PARTICLES;GAMEUI_EMBEDDED;GAMEUI_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -2457,6 +2457,7 @@ exit /b 0
     <ClCompile Include="vgui_netgraphpanel.cpp" />
     <ClCompile Include="vgui_slideshow_display_screen.cpp" />
     <ClCompile Include="vgui_video.cpp" />
+    <ClCompile Include="videoservices\rd_d3d9hook.cpp" />
     <ClCompile Include="videoservices\video_ffmpeg_material_simd.cpp">
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">All</AssemblerOutput>
       <UseUnicodeForAssemblerListing Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</UseUnicodeForAssemblerListing>
@@ -3579,6 +3580,7 @@ exit /b 0
     <ClInclude Include="vgui_hudvideo.h" />
     <ClInclude Include="vgui_int.h" />
     <ClInclude Include="vgui_video.h" />
+    <ClInclude Include="videoservices\rd_d3d9hook.h" />
     <ClInclude Include="videoservices\video_ffmpeg_material_simd.h" />
     <ClInclude Include="videoservices\video_ffmpeg_material.h" />
     <ClInclude Include="videoservices\video_ffmpeg_player.h" />
@@ -3617,9 +3619,11 @@ exit /b 0
     <Library Include="..\..\lib\public\vpklib.lib" />
     <Library Include="..\..\lib\public\vstdlib.lib" />
     <Library Include="..\..\lib\public\vtf.lib" />
-    <Library Include="videoservices\lib\win32\avcodec.lib" />
-    <Library Include="videoservices\lib\win32\avformat.lib" />
-    <Library Include="videoservices\lib\win32\avutil.lib" />
+    <Library Include="videoservices\lib\win32\ffmpeg\avcodec.lib" />
+    <Library Include="videoservices\lib\win32\ffmpeg\avformat.lib" />
+    <Library Include="videoservices\lib\win32\ffmpeg\avutil.lib" />
+    <Library Include="videoservices\lib\win32\ms\dxguid.lib" />
+    <Library Include="videoservices\lib\win32\ms\dxva2.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

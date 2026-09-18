@@ -1,4 +1,4 @@
-﻿// video_yuv_dx9.cpp
+// video_yuv_dx9.cpp
 
 #include "BaseVSShader.h"
 #include "cpp_shader_constant_register_map.h"
@@ -13,6 +13,8 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
         SHADER_PARAM( textureU, SHADER_PARAM_TYPE_TEXTURE, "", "U Plane (8-bit I8)" )
         SHADER_PARAM( textureV, SHADER_PARAM_TYPE_TEXTURE, "", "V Plane (8-bit I8)" )
         SHADER_PARAM( textureUV, SHADER_PARAM_TYPE_TEXTURE, "", "UV Plane (10/12-bit BGRA8888)" )
+        SHADER_PARAM( textureRGB, SHADER_PARAM_TYPE_TEXTURE, "", "RGB render target (DXVA2 hardware path)" )
+        SHADER_PARAM( rgbinput, SHADER_PARAM_TYPE_INTEGER, "", "0=YUV planes, 1=RGB render target input" )
         SHADER_PARAM( bitdepth, SHADER_PARAM_TYPE_INTEGER, "", "8=8bit, 10=10bit, 12=12bit" )
         SHADER_PARAM( colorrange, SHADER_PARAM_TYPE_INTEGER, "", "1=Limited, 2=Full" )
         SHADER_PARAM( colorspace, SHADER_PARAM_TYPE_INTEGER, "", "FFmpeg: AVColorSpace" )
@@ -22,7 +24,11 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
 
     SHADER_INIT_PARAMS()
     {
-        if ( !params[ textureY ]->IsDefined() ) {
+        if ( !params[ rgbinput ]->IsDefined() ) {
+            params[ rgbinput ]->SetIntValue( 0 );
+        }
+
+        if ( !params[ textureY ]->IsDefined() && params[ rgbinput ]->GetIntValue() == 0 ) {
             Warning( "Shader 'video_yuv': undefined $textureY.\n" );
         }
 
@@ -44,6 +50,9 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
 
         // Texture layout depends on bit depth: 8-bit uses 3 I8 planes,
         // 10/12-bit uses Y (I8 lo/hi) + UV (BGRA8888).
+        // RGB input mode (SRC_RGB) binds a single render-target texture
+        // instead, so the YUV layout checks are skipped.
+        if ( params[ rgbinput ]->GetIntValue() == 0 )
         {
             const bool bHighBitDepth = ( params[ bitdepth ]->GetIntValue() != 0 );
             if ( bHighBitDepth )
@@ -206,6 +215,9 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
 
     SHADER_INIT
     {
+        if ( params[ textureRGB ]->IsDefined() )
+            LoadTexture( textureRGB );
+
         if ( params[ textureY ]->IsDefined() )
             LoadTexture( textureY );
 
@@ -227,11 +239,13 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
 
     SHADER_DRAW
     {
+        const bool bRGBInput = params[ rgbinput ]->GetIntValue() != 0;
+
         SHADOW_STATE
         {
             pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
-            pShaderShadow->EnableTexture( SHADER_SAMPLER1, true );
-            pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
+            pShaderShadow->EnableTexture( SHADER_SAMPLER1, !bRGBInput );
+            pShaderShadow->EnableTexture( SHADER_SAMPLER2, !bRGBInput );
 
             pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
             pShaderShadow->EnableSRGBRead( SHADER_SAMPLER1, false );
@@ -245,6 +259,7 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
             SET_STATIC_VERTEX_SHADER( video_yuv_vs30 );
 
             DECLARE_STATIC_PIXEL_SHADER( video_yuv_ps30 );
+                SET_STATIC_PIXEL_SHADER_COMBO( SRC_RGB, bRGBInput ? 1 : 0 );
                 SET_STATIC_PIXEL_SHADER_COMBO( SRC_BIT_DEPTH, params[ bitdepth ]->GetIntValue() );
                 SET_STATIC_PIXEL_SHADER_COMBO( AVCOL_RANGE, params[ colorrange ]->GetIntValue() );
                 SET_STATIC_PIXEL_SHADER_COMBO( AVCOL_SPC, params[ colorspace ]->GetIntValue() );
@@ -257,16 +272,23 @@ BEGIN_VS_SHADER( VideoYUV, "Planar YUV decoder with HDR support (PS3.0)" )
 
         DYNAMIC_STATE
         {
-            BindTexture( SHADER_SAMPLER0, textureY, FRAME );
-            if ( params[ bitdepth ]->GetIntValue() != 0 )
+            if ( bRGBInput )
             {
-                BindTexture( SHADER_SAMPLER1, textureYhi, FRAME );
-                BindTexture( SHADER_SAMPLER2, textureUV, FRAME );
+                BindTexture( SHADER_SAMPLER0, textureRGB, FRAME );
             }
             else
             {
-                BindTexture( SHADER_SAMPLER1, textureU, FRAME );
-                BindTexture( SHADER_SAMPLER2, textureV, FRAME );
+                BindTexture( SHADER_SAMPLER0, textureY, FRAME );
+                if ( params[ bitdepth ]->GetIntValue() != 0 )
+                {
+                    BindTexture( SHADER_SAMPLER1, textureYhi, FRAME );
+                    BindTexture( SHADER_SAMPLER2, textureUV, FRAME );
+                }
+                else
+                {
+                    BindTexture( SHADER_SAMPLER1, textureU, FRAME );
+                    BindTexture( SHADER_SAMPLER2, textureV, FRAME );
+                }
             }
 
             LoadViewMatrixIntoVertexShaderConstant( VERTEX_SHADER_VIEWMODEL );
