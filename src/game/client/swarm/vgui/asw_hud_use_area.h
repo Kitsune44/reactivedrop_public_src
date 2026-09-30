@@ -9,7 +9,9 @@ class CASW_HUD_Use_Icon;
 
 class CASWHudCustomPaintPanel : public vgui::Panel
 {
-	DECLARE_CLASS_SIMPLE( CASWHudCustomPaintPanel, public vgui::Panel );
+	// clang: DECLARE_CLASS_SIMPLE already injects the access specifier, so "public"
+	// here would break the BaseClass typedef it creates.
+	DECLARE_CLASS_SIMPLE( CASWHudCustomPaintPanel, vgui::Panel );
 public:
 	CASWHudCustomPaintPanel( vgui::Panel* pParent, const char *pElementName );
 	virtual void Paint();
@@ -25,7 +27,9 @@ public:
 //-----------------------------------------------------------------------------
 class CASWHudUseArea : public vgui::Panel, public CASW_HudElement
 {
-	DECLARE_CLASS_SIMPLE( CASWHudUseArea, public vgui::Panel );
+	// clang: DECLARE_CLASS_SIMPLE already injects the access specifier, so "public"
+	// here would break the BaseClass typedef it creates.
+	DECLARE_CLASS_SIMPLE( CASWHudUseArea, vgui::Panel );
 
 public:
 	CASWHudUseArea( const char *pElementName );
