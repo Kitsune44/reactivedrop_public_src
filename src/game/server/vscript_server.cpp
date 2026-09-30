@@ -487,7 +487,13 @@ void CScriptKeyValues::ScriptReleaseKeyValues( )
 
 
 // constructors
+#if defined( __clang__ )
+// clang: adding a default argument in a redeclaration makes this the default constructor,
+// which clang rejects; MSVC keeps its original form in the #else branch.
+CScriptKeyValues::CScriptKeyValues( KeyValues *pKeyValues )
+#else
 CScriptKeyValues::CScriptKeyValues( KeyValues *pKeyValues = NULL )
+#endif
 {
 	m_pKeyValues = pKeyValues;
 }

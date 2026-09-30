@@ -23,6 +23,13 @@ enum RoundStyle_t
 
 class DmeTime_t;
 
+#if defined( __clang__ )
+// clang does not allow default arguments in a friend declaration that is not a definition
+// ([dcl.fct.default]/4) - we declare the function in the namespace, friend only befriends it.
+float GetFractionOfTimeBetween( DmeTime_t t, DmeTime_t start, DmeTime_t end, bool bClamp = false );
+float GetFractionOfTime( DmeTime_t t, DmeTime_t duration, bool bClamp = false );
+#endif
+
 class DmeFramerate_t
 {
 public:
@@ -135,8 +142,12 @@ public:
 
 	// helper functions
 
+#if defined( __clang__ )
+	friend float GetFractionOfTimeBetween( DmeTime_t t, DmeTime_t start, DmeTime_t end, bool bClamp );
+#else
 	friend float GetFractionOfTimeBetween( DmeTime_t t, DmeTime_t start, DmeTime_t end, bool bClamp = false );
 	friend float GetFractionOfTime( DmeTime_t t, DmeTime_t duration, bool bClamp = false );
+#endif
 	friend int FrameForTime( DmeTime_t t, DmeFramerate_t framerate );
 
 

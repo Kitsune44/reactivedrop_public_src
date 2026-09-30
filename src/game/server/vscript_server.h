@@ -54,7 +54,13 @@ bool IsEntityCreationAllowedInScripts( void );
 class CScriptKeyValues
 {
 public:
+#if defined( __clang__ )
+	// clang requires the default argument to be in the class declaration; the definition in
+	// vscript_server.cpp then must not repeat it. MSVC tolerates it in both places.
+	CScriptKeyValues( KeyValues *pKeyValues = NULL );
+#else
 	CScriptKeyValues( KeyValues *pKeyValues );
+#endif
 	~CScriptKeyValues( );
 
 	HSCRIPT ScriptFindKey( const char *pszName );
