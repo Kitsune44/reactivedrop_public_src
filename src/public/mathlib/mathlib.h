@@ -1227,7 +1227,9 @@ FORCEINLINE int Float2Int( float a )
 	
 	int RetVal;
 
-#if defined( COMPILER_MSVC32 )
+// clang-cl rejects the MS-style inline asm in these helpers (error: "ambiguous operand size
+// for instruction 'movzx'"), so clang uses the generic C++ path below instead of the asm.
+#if defined( COMPILER_MSVC32 ) && !defined( __clang__ )
 	int CtrlwdHolder;
 	int CtrlwdSetter;
 	__asm 
@@ -1257,7 +1259,7 @@ inline int Floor2Int( float a )
 
 #if defined( _X360 )
 	RetVal = (int)floor( a );
-#elif defined( COMPILER_MSVC32 )
+#elif defined( COMPILER_MSVC32 ) && !defined( __clang__ )
    int CtrlwdHolder;
    int CtrlwdSetter;
    __asm 
@@ -1315,7 +1317,7 @@ inline int Ceil2Int( float a )
 
 #if defined( _X360 )
 	RetVal = (int)ceil( a );
-#elif defined( COMPILER_MSVC32 )
+#elif defined( COMPILER_MSVC32 ) && !defined( __clang__ )
    int CtrlwdHolder;
    int CtrlwdSetter;
    __asm 
