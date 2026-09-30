@@ -437,6 +437,9 @@ protected:
 	void AllocateConstantMemory( void );
 };
 
+#if !defined( __clang__ )
+	// clang: fields of incomplete type in a template class are an error (MSVC checks them only
+	// at instantiation). This operator machinery is unused in the repo - we skip it for clang.
 class CSOAAttributeReference;
 
 // define binary op class to allow this construct without temps:
@@ -456,6 +459,8 @@ FORCEINLINE CSOAAttributeReferenceBinaryOp<fnname> operator opname( CSOAAttribut
 {																		\
 	return CSOAAttributeReferenceBinaryOp<fnname>( *this, other );		\
 }
+
+#endif
 
 class CSOAAttributeReference
 {
@@ -489,17 +494,20 @@ public:
 
 	// these operator overloads let you do
 	// dst[ATT1] = src1[ATT] + src2[ATT] with no temporaries generated
+#if !defined( __clang__ )
 	DEFINE_OP( +, AddSIMD );
 	DEFINE_OP( *, MulSIMD );
 	DEFINE_OP( -, SubSIMD );
 	DEFINE_OP( /, DivSIMD );
 
 	template<BINARYSIMDFUNCTION fn> FORCEINLINE void operator =( CSOAAttributeReferenceBinaryOp<fn> const &op );
+#endif
 
 	FORCEINLINE void CopyTo( CSOAAttributeReference &other ) const; // since operator= is over-ridden
 };
 
 
+#if !defined( __clang__ )
 template<BINARYSIMDFUNCTION fn> FORCEINLINE void CSOAAttributeReference::operator =( CSOAAttributeReferenceBinaryOp<fn> const &op )
 {
 	m_pContainer->AssertDataType( m_nAttributeID, ATTRDATATYPE_FLOAT );
@@ -520,6 +528,7 @@ template<BINARYSIMDFUNCTION fn> FORCEINLINE void CSOAAttributeReference::operato
 		pInB += nRowToRowStride;
 	} while ( --nRowCtr );
 }
+#endif
 
 FORCEINLINE void CSOAAttributeReference::CopyTo( CSOAAttributeReference &other ) const
 {
@@ -527,12 +536,14 @@ FORCEINLINE void CSOAAttributeReference::CopyTo( CSOAAttributeReference &other )
 	other.m_nAttributeID = m_nAttributeID;
 }
 
+#if !defined( __clang__ )
 template<BINARYSIMDFUNCTION fn>
 CSOAAttributeReferenceBinaryOp<fn>::CSOAAttributeReferenceBinaryOp( CSOAAttributeReference const &a, CSOAAttributeReference const &b )
 {
 	a.CopyTo( m_opA );
 	b.CopyTo( m_opB );
 }
+#endif
 
 
 
