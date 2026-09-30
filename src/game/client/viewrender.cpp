@@ -5130,7 +5130,10 @@ bool DrawingShadowDepthView( void ) //for easy externing
 {
 	return (CurrentViewID() == VIEW_SHADOW_DEPTH_TEXTURE);
 }
-						  
+
+#ifdef _WIN32
+#pragma warning (disable:4456) // hide 'declaration of 'VProf_' hides previous local declaration'
+#endif
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
@@ -5219,6 +5222,9 @@ void CShadowDepthView::Draw()
 #endif
 }
 
+#ifdef _WIN32
+#pragma warning (default:4456)
+#endif
 
 //-----------------------------------------------------------------------------
 // 
