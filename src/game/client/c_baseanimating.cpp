@@ -708,12 +708,6 @@ C_BaseAnimating::C_BaseAnimating() :
 		m_flEncodedController[ i ] = 0.0f;
 	}
 
-#if defined( __clang__ )
-	// clang compiles "if ( m_bClientSideAnimation )" as a comparison against 1, while MSVC tests
-	// for non-zero. The field is initialized further down in this constructor, so with a garbage
-	// byte AddBaseAnimatingInterpolatedVars() could leave EXCLUDE_AUTO_INTERPOLATE unset.
-	m_bClientSideAnimation = false;
-#endif
 	AddBaseAnimatingInterpolatedVars();
 
 	m_iMostRecentModelBoneCounter = 0xFFFFFFFF;
