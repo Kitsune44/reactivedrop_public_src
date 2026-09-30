@@ -20,7 +20,10 @@
 #endif
 
 class KeyValues;
-class AI_CriteriaSet;
+// clang: AI_CriteriaSet is a macro for ResponseRules::CriteriaSet (see baseentity.h), so this line
+// expands to "class ResponseRules::CriteriaSet;" - a forward declaration with a nested name
+// specifier, which clang rejects. Declaring the class in its namespace works for both compilers.
+namespace ResponseRules { class CriteriaSet; }
 
 using ResponseRules::ResponseType_t;
 using ResponseRules::AI_ResponseFollowup;
