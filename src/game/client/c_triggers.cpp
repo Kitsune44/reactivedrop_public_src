@@ -49,7 +49,12 @@ IMPLEMENT_CLIENTCLASS_DT( C_TriggerPlayerMovement, DT_TriggerPlayerMovement, CTr
 END_RECV_TABLE()
 
 C_EntityClassList< C_TriggerPlayerMovement > g_TriggerPlayerMovementList;
+#if defined( __clang__ )
+// clang requires an explicit template<> for the definition of a static member of a template class
+template<> C_TriggerPlayerMovement *C_EntityClassList<C_TriggerPlayerMovement>::m_pClassList = NULL;
+#else
 C_TriggerPlayerMovement *C_EntityClassList<C_TriggerPlayerMovement>::m_pClassList = NULL;
+#endif
 
 C_TriggerPlayerMovement::C_TriggerPlayerMovement()
 {

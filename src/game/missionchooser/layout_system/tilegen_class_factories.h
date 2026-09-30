@@ -21,6 +21,14 @@
 // expression, action, or range classes are parsed.
 // Subsequent calls are ignored.
 //-----------------------------------------------------------------------------
+#if defined( __clang__ )
+	#define TILEGEN_EXPLICIT_SPEC		template<>
+	#define TILEGEN_STATIC_MEMBER_INIT	{}
+#else
+	#define TILEGEN_EXPLICIT_SPEC
+	#define TILEGEN_STATIC_MEMBER_INIT
+#endif
+
 void RegisterAllTilegenClasses();
 
 //-----------------------------------------------------------------------------
@@ -64,22 +72,22 @@ ITilegenExpression< const char * > *ReadLiteralStringValue( KeyValues *pKeyValue
 
 // Class factory specializations to handle parsing literal values...
 
-inline ITilegenExpression< int > *ITilegenClassFactory< ITilegenExpression< int > >::ReadLiteralValue( KeyValues *pKeyValues )
+TILEGEN_EXPLICIT_SPEC inline ITilegenExpression< int > *ITilegenClassFactory< ITilegenExpression< int > >::ReadLiteralValue( KeyValues *pKeyValues )
 {
 	return ReadLiteralIntValue( pKeyValues );
 }
 
-inline ITilegenExpression< bool > *ITilegenClassFactory< ITilegenExpression< bool > >::ReadLiteralValue( KeyValues *pKeyValues )
+TILEGEN_EXPLICIT_SPEC inline ITilegenExpression< bool > *ITilegenClassFactory< ITilegenExpression< bool > >::ReadLiteralValue( KeyValues *pKeyValues )
 {
 	return ReadLiteralBoolValue( pKeyValues );
 }
 
-inline ITilegenExpression< float > *ITilegenClassFactory< ITilegenExpression< float > >::ReadLiteralValue( KeyValues *pKeyValues )
+TILEGEN_EXPLICIT_SPEC inline ITilegenExpression< float > *ITilegenClassFactory< ITilegenExpression< float > >::ReadLiteralValue( KeyValues *pKeyValues )
 {
 	return ReadLiteralFloatValue( pKeyValues );
 }
 
-inline ITilegenExpression< char const * > *ITilegenClassFactory< ITilegenExpression< char const * > >::ReadLiteralValue( KeyValues *pKeyValues )
+TILEGEN_EXPLICIT_SPEC inline ITilegenExpression< char const * > *ITilegenClassFactory< ITilegenExpression< char const * > >::ReadLiteralValue( KeyValues *pKeyValues )
 {
 	return ReadLiteralStringValue( pKeyValues );
 }

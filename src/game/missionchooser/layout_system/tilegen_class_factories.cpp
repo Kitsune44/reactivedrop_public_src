@@ -20,8 +20,8 @@ class CRoomCandidate;
 // (one for each return type).
 //-----------------------------------------------------------------------------
 #define DEFINE_TILEGEN_EXPRESSION_FACTORY( ExpressionType ) \
-	CUtlVector< ITilegenClassFactory< ITilegenExpression< ExpressionType > > * > CTilegenClassRegistry< ITilegenExpression< ExpressionType > >::m_FactoryList; \
-	const char *CTilegenClassRegistry< ITilegenExpression< ExpressionType > >::m_pFactoryName = "Expression Registry (" #ExpressionType ")"
+TILEGEN_EXPLICIT_SPEC 	CUtlVector< ITilegenClassFactory< ITilegenExpression< ExpressionType > > * > CTilegenClassRegistry< ITilegenExpression< ExpressionType > >::m_FactoryList TILEGEN_STATIC_MEMBER_INIT; \
+TILEGEN_EXPLICIT_SPEC 	const char *CTilegenClassRegistry< ITilegenExpression< ExpressionType > >::m_pFactoryName = "Expression Registry (" #ExpressionType ")"
 
 DEFINE_TILEGEN_EXPRESSION_FACTORY( bool );
 DEFINE_TILEGEN_EXPRESSION_FACTORY( int );
@@ -37,16 +37,16 @@ DEFINE_TILEGEN_EXPRESSION_FACTORY( const CTilegenState * );
 //-----------------------------------------------------------------------------
 // Provide storage for the static action class registry.
 //-----------------------------------------------------------------------------
-CUtlVector< ITilegenClassFactory< ITilegenAction > * > CTilegenClassRegistry< ITilegenAction >::m_FactoryList;
-const char *CTilegenClassRegistry< ITilegenAction >::m_pFactoryName = "Action Registry";
+TILEGEN_EXPLICIT_SPEC CUtlVector< ITilegenClassFactory< ITilegenAction > * > CTilegenClassRegistry< ITilegenAction >::m_FactoryList TILEGEN_STATIC_MEMBER_INIT;
+TILEGEN_EXPLICIT_SPEC const char *CTilegenClassRegistry< ITilegenAction >::m_pFactoryName = "Action Registry";
 
 //-----------------------------------------------------------------------------
 // Provide storage for the static range class registries
 // (one for each return type).
 //-----------------------------------------------------------------------------
 #define DEFINE_TILEGEN_RANGE_FACTORY( ExpressionType ) \
-	CUtlVector< ITilegenClassFactory< ITilegenRange< ExpressionType > > * > CTilegenClassRegistry< ITilegenRange< ExpressionType > >::m_FactoryList; \
-	const char *CTilegenClassRegistry< ITilegenRange< ExpressionType > >::m_pFactoryName = "Range Registry (" #ExpressionType ")"
+TILEGEN_EXPLICIT_SPEC 	CUtlVector< ITilegenClassFactory< ITilegenRange< ExpressionType > > * > CTilegenClassRegistry< ITilegenRange< ExpressionType > >::m_FactoryList TILEGEN_STATIC_MEMBER_INIT; \
+TILEGEN_EXPLICIT_SPEC 	const char *CTilegenClassRegistry< ITilegenRange< ExpressionType > >::m_pFactoryName = "Range Registry (" #ExpressionType ")"
 
 DEFINE_TILEGEN_RANGE_FACTORY( const CExit * );
 
@@ -55,7 +55,7 @@ DEFINE_TILEGEN_RANGE_FACTORY( const CExit * );
 // of each class factory for expressions, actions, and ranges.
 //-----------------------------------------------------------------------------
 #define IMPLEMENT_TILEGEN_EXPRESSION_OVERRIDE_NAME( ClassName, OperatorString ) \
-	const char *CTilegenClassFactory< ITilegenExpression< ClassName::TExpressionValue >, ClassName >::GetName() { return OperatorString; } \
+TILEGEN_EXPLICIT_SPEC 	const char *CTilegenClassFactory< ITilegenExpression< ClassName::TExpressionValue >, ClassName >::GetName() { return OperatorString; } \
 	const char *ClassName::GetTypeName() { return #ClassName; } \
 	static CTilegenClassFactory< ITilegenExpression< ClassName::TExpressionValue >, ClassName > s_##ClassName##_Factory;
 
@@ -65,7 +65,7 @@ DEFINE_TILEGEN_RANGE_FACTORY( const CExit * );
 	CTilegenClassRegistry< ITilegenExpression< ClassName::TExpressionValue > >::AddFactory( &s_##ClassName##_Factory );
 
 #define IMPLEMENT_TILEGEN_ACTION( ClassName ) \
-	const char *CTilegenClassFactory< ITilegenAction, ClassName >::GetName() { return #ClassName; } \
+TILEGEN_EXPLICIT_SPEC 	const char *CTilegenClassFactory< ITilegenAction, ClassName >::GetName() { return #ClassName; } \
 	const char *ClassName::GetTypeName() { return #ClassName; } \
 	static CTilegenClassFactory< ITilegenAction, ClassName > s_##ClassName##_Factory;
 
@@ -73,7 +73,7 @@ DEFINE_TILEGEN_RANGE_FACTORY( const CExit * );
 	CTilegenClassRegistry< ITilegenAction >::AddFactory( &s_##ClassName##_Factory );
 
 #define IMPLEMENT_TILEGEN_RANGE( ClassName ) \
-	const char *CTilegenClassFactory< ITilegenRange< ClassName::TElementValue >, ClassName >::GetName() { return #ClassName; } \
+TILEGEN_EXPLICIT_SPEC 	const char *CTilegenClassFactory< ITilegenRange< ClassName::TElementValue >, ClassName >::GetName() { return #ClassName; } \
 	static CTilegenClassFactory< ITilegenRange< ClassName::TElementValue >, ClassName > s_##ClassName##_Factory;
 
 #define REGISTER_TILEGEN_RANGE( ClassName ) \
