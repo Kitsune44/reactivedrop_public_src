@@ -94,6 +94,15 @@ HybridEnableStates sHybridStates[] =
 BaseModUI::BaseModHybridButton::BaseModHybridButton( Panel *parent, const char *panelName, const char *text, Panel *pActionSignalTarget, const char *pCmd )
 	: BaseClass( parent, panelName, text, pActionSignalTarget, pCmd )
 {
+#if defined( __clang__ )
+	// clang-cl: SetClosed() reads an uninitialized bool and clang compiles "if ( !m_isOpen )" as
+	// "if ( m_isOpen != 1 )"; a garbage byte from recycled heap memory then blocks the reset and
+	// the button stays permanently Open (painted wider with a glow, with no flyout on screen).
+	m_isOpen = false;
+	// Fields this constructor does not set (the other overload does).
+	m_iUsablePlayerIndex = -1;
+	m_bDropDownSelection = false;
+#endif
 	SetPaintBorderEnabled( false );
 	SetPaintBackgroundEnabled( false );
 	SetContentAlignment( a_northwest );
@@ -128,6 +137,14 @@ BaseModUI::BaseModHybridButton::BaseModHybridButton( Panel *parent, const char *
 BaseModUI::BaseModHybridButton::BaseModHybridButton( Panel *parent, const char *panelName, const wchar_t *text, Panel *pActionSignalTarget, const char *pCmd )
 	: BaseClass( parent, panelName, text, pActionSignalTarget, pCmd )
 {
+#if defined( __clang__ )
+	// clang-cl: same as the other overload - SetClosed() must not read a garbage bool.
+	m_isOpen = false;
+	m_bOnlyActiveUser = false;
+	m_bIgnoreButtonA = false;
+	m_nWideAtOpen = 0;
+	m_bDropDownSelection = false;
+#endif
 	SetPaintBorderEnabled( false );
 	SetPaintBackgroundEnabled( false );
 	SetContentAlignment( a_northwest );
