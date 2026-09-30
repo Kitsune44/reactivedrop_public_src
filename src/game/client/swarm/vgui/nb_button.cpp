@@ -67,7 +67,9 @@ void CNB_Button::Paint()
 	if ( !ShouldPaint() )
 		return; 
 
-	BaseClass::BaseClass::Paint();  // skip drawing regular vgui::Button's focus border
+	// clang: BaseClass is private in vgui::Button, so the grandparent is named instead of the
+	// MSVC-only BaseClass::BaseClass (both resolve to vgui::Label).
+	vgui::Label::Paint();  // skip drawing regular vgui::Button's focus border
 }
 
 void CNB_Button::PaintBackground()

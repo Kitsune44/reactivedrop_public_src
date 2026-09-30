@@ -248,7 +248,9 @@ ExperienceBarSmall::ExperienceBarSmall(vgui::Panel *parent, const char *name) :
 
 void ExperienceBarSmall::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	BaseClass::BaseClass::ApplySchemeSettings( pScheme );
+	// clang: BaseClass is a private member of ExperienceBar, so the grandparent is named instead
+	// of using the MSVC-only BaseClass::BaseClass (both resolve to vgui::EditablePanel).
+	vgui::EditablePanel::ApplySchemeSettings( pScheme );
 
 	LoadControlSettings( "resource/UI/ExperienceBarSmall.res" );
 

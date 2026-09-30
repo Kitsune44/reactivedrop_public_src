@@ -26,7 +26,8 @@ CNB_Lobby_Row_Small::~CNB_Lobby_Row_Small()
 
 void CNB_Lobby_Row_Small::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
-	BaseClass::BaseClass::ApplySchemeSettings( pScheme );
+	// clang: BaseClass is private in CNB_Lobby_Row; the grandparent vgui::EditablePanel is named explicitly.
+	vgui::EditablePanel::ApplySchemeSettings( pScheme );
 	
 	if ( rd_legacy_ui.GetString()[0] != '\0' )
 		LoadControlSettings( "resource/ui/nb_lobby_row_small.res" );

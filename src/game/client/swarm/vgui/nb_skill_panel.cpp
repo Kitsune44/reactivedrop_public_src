@@ -165,7 +165,8 @@ void CNB_Skill_Panel_Spending::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
 	m_szLastSkillImage[0] = 0;
 
-	BaseClass::BaseClass::ApplySchemeSettings( pScheme );
+	// clang: BaseClass is private in CNB_Skill_Panel; the grandparent vgui::EditablePanel is named explicitly.
+	vgui::EditablePanel::ApplySchemeSettings( pScheme );
 
 	LoadControlSettings( "resource/ui/nb_skill_panel_spending.res" );
 }
