@@ -962,40 +962,40 @@ void CIconLesson::UpdateLocatorTarget( CLocatorTarget *pLocatorTarget, C_BaseEnt
 
 #define LESSON_VARIABLE_INIT_SYMBOL( _varEnum, _varName, _varType ) g_n##_varEnum##Symbol = KeyValuesSystem()->GetSymbolForString( #_varEnum );
 
-#define LESSON_SCRIPT_STRING_ADD_TO_MAP( _varEnum, _varName, _varType ) g_NameToTypeMap.Insert( #_varEnum, LESSON_VARIABLE_##_varEnum## );
+#define LESSON_SCRIPT_STRING_ADD_TO_MAP( _varEnum, _varName, _varType ) g_NameToTypeMap.Insert( #_varEnum, LESSON_VARIABLE_##_varEnum );
 
 // Create enum value
-#define LESSON_VARIABLE_ENUM( _varEnum, _varName, _varType ) LESSON_VARIABLE_##_varEnum##,
+#define LESSON_VARIABLE_ENUM( _varEnum, _varName, _varType ) LESSON_VARIABLE_##_varEnum,
 
 // Init info call
-#define LESSON_VARIABLE_INIT_INFO_CALL( _varEnum, _varName, _varType ) g_pLessonVariableInfo[ LESSON_VARIABLE_##_varEnum## ].Init_##_varEnum##();
+#define LESSON_VARIABLE_INIT_INFO_CALL( _varEnum, _varName, _varType ) g_pLessonVariableInfo[ LESSON_VARIABLE_##_varEnum ].Init_##_varEnum();
 
 // Init info
 #define LESSON_VARIABLE_INIT_INFO( _varEnum, _varName, _varType ) \
-	void Init_##_varEnum##( void ) \
+	void Init_##_varEnum( void ) \
 	{ \
-		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::##_varName## ); \
+		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::_varName ); \
 		varType = LessonParamTypeFromString( #_varType ); \
 	}
 
 #define LESSON_VARIABLE_INIT_INFO_BOOL( _varEnum, _varName, _varType ) \
-	void Init_##_varEnum##( void ) \
+	void Init_##_varEnum( void ) \
 	{ \
-		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::##_varName## ); \
+		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::_varName ); \
 		varType = FIELD_BOOLEAN; \
 	}
 
 #define LESSON_VARIABLE_INIT_INFO_EHANDLE( _varEnum, _varName, _varType ) \
-	void Init_##_varEnum##( void ) \
+	void Init_##_varEnum( void ) \
 	{ \
-		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::##_varName## ); \
+		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::_varName ); \
 		varType = FIELD_EHANDLE; \
 	}
 
 #define LESSON_VARIABLE_INIT_INFO_STRING( _varEnum, _varName, _varType ) \
-	void Init_##_varEnum##( void ) \
+	void Init_##_varEnum( void ) \
 	{ \
-		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::##_varName## ); \
+		iOffset = offsetof( CScriptedIconLesson, CScriptedIconLesson::_varName ); \
 		varType = FIELD_STRING; \
 	}
 
@@ -1013,19 +1013,19 @@ void CIconLesson::UpdateLocatorTarget( CLocatorTarget *pLocatorTarget, C_BaseEnt
 	}
 
 // Wrapper for using this macro in the factory
-#define LESSON_SCRIPT_STRING_GENERAL( _varEnum, _varName, _varType ) LESSON_SCRIPT_STRING( LESSON_VARIABLE_##_varEnum##, #_varEnum )
+#define LESSON_SCRIPT_STRING_GENERAL( _varEnum, _varName, _varType ) LESSON_SCRIPT_STRING( LESSON_VARIABLE_##_varEnum, #_varEnum )
 
 // Process the element action on this variable 
 #define PROCESS_LESSON_ACTION( _varEnum, _varName, _varType ) \
-	case LESSON_VARIABLE_##_varEnum##:\
+	case LESSON_VARIABLE_##_varEnum:\
 		return ProcessElementAction( pLessonElement->iAction, pLessonElement->bNot, #_varName, _varName, &pLessonElement->szParam, eventParam_float );
 
 #define PROCESS_LESSON_ACTION_EHANDLE( _varEnum, _varName, _varType ) \
-	case LESSON_VARIABLE_##_varEnum##:\
+	case LESSON_VARIABLE_##_varEnum:\
 		return ProcessElementAction( pLessonElement->iAction, pLessonElement->bNot, #_varName, _varName, &pLessonElement->szParam, eventParam_float, eventParam_BaseEntity, eventParam_string );
 
 #define PROCESS_LESSON_ACTION_STRING( _varEnum, _varName, _varType ) \
-	case LESSON_VARIABLE_##_varEnum##:\
+	case LESSON_VARIABLE_##_varEnum:\
 		return ProcessElementAction( pLessonElement->iAction, pLessonElement->bNot, #_varName, &_varName, &pLessonElement->szParam, eventParam_string );
 
 // Init the variable from the script (or a convar)

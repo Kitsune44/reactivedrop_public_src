@@ -37,7 +37,8 @@ extern ScriptClassDesc_t * GetScriptDesc( CBaseEntity * );
 #ifdef VMPROFILE
 
 #define VMPROF_START float debugStartTime = Plat_FloatTime();
-#define VMPROF_SHOW( funcname, funcdesc  ) DevMsg("***VSCRIPT PROFILE***: %s %s: %6.4f milliseconds\n", (##funcname), (##funcdesc), (Plat_FloatTime() - debugStartTime)*1000.0 );
+// clang: token pasting before macro arguments is invalid (error: "pasting formed") - pass them plainly.
+#define VMPROF_SHOW( funcname, funcdesc  ) DevMsg("***VSCRIPT PROFILE***: %s %s: %6.4f milliseconds\n", (funcname), (funcdesc), (Plat_FloatTime() - debugStartTime)*1000.0 );
 
 #else // !VMPROFILE
 

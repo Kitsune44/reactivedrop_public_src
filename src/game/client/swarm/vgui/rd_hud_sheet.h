@@ -23,7 +23,7 @@ struct HudSheetTexture_t
 #define END_HUD_SHEET( name ) \
 	NUM_##name##_UVS, \
 	}; \
-	HudSheetTexture_t m_##name##[ NUM_##name##_UVS ];
+	HudSheetTexture_t m_##name[ NUM_##name##_UVS ];
 
 
 class HudSheet_t
@@ -41,7 +41,7 @@ public:
 };
 
 #define ADD_HUD_SHEET( name, textureFile ) \
-	m_HudSheets.AddToTail( HudSheet_t( &m_n##name##ID, &m_##name##[0], NUM_##name##_UVS, textureFile, &m_vec##name##Size ) );
+	m_HudSheets.AddToTail( HudSheet_t( &m_n##name##ID, &m_##name[0], NUM_##name##_UVS, textureFile, &m_vec##name##Size ) );
 
 #define HUD_UV_COORDS_QUALIFIED( sheet, full_texture_name ) \
 	g_RD_HUD_Sheets.m_##sheet[ full_texture_name ].u, \

@@ -9,9 +9,11 @@ class CASW_Marine;
 class CMoveData;
 
 DECLARE_LOGGING_CHANNEL( LOG_ASW_Melee );
-#define ASW_MEL_MSG(string, ...) ASW_MSG( LOG_ASW_Melee, ##string, ##__VA_ARGS__ )
-#define ASW_MEL_MSG_SIMPLE(string, ...) ASW_MSG_SIMPLE( LOG_ASW_Melee, ##string, ##__VA_ARGS__ )
-#define ASW_MEL_WAR(string, ...) ASW_WAR( LOG_ASW_Melee, ##string, ##__VA_ARGS__ )
+// clang: pasting before the format string is invalid (error: "pasting formed '(LOG_ASW_Melee'"),
+// the string is passed as a plain argument - only __VA_ARGS__ keeps the GNU ## extension.
+#define ASW_MEL_MSG(string, ...) ASW_MSG( LOG_ASW_Melee, string, ##__VA_ARGS__ )
+#define ASW_MEL_MSG_SIMPLE(string, ...) ASW_MSG_SIMPLE( LOG_ASW_Melee, string, ##__VA_ARGS__ )
+#define ASW_MEL_WAR(string, ...) ASW_WAR( LOG_ASW_Melee, string, ##__VA_ARGS__ )
 
 enum ASW_ControlDirection_t
 {
