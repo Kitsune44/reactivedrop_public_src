@@ -199,7 +199,13 @@ public:
 	unsigned int operator()( const NavVisPair_t &item ) const
 	{
 		COMPILE_TIME_ASSERT( sizeof(CNavArea *) == 4 );
+#if defined( __clang__ )
+		// GetID() returns unsigned int, so the sum is unsigned - clang rejects the narrowing
+		// to int in an initializer list (MSVC only warns), hence the explicit casts.
+		int key[2] = { (int)( (int)item.pAreas[0] + item.pAreas[1]->GetID() ), (int)( (int)item.pAreas[1] + item.pAreas[0]->GetID() ) };
+#else
 		int key[2] = { (int)item.pAreas[0] + item.pAreas[1]->GetID(), (int)item.pAreas[1] + item.pAreas[0]->GetID() };
+#endif
 		return Hash8( key );	
 	}
 };
