@@ -2333,7 +2333,9 @@ static AI_FollowFormation_t g_AntlionFollowFormation =
 
 //-------------------------------------
 
-#define COMMANDER_TOLERANCE (13.0 * 1.415)
+// The formation slots store a float tolerance; clang rejects narrowing a double constant in an
+// initializer list (-Wc++11-narrowing), so the cast is applied once here (same value as MSVC).
+#define COMMANDER_TOLERANCE ((float)( 13.0 * 1.415 ))
 
 static AI_FollowSlot_t g_CommanderFollowFormationSlots[] = 
 {
