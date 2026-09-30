@@ -2060,13 +2060,21 @@ int CStudioHdr::CActivityToSequenceMapping::NumSequencesForActivity( int forActi
 static CStudioHdr::CActivityToSequenceMapping emptyMapping;
 
 // double-check that the data I point to hasn't changed
+#if !defined( __clang__ )
 bool CStudioHdr::CActivityToSequenceMapping::ValidateAgainst( const CStudioHdr * RESTRICT pstudiohdr ) RESTRICT
+#else
+bool CStudioHdr::CActivityToSequenceMapping::ValidateAgainst( const CStudioHdr * RESTRICT pstudiohdr )
+#endif
 {
 	return ( this == &emptyMapping || 
 			 ( m_pStudioHdr == pstudiohdr->m_pStudioHdr && m_expectedVModel == pstudiohdr->GetVirtualModel() ) );
 }
 
+#if !defined( __clang__ )
 void CStudioHdr::CActivityToSequenceMapping::SetValidation( const CStudioHdr *RESTRICT pstudiohdr ) RESTRICT
+#else
+void CStudioHdr::CActivityToSequenceMapping::SetValidation( const CStudioHdr *RESTRICT pstudiohdr )
+#endif
 {
 	m_expectedVModel = pstudiohdr->GetVirtualModel();
 }

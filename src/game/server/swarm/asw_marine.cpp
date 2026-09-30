@@ -3789,7 +3789,11 @@ void CASW_Marine::MeleeBleed(CTakeDamageInfo* info)
 }
 
 /// issue any special effects or sounds on resurrection
+#if !defined( __clang__ )
 void CASW_Marine::PerformResurrectionEffect( void ) RESTRICT
+#else
+void CASW_Marine::PerformResurrectionEffect( void )
+#endif
 {
 	DispatchParticleEffect( "marine_resurrection", PATTACH_ABSORIGIN_FOLLOW, this );
 	this->EmitSound( "Marine.Resurrect" );

@@ -438,7 +438,11 @@ void CASW_SquadFormation::RecomputeFollowerOrder( const Vector &vProjectedLeader
 	}
 }
 
+#if !defined( __clang__ )
 Vector CASW_SquadFormation::GetLdrAnglMatrix( const Vector &origin, const QAngle &ang, matrix3x4_t * RESTRICT pout ) RESTRICT
+#else
+Vector CASW_SquadFormation::GetLdrAnglMatrix( const Vector &origin, const QAngle &ang, matrix3x4_t * pout )
+#endif
 {
 	Vector vecLeaderAim;
 	{

@@ -723,7 +723,11 @@ ConVar ai_nav_debug_experimental_pathing( "ai_nav_debug_experimental_pathing", "
 // find any that involve switchbacks, but on the other hand this avoids needing any additional
 // statekeeping to follow cycles. It does tend to hit the same node twice from different origins.
 // @TODO: replace 1/sqrt with hardware reciprocal square root
+#if !defined( __clang__ )
 CAI_Node *CAI_Network::FindNodeDistanceAwayFromStart( CAI_Node * RESTRICT pStartNode, const Vector &point, float minDistSq, float maxDistSq, const Hull_t hulltype, const Capability_t movetype, const IPathingNodeValidator &validator ) RESTRICT
+#else
+CAI_Node *CAI_Network::FindNodeDistanceAwayFromStart( CAI_Node * pStartNode, const Vector &point, float minDistSq, float maxDistSq, const Hull_t hulltype, const Capability_t movetype, const IPathingNodeValidator &validator )
+#endif
 {
 	VPROF("CAI_Network::FindNodeDistanceAwayFromStart()");
 	AssertMsg( pStartNode, "FindNodeDistanceAwayFromStart called with NULL start\n" );

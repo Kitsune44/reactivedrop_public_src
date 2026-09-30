@@ -257,19 +257,37 @@ inline CBaseEntity *ToEnt( HSCRIPT hScript )
 // convenience functions for fishing out the vectors of this object
 // equivalent to GetVectors(), but doesn't need an intermediate stack 
 // variable (which might cause an LHS anyway)
-inline Vector	CBaseEntity::Forward() const RESTRICT  ///< get my forward (+x) vector
+#if defined( __clang__ )
+// clang: the in-class declaration has no RESTRICT, so repeating it in the out-of-class
+// definition changes the type (error: "conflicting types for 'Forward'").
+inline Vector	CBaseEntity::Forward() const
+#else
+inline Vector	CBaseEntity::Forward() const RESTRICT
+#endif  ///< get my forward (+x) vector
 {
 	const matrix3x4_t &mat = EntityToWorldTransform();
 	return Vector( mat[0][0], mat[1][0], mat[2][0] );
 }
 
-inline Vector	CBaseEntity::Left() const RESTRICT     ///< get my left    (+y) vector
+#if defined( __clang__ )
+// clang: the in-class declaration has no RESTRICT, so repeating it in the out-of-class
+// definition changes the type (error: "conflicting types for 'Left'").
+inline Vector	CBaseEntity::Left() const
+#else
+inline Vector	CBaseEntity::Left() const RESTRICT
+#endif     ///< get my left    (+y) vector
 {
 	const matrix3x4_t &mat = EntityToWorldTransform();
 	return Vector( mat[0][1], mat[1][1], mat[2][1] );
 }
 
-inline Vector	CBaseEntity::Up() const  RESTRICT      ///< get my up      (+z) vector
+#if defined( __clang__ )
+// clang: the in-class declaration has no RESTRICT, so repeating it in the out-of-class
+// definition changes the type (error: "conflicting types for 'Up'").
+inline Vector	CBaseEntity::Up() const
+#else
+inline Vector	CBaseEntity::Up() const RESTRICT
+#endif      ///< get my up      (+z) vector
 {
 	const matrix3x4_t &mat = EntityToWorldTransform();
 	return Vector( mat[0][2], mat[1][2], mat[2][2] );

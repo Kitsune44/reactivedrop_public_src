@@ -143,7 +143,11 @@ float CASW_Sentry_Top_Flamer::GetYawTo(CBaseEntity* pEnt)
 		return UTIL_VecToYaw(vIdealAim.Normalized());
 }
 
+#if !defined( __clang__ )
 void CASW_Sentry_Top_Flamer::Fire() RESTRICT
+#else
+void CASW_Sentry_Top_Flamer::Fire()
+#endif
 {
 	// determine the number of projectiles to be fired this frame.
 	// it's best to do this early by divsion and turn it into an int, 

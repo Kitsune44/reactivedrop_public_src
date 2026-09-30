@@ -967,12 +967,22 @@ inline unsigned char CNavArea::GetPlayerCount( int teamID ) const
 * Trilinear interpolation of Z values at quad edges.
 * NOTE: pos->z is not used.
 */
+#if defined( __clang__ )
+// clang: the in-class declaration has no RESTRICT, so repeating it in the definition is a mismatch.
+inline float CNavArea::GetZ( const Vector * pos ) const
+#else
 inline float CNavArea::GetZ( const Vector * RESTRICT pos ) const RESTRICT
+#endif
 {
 	return GetZ( pos->x, pos->y );
 }
 
+#if defined( __clang__ )
+// clang: the in-class declaration has no RESTRICT, so repeating it in the definition is a mismatch.
+inline float CNavArea::GetZ( const Vector & pos ) const
+#else
 inline float CNavArea::GetZ( const Vector & pos ) const RESTRICT
+#endif
 {
 	return GetZ( pos.x, pos.y );
 }

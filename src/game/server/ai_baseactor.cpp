@@ -1479,7 +1479,11 @@ ConVar rr_remarkable_max_distance( "rr_remarkable_max_distance", "1200", FCVAR_C
 /* TODO: Make perfier
  *       Plumb through interrupt priority in speech
 /************************************************************************/
+#if !defined( __clang__ )
 bool CAI_BaseActor::UpdateRemarkableSpeech() RESTRICT
+#else
+bool CAI_BaseActor::UpdateRemarkableSpeech()
+#endif
 {
 	// done in caller
 	/*

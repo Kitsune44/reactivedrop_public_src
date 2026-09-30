@@ -725,7 +725,12 @@ void CViewEffects::Shake( const ScreenShake_t &data )
 
 	if ( ( command == SHAKE_START || command == SHAKE_START_RUMBLEONLY ) && ( m_ShakeList.Count() < MAX_SHAKES ) )
 	{
+		#if defined( __clang__ )
+		// clang treats RESTRICT as part of the pointer type, so the value cannot be stored in CUtlVector.
+		screenshake_t * pNewShake = new screenshake_t; // ugh, should just make these a static array
+		#else
 		screenshake_t * RESTRICT pNewShake = new screenshake_t; // ugh, should just make these a static array
+		#endif
 			
 		pNewShake->amplitude = data.amplitude;
 		pNewShake->frequency = data.frequency;

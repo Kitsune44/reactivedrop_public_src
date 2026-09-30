@@ -449,7 +449,13 @@ void CUtlLinkedList<T,S,ML,I,M>::PurgeAndDeleteElements()
 // Node allocation/deallocation
 //-----------------------------------------------------------------------------
 template <class T, class S, bool ML, class I, class M>
+// clang rejects the MSVC-only placement of RESTRICT after the qualified name
+// (error: "conflicting types for AllocInternal"), so it is used for MSVC only.
+#if !defined( __clang__ )
 I CUtlLinkedList<T,S,ML,I,M>::AllocInternal( bool multilist ) RESTRICT
+#else
+I CUtlLinkedList<T,S,ML,I,M>::AllocInternal( bool multilist )
+#endif
 {
 	Assert( !multilist || ML );
 #ifdef MULTILIST_PEDANTIC_ASSERTS
