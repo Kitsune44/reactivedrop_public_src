@@ -29,6 +29,34 @@ public:
 	virtual void Save( const SaveRestoreFieldInfo_t &fieldInfo, ISave *pSave )
 	{		
 		datamap_t *pTreeTypeDatamap = CTypedescDeducer<FIELD_TYPE>::Deduce( (UTLRBTREE *)NULL );
+#if defined( __clang__ )
+		// clang does not defer template bodies, so it sees these initializers as they are:
+		// fieldOffset is scalar and datamap_t has 6 fields, hence the explicit form below.
+		// MSVC keeps its original brace initializers in the #else branch.
+		typedescription_t dataDesc =
+		{
+			(fieldtype_t)FIELD_TYPE,
+			"elem",
+			0,
+			1,
+			FTYPEDESC_SAVE,
+			NULL,
+			NULL,
+			NULL,
+			pTreeTypeDatamap,
+			-1,
+		};
+
+		datamap_t dataMap =
+		{
+			&dataDesc,
+			1,
+			"urb",
+			NULL,
+			0,
+			NULL,
+		};
+#else
 		typedescription_t dataDesc = 
 		{
 			(fieldtype_t)FIELD_TYPE, 
@@ -56,6 +84,7 @@ public:
 			true
 #endif
 		};
+#endif
 		
 		UTLRBTREE *pUtlRBTree = (UTLRBTREE *)fieldInfo.pField;
 
@@ -79,6 +108,34 @@ public:
 	virtual void Restore( const SaveRestoreFieldInfo_t &fieldInfo, IRestore *pRestore )
 	{
 		datamap_t *pTreeTypeDatamap = CTypedescDeducer<FIELD_TYPE>::Deduce( (UTLRBTREE *)NULL );
+#if defined( __clang__ )
+		// clang does not defer template bodies, so it sees these initializers as they are:
+		// fieldOffset is scalar and datamap_t has 6 fields, hence the explicit form below.
+		// MSVC keeps its original brace initializers in the #else branch.
+		typedescription_t dataDesc =
+		{
+			(fieldtype_t)FIELD_TYPE,
+			"elems",
+			0,
+			1,
+			FTYPEDESC_SAVE,
+			NULL,
+			NULL,
+			NULL,
+			pTreeTypeDatamap,
+			-1,
+		};
+
+		datamap_t dataMap =
+		{
+			&dataDesc,
+			1,
+			"uv",
+			NULL,
+			0,
+			NULL,
+		};
+#else
 		typedescription_t dataDesc = 
 		{
 			(fieldtype_t)FIELD_TYPE, 
@@ -106,6 +163,7 @@ public:
 			true
 #endif
 		};
+#endif
 		
 		UTLRBTREE *pUtlRBTree = (UTLRBTREE *)fieldInfo.pField;
 
