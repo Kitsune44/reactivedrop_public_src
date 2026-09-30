@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Settings for the ClangCL toolset (clang-cl + lld-link).
+
+  Imported by the three game projects with a PlatformToolset=ClangCL condition, so the MSVC
+  build never evaluates a single line of this file. Only what the ClangCL toolset cannot handle
+  on its own lives here; every other setting comes from the .vcxproj, which both toolsets share.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Condition="'$(PlatformToolset)' == 'ClangCL'">
+    <!-- The libraries in lib\win32\clang_cl (vpx, webm) are LLVM bitcode for Release and native
+         /MTd for Debug; link.exe rejects the bitcode, lld-link accepts it and runs its LTO. -->
+    <LinkToolExe>lld-link.exe</LinkToolExe>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'ClangCL'">
+    <ClCompile>
+      <!-- The error limit is lifted so a full build reports every error instead of stopping after
+           the default cap. -->
+      <AdditionalOptions>-ferror-limit=0 %(AdditionalOptions)</AdditionalOptions>
+
+      <!-- Floating point: both toolsets get /fp:strict (Debug) and /fp:fast (Release, Profile),
+           but the meaning differs - clang-cl maps /fp:fast to the full -ffast-math, which is more
+           aggressive than MSVC's /fp:fast. Change the project setting if that ever matters. -->
+
+      <!-- LTO: thin, as the counterpart of /GL on the MSVC side. Full -flto over the game
+           translation units corrupts data the engine reads from our DLL (startup crash:
+           "Prop DT_ParticleSystem/(null) has an invalid element count for a non-array").
+           The bitcode libraries are LTO'd by lld-link either way. Turn this off for a quick
+           iteration with /p:WholeProgramOptimization=false. -->
+      <AdditionalOptions Condition="'$(WholeProgramOptimization)' == 'true'">-flto=thin %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <!-- clang binds a block-scope 'extern' to the nearest namespace (BaseModUI), MSVC to the
+           global one. The definitions in the repo are global, so the mismatched symbols are mapped
+           to the global ones. No %(AdditionalOptions) here: the .vcxproj value carries
+           /SOURCELINK:..\..\sourcelink.json, which lld-link does not understand. -->
+      <AdditionalOptions>/Brepro /ALTERNATENAME:?cl_names_debug@BaseModUI@@3VConVar@@A=?cl_names_debug@@3VConVar@@A /ALTERNATENAME:?sv_gametypes@BaseModUI@@3VConVar@@A=?sv_gametypes@@3VConVar@@A /ALTERNATENAME:?ui_foundgames_spinner_time@BaseModUI@@3VConVar@@A=?ui_foundgames_spinner_time@@3VConVar@@A /ALTERNATENAME:?sv_cheats@BaseModUI@@3PAVConVar@@A=?sv_cheats@@3PAVConVar@@A /ALTERNATENAME:?OnStorageDevicesChangedSelectNewDevice@BaseModUI@@YAXXZ=?OnStorageDevicesChangedSelectNewDevice@@YAXXZ</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+
+</Project>

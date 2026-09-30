@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\common\blackbox_helper.cpp" />
@@ -2247,33 +2247,11 @@
     <Library Include="..\..\lib\public\vpklib.lib" />
     <Library Include="..\..\lib\public\vstdlib.lib" />
     <Library Include="..\..\lib\public\vtf.lib" />
-    <Library Include="videoservices\lib\win32\dsound.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\dxguid.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\ogg.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\opus.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\vorbis.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\vpx_mt.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\webm_mt.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\debug\vpx_mtd.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
-    <Library Include="videoservices\lib\win32\debug\webm_mtd.lib">
-      <Filter>videoservices\lib</Filter>
-    </Library>
+    <Library Include="videoservices\lib\win32\dsound.lib" />
+    <Library Include="videoservices\lib\win32\dxguid.lib" />
+    <Library Include="videoservices\lib\win32\ogg.lib" />
+    <Library Include="videoservices\lib\win32\opus.lib" />
+    <Library Include="videoservices\lib\win32\vorbis.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\vpc_scripts\loadaddress.vpc" />
@@ -2284,9 +2262,6 @@
   <ItemGroup>
     <Filter Include="videoservices">
       <UniqueIdentifier>{ff3ae5f5-6682-44dd-90bd-d75db53e8abe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="videoservices\lib">
-      <UniqueIdentifier>{94fbf44a-e7fc-481d-ae84-7eb1c4519f2c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -45,6 +45,7 @@
     </VCToolsVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\src\asrd_toolset_dirs.props" Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\src\asrd_toolset_dirs.props')" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
@@ -61,8 +62,8 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>Debug_swarm\</OutDir>
-    <IntDir>Debug_swarm\</IntDir>
+    <OutDir>Debug_swarm\$(AsrdToolsetDir)\</OutDir>
+    <IntDir>Debug_swarm\$(AsrdToolsetDir)\intermediate\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
     <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
     <LinkIncremental>true</LinkIncremental>
@@ -72,8 +73,8 @@
     <CodeAnalysisRuleSet>..\..\devtools\CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>Release_swarm\</OutDir>
-    <IntDir>Release_swarm\</IntDir>
+    <OutDir>Release_swarm\$(AsrdToolsetDir)\</OutDir>
+    <IntDir>Release_swarm\$(AsrdToolsetDir)\intermediate\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
@@ -83,8 +84,8 @@
     <CodeAnalysisRuleSet>..\..\devtools\CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
-    <OutDir>Release_swarm\</OutDir>
-    <IntDir>Release_swarm\</IntDir>
+    <OutDir>Release_swarm\$(AsrdToolsetDir)\</OutDir>
+    <IntDir>Release_swarm\$(AsrdToolsetDir)\intermediate\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
     <PreLinkEventUseInBuild>true</PreLinkEventUseInBuild>
     <LinkIncremental>false</LinkIncremental>
@@ -144,9 +145,10 @@
       <AdditionalLibraryDirectories>..\..\lib\common\.;..\..\lib\public\.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>$(IntDir)$(TargetName).map</MapFileName>
+      <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <SubSystem>Windows</SubSystem>
       <BaseAddress>
       </BaseAddress>
@@ -174,12 +176,12 @@ mkdir "%25DEST_DIR%25" 2&gt;nul
 
 robocopy "$(TargetDir)\" "%25DEST_DIR%25" "$(TargetFileName)" "$(TargetName).map" "$(TargetName).pdb" /IS /IT /COPY:DAT /R:1 /W:0 /NP
 if %errorlevel% GEQ 8 exit /b %errorlevel%
-REM normalize robocopy success range (0–7) to MSBuild success (0)
+REM normalize robocopy success range (0â7) to MSBuild success (0)
 cmd /c exit /b 0
 
 if exist ..\..\devtools\bin\postbuild.cmd (
-  call ..\..\devtools\bin\postbuild.cmd $(TargetName)
-  if %errorlevel% NEQ 0 exit /b %errorlevel%
+Â  call ..\..\devtools\bin\postbuild.cmd $(TargetName)
+Â  if %errorlevel% NEQ 0 exit /b %errorlevel%
 )
 
 exit /b 0
@@ -188,7 +190,7 @@ exit /b 0
     <PreLinkEvent>
       <Command>if exist ..\..\devtools\bin\sourcelink.cmd (
   call ..\..\devtools\bin\sourcelink.cmd
-  if %errorlevel% NEQ 0 exit /b %errorlevel%
+Â  if %errorlevel% NEQ 0 exit /b %errorlevel%
 )
 
 exit /b 0
@@ -249,9 +251,10 @@ exit /b 0
       <AdditionalLibraryDirectories>..\..\lib\common\.;..\..\lib\public\.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>$(IntDir)$(TargetName).map</MapFileName>
+      <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -283,12 +286,12 @@ mkdir "%25DEST_DIR%25" 2&gt;nul
 
 robocopy "$(TargetDir)\" "%25DEST_DIR%25" "$(TargetFileName)" "$(TargetName).map" "$(TargetName).pdb" /IS /IT /COPY:DAT /R:1 /W:0 /NP
 if %errorlevel% GEQ 8 exit /b %errorlevel%
-REM normalize robocopy success range (0–7) to MSBuild success (0)
+REM normalize robocopy success range (0â7) to MSBuild success (0)
 cmd /c exit /b 0
 
 if exist ..\..\devtools\bin\postbuild.cmd (
-  call ..\..\devtools\bin\postbuild.cmd $(TargetName)
-  if %errorlevel% NEQ 0 exit /b %errorlevel%
+Â  call ..\..\devtools\bin\postbuild.cmd $(TargetName)
+Â  if %errorlevel% NEQ 0 exit /b %errorlevel%
 )
 
 exit /b 0
@@ -297,7 +300,7 @@ exit /b 0
     <PreLinkEvent>
       <Command>if exist ..\..\devtools\bin\sourcelink.cmd (
   call ..\..\devtools\bin\sourcelink.cmd
-  if %errorlevel% NEQ 0 exit /b %errorlevel%
+Â  if %errorlevel% NEQ 0 exit /b %errorlevel%
 )
 
 exit /b 0
@@ -359,9 +362,10 @@ exit /b 0
       <AdditionalLibraryDirectories>..\..\lib\common\.;..\..\lib\public\.;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>$(IntDir)$(TargetName).map</MapFileName>
+      <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
+      <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -394,12 +398,12 @@ mkdir "%25DEST_DIR%25" 2&gt;nul
 
 robocopy "$(TargetDir)\" "%25DEST_DIR%25" "$(TargetFileName)" "$(TargetName).map" "$(TargetName).pdb" /IS /IT /COPY:DAT /R:1 /W:0 /NP
 if %errorlevel% GEQ 8 exit /b %errorlevel%
-REM normalize robocopy success range (0–7) to MSBuild success (0)
+REM normalize robocopy success range (0â7) to MSBuild success (0)
 cmd /c exit /b 0
 
 if exist ..\..\devtools\bin\postbuild.cmd (
-  call ..\..\devtools\bin\postbuild.cmd $(TargetName)
-  if %errorlevel% NEQ 0 exit /b %errorlevel%
+Â  call ..\..\devtools\bin\postbuild.cmd $(TargetName)
+Â  if %errorlevel% NEQ 0 exit /b %errorlevel%
 )
 
 exit /b 0
@@ -408,7 +412,7 @@ exit /b 0
     <PreLinkEvent>
       <Command>if exist ..\..\devtools\bin\sourcelink.cmd (
   call ..\..\devtools\bin\sourcelink.cmd
-  if %errorlevel% NEQ 0 exit /b %errorlevel%
+Â  if %errorlevel% NEQ 0 exit /b %errorlevel%
 )
 
 exit /b 0
@@ -2379,6 +2383,10 @@ exit /b 0
     <Library Include="..\..\lib\public\vpklib.lib" />
     <Library Include="..\..\lib\public\vstdlib.lib" />
   </ItemGroup>
+  <!-- ASRD/clang-cl: settings for the ClangCL toolset (lld-link, LTO, clang workarounds).
+       Gated on PlatformToolset=ClangCL - the MSVC build never sees a single line of that file.
+       which is why switching the toolset in Visual Studio did not work. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\src\clang_cl.props" Condition="'$(PlatformToolset)' == 'ClangCL' And Exists('$(MSBuildThisFileDirectory)..\..\..\src\clang_cl.props')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Build directory layout, selected by the toolset.
+
+    Artifacts and intermediate files are kept apart per toolset so that the MSVC and the
+    clang-cl build of the same configuration can never reuse each other's object files:
+
+      <configuration dir>\msvc\                 linked artifacts (client.dll, .map, .pdb)
+      <configuration dir>\msvc\intermediate\    object files, pch, build logs
+      <configuration dir>\clang_cl\             the same layout for the ClangCL toolset,
+      <configuration dir>\clang_cl\intermediate\
+
+    This file is imported after Microsoft.Cpp.props and before the configuration
+    PropertyGroups that set OutDir/IntDir, so PlatformToolset is already known while
+    OutDir is not yet overridden.
+
+    All MSVC versions intentionally share "msvc"; replace the fallback with
+    "msvc_$(PlatformToolset)" to separate v143 from v145 as well.
+
+    The shader projects (stdshader_dx9_sdk, shaderlib_sdk) keep their own directories and
+    are not covered by this file.
+  -->
+  <PropertyGroup>
+    <AsrdToolsetDir Condition="'$(PlatformToolset)' == 'ClangCL'">clang_cl</AsrdToolsetDir>
+    <AsrdToolsetDir Condition="'$(AsrdToolsetDir)' == ''">msvc</AsrdToolsetDir>
+  </PropertyGroup>
+</Project>
