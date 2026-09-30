@@ -9,7 +9,9 @@
 #include "rd_swarmopedia.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 class StatsBar;
 // == MANAGED_CLASS_DECLARATIONS_END ==
 class CASW_EquipItem;

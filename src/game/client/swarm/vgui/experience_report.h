@@ -16,7 +16,9 @@ class MedalStatLine;
 class CNB_Island;
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 class WeaponUnlockPanel;
 // == MANAGED_CLASS_DECLARATIONS_END ==
 

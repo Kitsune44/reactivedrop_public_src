@@ -9,7 +9,9 @@
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
 class CBitmapButton;
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 // == MANAGED_CLASS_DECLARATIONS_END ==
 
 class CNB_Select_Save_Entry : public vgui::EditablePanel

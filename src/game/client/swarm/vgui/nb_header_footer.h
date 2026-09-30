@@ -13,7 +13,9 @@
 extern IVideoServices *g_pWEBM;
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 // == MANAGED_CLASS_DECLARATIONS_END ==
 class HUDVideoPanel;
 class CNB_Gradient_Bar;

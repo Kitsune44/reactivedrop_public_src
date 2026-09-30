@@ -10,8 +10,12 @@
 #include "nb_lobby_row.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::ImagePanel;
-class vgui::Panel;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Panel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Panel; }
 // == MANAGED_CLASS_DECLARATIONS_END ==
 
 class CNB_Lobby_Row_Small : public CNB_Lobby_Row, BaseModUI::IGenericPanelListItem

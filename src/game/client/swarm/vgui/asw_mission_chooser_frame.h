@@ -10,8 +10,12 @@
 struct RD_Campaign_t;
 struct RD_Mission_t;
 class CASW_Mission_Chooser_Tab;
-class vgui::ImagePanel;
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 class CNB_Header_Footer;
 class CampaignMapSearchLights;
 

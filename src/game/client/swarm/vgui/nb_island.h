@@ -7,7 +7,9 @@
 #include <vgui/VGUI.h>
 #include <vgui_controls/EditablePanel.h>
 
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 
 // a box with rounded corners and a title
 

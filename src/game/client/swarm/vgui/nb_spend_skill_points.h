@@ -9,11 +9,19 @@
 #include "asw_shareddefs.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::Label;
-class vgui::Panel;
-class vgui::Button;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Panel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Panel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Button;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Button; }
 class CNB_Skill_Panel_Spending;
-class vgui::ImagePanel;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
 class CNB_Header_Footer;
 // == MANAGED_CLASS_DECLARATIONS_END ==
 class CNB_Select_Marine_Entry;

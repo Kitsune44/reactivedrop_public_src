@@ -9,10 +9,18 @@
 #include "vgui_bitmapbutton.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::Label;
-class vgui::Panel;
-class vgui::Button;
-class vgui::ImagePanel;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Panel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Panel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Button;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Button; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
 class CNB_Lobby_Row;
 class CNB_Lobby_Row_Small;
 class CNB_Lobby_Row_XSmall;

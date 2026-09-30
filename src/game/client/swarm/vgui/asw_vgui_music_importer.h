@@ -4,7 +4,9 @@
 #include <vgui/VGUI.h>
 #include "vgui_controls/FileOpenDialog.h"
 
-class vgui::IScheme;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::IScheme;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class IScheme; }
 
 //--------------------------------------------------------
 // Information about the mp3 file being loaded (artist, genre, etc.)

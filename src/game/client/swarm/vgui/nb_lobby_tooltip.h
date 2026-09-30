@@ -9,14 +9,22 @@
 #include "steam/steam_api.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::Panel;
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Panel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Panel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 class CNB_Skill_Panel;
 class CNB_Weapon_Detail;
 class CASW_Model_Panel;
 // == MANAGED_CLASS_DECLARATIONS_END ==
-class vgui::ImagePanel;
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 
 namespace vgui
 {

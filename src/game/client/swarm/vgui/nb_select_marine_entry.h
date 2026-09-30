@@ -8,8 +8,12 @@
 #include <vgui_controls/EditablePanel.h>
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::ImagePanel;
-class vgui::Label;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Label;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Label; }
 // == MANAGED_CLASS_DECLARATIONS_END ==
 class CBitmapButton;
 class CNB_Button;

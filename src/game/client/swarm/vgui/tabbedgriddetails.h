@@ -6,8 +6,8 @@ class TGD_Tab;
 class TGD_Grid;
 class TGD_Entry;
 class TGD_Details;
-class vgui::Label;
-class vgui::ScrollBar;
+namespace vgui { class Label; }
+namespace vgui { class ScrollBar; }
 class CNB_Button;
 class CNB_Header_Footer;
 class CRD_VGUI_Main_Menu_Top_Bar;

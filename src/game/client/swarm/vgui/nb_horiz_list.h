@@ -9,10 +9,14 @@
 #include "vgui_controls/phandle.h"
 
 // == MANAGED_CLASS_DECLARATIONS_START: Do not edit by hand ==
-class vgui::ImagePanel;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ImagePanel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ImagePanel; }
 class CBitmapButton;
 // == MANAGED_CLASS_DECLARATIONS_END ==
-class vgui::ScrollBar;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::ScrollBar;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class ScrollBar; }
 
 class CNB_Horiz_List : public vgui::EditablePanel
 {

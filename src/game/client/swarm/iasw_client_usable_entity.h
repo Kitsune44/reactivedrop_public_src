@@ -98,7 +98,9 @@ struct ASWUseAction
 };
 
 class C_ASW_Inhabitable_NPC;
-class vgui::Panel;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Panel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Panel; }
 
 abstract_class IASW_Client_Usable_Entity
 {

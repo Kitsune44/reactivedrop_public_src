@@ -16,9 +16,15 @@
 #include "KeyValues.h"
 #include <vgui_controls/QueryBox.h>
 
-class vgui::Frame;
-class vgui::TextEntry;
-class vgui::Panel;
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Frame;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Frame; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::TextEntry;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class TextEntry; }
+// clang: a forward declaration cannot have a nested name specifier ("class vgui::Panel;"),
+// so the class is declared inside its namespace instead.
+namespace vgui { class Panel; }
 class CCvarTextEntry;
 
 //--------------------------------------------------------------------------------------------------------------
