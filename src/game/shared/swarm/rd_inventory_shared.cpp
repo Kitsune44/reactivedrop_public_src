@@ -109,7 +109,17 @@ static const char s_szHexDigits[] = "0123456789abcdef";
 
 static void WriteInventoryCacheHelper();
 
-static class CRD_Inventory_Manager final : public CAutoGameSystem, public CGameEventListener
+#if defined( __clang__ )
+// clang parses member function bodies at the end of the class definition, so the global object
+// used inside those bodies must be declared before the class (MSVC accepts it after).
+class CRD_Inventory_Manager;
+extern CRD_Inventory_Manager s_RD_Inventory_Manager;
+#define RD_INV_MGR_STORAGE
+#else
+#define RD_INV_MGR_STORAGE	static
+#endif
+
+RD_INV_MGR_STORAGE class CRD_Inventory_Manager final : public CAutoGameSystem, public CGameEventListener
 {
 public:
 	CRD_Inventory_Manager() : CAutoGameSystem( "CRD_Inventory_Manager" )
