@@ -23,6 +23,23 @@
 #define offsetof(s,m)	(size_t)&(((s *)0)->m)
 #endif
 
+#if defined( __clang__ )
+// clang: the built-in offsetof (__builtin_offsetof) requires a real array designator,
+// while CNetworkArray is a class with operator [] (e.g. RECVINFO(m_hAttachEntity[0])).
+// Like MSVC and Linux we compute the offset with pointer arithmetic (no dereference).
+#undef offsetof
+#define offsetof(s,m)	(int)(size_t)&(((s *)0)->m)
+#endif
+
+#if defined( __clang__ )
+// clang: in some TUs the built-in offsetof from the UCRT (stddef.h) is active and it does not
+// accept "x[0]" when x is a CNetworkArray (a class with operator []). That is why in the
+// RECVINFO/SENDINFO macros we compute the offset with pointer arithmetic, whatever offsetof is.
+#define DT_CLANG_OFFSETOF( type, expr )	(int)(size_t)&( ( (type *)0 )->expr )
+#else
+#define DT_CLANG_OFFSETOF( type, expr )	offsetof( type, expr )
+#endif
+
 // Max number of properties in a datatable and its children.
 #define MAX_DATATABLES		1024	// must be a power of 2.
 #define MAX_DATATABLE_PROPS	4096
