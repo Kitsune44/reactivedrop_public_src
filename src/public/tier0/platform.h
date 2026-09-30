@@ -633,7 +633,7 @@ typedef unsigned int		uint;
 //-----------------------------------------------------------------------------
 // Used to break into the debugger
 //-----------------------------------------------------------------------------
-#ifdef COMPILER_MSVC64
+#if defined( COMPILER_MSVC64 ) || defined( __clang__ )
 	#define DebuggerBreak()		__debugbreak()
 #elif COMPILER_MSVC32
 	#define DebuggerBreak()		__asm { int 3 }

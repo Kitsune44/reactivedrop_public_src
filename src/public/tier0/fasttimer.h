@@ -316,6 +316,18 @@ inline void CCycleCount::Sample()
 	: "D" (pSample)
 		: "%eax", "%edx" );
 #elif defined( _WIN32 )
+#if defined( __clang__ )
+	// clang-cl does not model the clobbering of EAX/EDX by MS-style __asm { rdtsc }, so a value
+	// living in EAX/EDX (e.g. a pointer returned by a called function) was destroyed. Symptom:
+	// SetSchedule received the low 32 bits of the TSC instead of a CAI_Schedule* and crashed.
+	// The intrinsic is modelled correctly.
+	unsigned long* pSample = (unsigned long *)&m_Int64;
+	{
+		uint64 ullASRDTsc = ( uint64 )__builtin_ia32_rdtsc();
+		pSample[0] = ( unsigned long )( ullASRDTsc & 0xFFFFFFFFu );
+		pSample[1] = ( unsigned long )( ullASRDTsc >> 32 );
+	}
+#else
 	unsigned long* pSample = (unsigned long *)&m_Int64;
 	__asm
 	{
@@ -329,6 +341,7 @@ inline void CCycleCount::Sample()
 		mov		[ecx], eax
 		mov		[ecx+4], edx
 	}
+#endif
 #elif defined( POSIX )
 	unsigned long* pSample = (unsigned long *)&m_Int64;
     __asm__ __volatile__ (  

@@ -5907,8 +5907,11 @@ bool CAlienSwarm::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 		V_swap( collisionGroup0, collisionGroup1 );
 	}
 
+// clang evaluates this assertion as a constant expression and enforces the declared range of
+// Collision_Group_t, which the ASW collision groups exceed; comparing the underlying integers
+// keeps the check identical for both compilers.
 #define SHOULD_COLLIDE( group0, group1, should ) \
-	ASSERT_INVARIANT( group0 <= group1 ); \
+	ASSERT_INVARIANT( (int)( group0 ) <= (int)( group1 ) ); \
 	if ( collisionGroup0 == group0 && collisionGroup1 == group1 ) \
 		return should
 #define ALWAYS_COLLIDE( group, should ) \

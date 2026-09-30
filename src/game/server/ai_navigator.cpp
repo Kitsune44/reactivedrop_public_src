@@ -1228,7 +1228,7 @@ float CAI_Navigator::GetPathTimeToGoal()
 
 AI_PathNode_t CAI_Navigator::GetNearestNode()
 {
-#if !defined( GNUC )
+#if !defined( GNUC ) && !defined( __clang__ )   // clang cannot evaluate this comparison in a constant expression
 	COMPILE_TIME_ASSERT( ((int)AIN_NO_NODE == (int)NO_NODE) );
 #endif
 	return (AI_PathNode_t)( GetPathfinder()->NearestNodeToNPC() );

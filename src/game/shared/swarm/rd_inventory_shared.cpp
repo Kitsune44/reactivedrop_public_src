@@ -62,7 +62,13 @@ using namespace ReactiveDropInventory;
 COMPILE_TIME_ASSERT( RD_STEAM_INVENTORY_EQUIP_SLOT_FIRST_MEDAL + RD_STEAM_INVENTORY_NUM_MEDAL_SLOTS == RD_NUM_STEAM_INVENTORY_EQUIP_SLOTS_PLAYER );
 #pragma warning(push)
 #pragma warning(disable: 4130) // we're comparing string literals, but if the comparison fails due to memory weirdness, it'll fail at compile time, so it's fine
+#if defined( __clang__ )
+// clang rejects this comparison of string literal addresses in a constant expression (it has an
+// unspecified value); MSVC only warns with C4130, which the pragma above silences. The check is
+// therefore kept for MSVC only.
+#else
 COMPILE_TIME_ASSERT( ReactiveDropInventory::g_PlayerInventorySlotNames[RD_STEAM_INVENTORY_EQUIP_SLOT_FIRST_MEDAL] == "medal" );
+#endif
 #pragma warning(pop)
 
 #ifdef CLIENT_DLL
