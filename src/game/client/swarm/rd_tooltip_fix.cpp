@@ -27,10 +27,10 @@ public:
 		auto pApplySchemeSettings = **reinterpret_cast< void( vgui::Tooltip:: *const *const * )( vgui::IScheme * ) >( pTooltip );
 
 		#ifdef _DEBUG
-			// This is a thunk, so we need to grab the real one.
+			// MSVC's incremental linker inserts a jmp thunk (0xE9) in debug builds, while lld-link
+			// (used by clang-cl) links the function directly, so only follow the thunk when it is there.
 			byte *pThunk = *reinterpret_cast<byte *const *>( &pApplySchemeSettings );
-			Assert( *pThunk == 0xE9 );
-			byte *pRealFunc = pThunk + 5 + *reinterpret_cast<const intptr_t *>( pThunk + 1 );
+			byte *pRealFunc = ( *pThunk == 0xE9 ) ? pThunk + 5 + *reinterpret_cast<const intptr_t *>( pThunk + 1 ) : pThunk;
 		#else
 			// ...except in release builds, where it's not a thunk.
 			byte *pRealFunc = *reinterpret_cast<byte *const *>( &pApplySchemeSettings );

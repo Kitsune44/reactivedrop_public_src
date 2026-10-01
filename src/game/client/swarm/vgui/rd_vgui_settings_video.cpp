@@ -96,8 +96,11 @@ public:
 
 		#ifdef _DEBUG
 			// Gotta deal with thunks on debug builds.
-			Assert( *pUpdateCurrentVideoConfig == 0xE9 );
-			pUpdateCurrentVideoConfig += 5 + *reinterpret_cast<const intptr_t *>( pUpdateCurrentVideoConfig + 1 );
+			// MSVC's incremental linker inserts a jmp thunk (0xE9) in debug builds, while lld-link
+			// (used by clang-cl) links the function directly. Follow the thunk only when it exists,
+			// otherwise the offset below lands in the middle of unrelated code.
+			if ( *pUpdateCurrentVideoConfig == 0xE9 )
+				pUpdateCurrentVideoConfig += 5 + *reinterpret_cast<const intptr_t *>( pUpdateCurrentVideoConfig + 1 );
 		#endif
 
 		struct VideoConfigSetting_t

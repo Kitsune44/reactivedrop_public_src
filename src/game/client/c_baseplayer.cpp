@@ -2493,7 +2493,7 @@ void C_BasePlayer::RecvProxy_NonLocalCellOriginXY( const CRecvProxyData *pData, 
 	player->m_vecCellOrigin.x = pData->m_Value.m_Vector[0];
 	player->m_vecCellOrigin.y = pData->m_Value.m_Vector[1];
 
-	register int const cellwidth = player->m_cellwidth; // Load it into a register
+	int const cellwidth = player->m_cellwidth;
 	((float*)pOut)[0] = CoordFromCell( cellwidth, player->m_cellX, pData->m_Value.m_Vector[0] );
 	((float*)pOut)[1] = CoordFromCell( cellwidth, player->m_cellY, pData->m_Value.m_Vector[1] );
 }
@@ -2504,7 +2504,7 @@ void C_BasePlayer::RecvProxy_NonLocalCellOriginZ( const CRecvProxyData *pData, v
 
 	player->m_vecCellOrigin.z = pData->m_Value.m_Float;
 
-	register int const cellwidth = player->m_cellwidth; // Load it into a register
+	int const cellwidth = player->m_cellwidth;
 	*((float*)pOut) = CoordFromCell( cellwidth, player->m_cellZ, pData->m_Value.m_Float );
 }
 
