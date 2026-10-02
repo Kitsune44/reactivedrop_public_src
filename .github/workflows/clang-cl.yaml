@@ -1,0 +1,293 @@
+# Branch validation across three independent build paths:
+#   Windows / MSVC - MSBuild, the toolset the project files carry (cl.exe + link.exe)
+#   Windows / LLVM - MSBuild with PlatformToolset=ClangCL (clang-cl.exe + lld-link.exe)
+#   Linux / LLVM   - src/crossbuild.sh (clang-cl.exe + lld-link.exe)
+#
+# Each path builds server.dll, client.dll and missionchooser.dll for Release and Debug, in a job of its
+# own, and stores that job's DLLs and PDBs as one flat artifact: the files sit side by side in the
+# download, without the directory layout of the projects they came from.
+#
+# This workflow validates the clang-cl branch; the production workflow is build.yaml.
+
+name: clang-cl branch checks
+
+on:
+  push:
+    branches:
+      - clang-cl
+
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: "Configuration to build"
+        required: true
+        type: choice
+        options:
+          - Release
+          - Debug
+          - All
+        default: All
+
+      windows_msvc:
+        description: "Windows / MSBuild / MSVC / cl.exe + link.exe"
+        type: boolean
+        default: true
+
+      windows_llvm:
+        description: "Windows / MSBuild / LLVM / clang-cl.exe + lld-link.exe"
+        type: boolean
+        default: true
+
+      linux_llvm:
+        description: "Linux / crossbuild.sh / LLVM / clang-cl.exe + lld-link.exe"
+        type: boolean
+        default: true
+
+jobs:
+  windows-msvc:
+    name: Windows / MSVC - ${{ matrix.configuration }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_msvc }}
+    runs-on: windows-2025
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: ${{ fromJSON(
+          (github.event_name != 'workflow_dispatch' || inputs.configuration == 'All')
+            && '["Release","Debug"]'
+            || format('["{0}"]', inputs.configuration)
+          ) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Build server.dll
+        working-directory: src/game/server
+        run: MSBuild.exe swarm_sdk_server.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=Win32
+
+      - name: Build client.dll
+        working-directory: src/game/client
+        run: MSBuild.exe swarm_sdk_client.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=Win32
+
+      - name: Build missionchooser.dll
+        working-directory: src/game/missionchooser
+        run: MSBuild.exe swarm_sdk_missionchooser.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=Win32
+
+      # MSBuild's default OutDir is reactivedrop/bin; flatten it for the artifact.
+      - name: Collect build artifacts (DLLs and PDBs)
+        shell: bash
+        run: |
+          mkdir -p bin
+          cp -v reactivedrop/bin/server.dll reactivedrop/bin/client.dll \
+                reactivedrop/bin/missionchooser.dll bin/
+          cp -v reactivedrop/bin/server.pdb reactivedrop/bin/client.pdb \
+                reactivedrop/bin/missionchooser.pdb bin/ 2>/dev/null || true
+
+      - name: Upload build artifacts (DLLs and PDBs)
+        uses: actions/upload-artifact@v7
+        with:
+          name: msvc-${{ matrix.configuration }}
+          if-no-files-found: warn
+          path: bin/*
+
+  windows-llvm:
+    name: Windows / LLVM - ${{ matrix.configuration }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_llvm }}
+    runs-on: windows-2025
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: ${{ fromJSON(
+          (github.event_name != 'workflow_dispatch' || inputs.configuration == 'All')
+            && '["Release","Debug"]'
+            || format('["{0}"]', inputs.configuration)
+          ) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Build server.dll
+        working-directory: src/game/server
+        run: MSBuild.exe swarm_sdk_server.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=Win32 -property:PlatformToolset=ClangCL
+
+      - name: Build client.dll
+        working-directory: src/game/client
+        run: MSBuild.exe swarm_sdk_client.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=Win32 -property:PlatformToolset=ClangCL
+
+      - name: Build missionchooser.dll
+        working-directory: src/game/missionchooser
+        run: MSBuild.exe swarm_sdk_missionchooser.vcxproj -property:Configuration=${{ matrix.configuration }} -property:Platform=Win32 -property:PlatformToolset=ClangCL
+
+      # The ClangCL toolset writes under <configuration>_swarm/clang_cl, except for the missionchooser
+      # project, which has no _swarm suffix.
+      - name: Collect build artifacts (DLLs and PDBs)
+        shell: bash
+        run: |
+          mkdir -p bin
+          cp -v src/game/client/${{ matrix.configuration }}_swarm/clang_cl/client.dll bin/
+          cp -v src/game/server/${{ matrix.configuration }}_swarm/clang_cl/server.dll bin/
+          cp -v src/game/missionchooser/${{ matrix.configuration }}/clang_cl/missionchooser.dll bin/
+          cp -v src/game/client/${{ matrix.configuration }}_swarm/clang_cl/client.pdb bin/ 2>/dev/null || true
+          cp -v src/game/server/${{ matrix.configuration }}_swarm/clang_cl/server.pdb bin/ 2>/dev/null || true
+          cp -v src/game/missionchooser/${{ matrix.configuration }}/clang_cl/missionchooser.pdb bin/ 2>/dev/null || true
+
+      - name: Upload build artifacts (DLLs and PDBs)
+        uses: actions/upload-artifact@v7
+        with:
+          name: clangcl-${{ matrix.configuration }}
+          if-no-files-found: warn
+          path: bin/*
+
+  linux-llvm:
+    name: Linux / LLVM - ${{ matrix.configuration }}
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_llvm }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: ${{ fromJSON(
+          (github.event_name != 'workflow_dispatch' || inputs.configuration == 'All')
+            && '["Release","Debug"]'
+            || format('["{0}"]', inputs.configuration)
+          ) }}
+    # LLVM is discovered by crossbuild.sh. XWIN pins the winsysroot location.
+    env:
+      XWIN: /home/runner/xwin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Vendored video libraries are Release LLVM bitcode produced by ClangCL.
+      # lld-link consumes it; LLVM 22 matches the producer and avoids an untested major-version mismatch.
+      # LLVM 22 comes from apt.llvm.org: the default repositories of ubuntu-24.04 do not carry it.
+      - name: Install LLVM 22
+        run: |
+          wget -q https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
+          sudo apt-get install -y lld-22
+
+      # xwin populates a Windows winsysroot for the Linux clang-cl cross-build, including the
+      # Windows headers, CRT and libraries needed by clang-cl/lld-link. The cache stores both
+      # the resulting tree and xwin's downloaded package data, so a cache hit can avoid both
+      # the installation and the downloads.
+      - name: Restore the Windows winsysroot cache
+        id: xwin-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/xwin
+            ~/.xwin-cache
+          key: xwin-x86-v2-${{ runner.os }}
+
+      # The filesystem is authoritative: a complete tree skips xwin entirely; an incomplete cache
+      # still installs xwin before attempting to populate it.
+      - name: Prepare the Windows winsysroot
+        run: |
+          if [ -d "$XWIN/crt" ] && [ -d "$XWIN/sdk" ]; then
+            echo "the CRT and the Windows SDK are already in $XWIN"
+            ls "$XWIN/crt/lib/x86" | sed -n '1,5p'
+            ls "$XWIN/sdk/lib/um/x86" | sed -n '1,5p'
+            exit 0
+          fi
+
+          if ! command -v xwin > /dev/null; then
+            cargo install xwin --locked
+          fi
+
+          # Print help only on the recovery path: xwin's CLI has changed between releases.
+          # --http-retry is a hidden global option; this release accepts the singular spelling only.
+          xwin --help | sed -n '1,30p'
+          xwin splat --help | sed -n '1,40p'
+
+          # Retrieving the package manifest from Microsoft's CDN fails often enough to matter:
+          # "I/O failures reading the response body", with a hint to use --http-retries. That hint is
+          # wrong in this release - the option is --http-retry, singular, and it is a hidden global
+          # option: xwin's own usage line reads
+          #   xwin --accept-license --arch <ARCH> --http-retry <HTTP_RETRY> <COMMAND>
+          # Neither help text mentions it; the singular spelling is the only one accepted.
+          # Do not use --use-winsysroot-style: it creates the Windows Kits layout, while crossbuild.sh
+          # expects crt/ and sdk/ directly under $XWIN.
+          for attempt in 1 2 3 4 5; do
+            if xwin --accept-license --arch x86 --http-retry 5 --cache-dir "$HOME/.xwin-cache" \
+                    splat --output "$HOME/xwin" \
+                    --include-debug-libs --preserve-ms-arch-notation > /tmp/xwin.out 2>&1; then
+              echo "=== attempt $attempt succeeded ==="
+              break
+            fi
+            echo "=== attempt $attempt failed, xwin said: ==="
+            tail -20 /tmp/xwin.out
+            sleep 30
+          done
+
+          # Validate the result explicitly: a successful xwin invocation is not enough if the expected
+          # CRT/SDK tree is still incomplete.
+          if [ ! -d "$HOME/xwin/crt" ] || [ ! -d "$HOME/xwin/sdk" ]; then
+            echo "::error::xwin did not produce a complete CRT and Windows SDK tree in $HOME/xwin"
+            exit 1
+          fi
+          ls "$HOME/xwin/crt/lib/x86" | sed -n '1,5p'
+          ls "$HOME/xwin/sdk/lib/um/x86" | sed -n '1,5p'
+
+      # Save even after a build failure; otherwise a failed run discards the newly populated cache
+      # and forces the next run to download hundreds of MB again.
+      - name: Save the Windows winsysroot cache
+        if: always() && steps.xwin-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/xwin
+            ~/.xwin-cache
+          key: xwin-x86-v2-${{ runner.os }}
+
+      - name: Validate script syntax and CLI
+        run: |
+          bash -n src/crossbuild.sh
+          src/crossbuild.sh --help
+
+      # Exercises project parsing, compiler/linker flags, case-sensitive include validation and shadow
+      # include-tree generation without invoking the compiler.
+      - name: Dry run
+        run: src/crossbuild.sh ${{ matrix.configuration }} --dry-run
+
+      # Keep projects as separate steps: failures remain project-local, progress is readable, and each
+      # target can be built independently.
+      - name: Build server.dll
+        run: src/crossbuild.sh ${{ matrix.configuration }} server
+
+      - name: Build client.dll
+        run: src/crossbuild.sh ${{ matrix.configuration }} client
+
+      - name: Build missionchooser.dll
+        run: src/crossbuild.sh ${{ matrix.configuration }} missionchooser
+
+      # The cross-build writes into the OutDir and IntDir of each project, the same places MSBuild
+      # uses, so the three DLLs sit in three separate trees. Copying them into one bin directory before
+      # upload deliberately removes that project-specific layout from the artifact.
+      - name: Collect build artifacts (DLLs and PDBs)
+        run: |
+          mkdir -p bin
+          cp -v src/game/client/${{ matrix.configuration }}_swarm/clang_cl/client.dll bin/
+          cp -v src/game/server/${{ matrix.configuration }}_swarm/clang_cl/server.dll bin/
+          cp -v src/game/missionchooser/${{ matrix.configuration }}/clang_cl/missionchooser.dll bin/
+          cp -v src/game/client/${{ matrix.configuration }}_swarm/clang_cl/client.pdb bin/ 2>/dev/null || true
+          cp -v src/game/server/${{ matrix.configuration }}_swarm/clang_cl/server.pdb bin/ 2>/dev/null || true
+          cp -v src/game/missionchooser/${{ matrix.configuration }}/clang_cl/missionchooser.pdb bin/ 2>/dev/null || true
+
+      - name: Upload build artifacts (DLLs and PDBs)
+        uses: actions/upload-artifact@v7
+        with:
+          name: crossbuild-${{ matrix.configuration }}
+          if-no-files-found: warn
+          path: bin/*
